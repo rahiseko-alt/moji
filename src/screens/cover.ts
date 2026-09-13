@@ -13,6 +13,7 @@ import {
   type Mode,
 } from '../app/choices'
 import { requireElement } from '../app/dom'
+import { mountCredits } from './credits'
 import { STRINGS } from '../i18n/strings'
 import './cover.css'
 
@@ -26,6 +27,8 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
         <div class="cover__modes" role="group"></div>
       </div>
     </div>`
+
+  mountCredits(requireElement<HTMLElement>(screen, '.cover__frame'), choices)
 
   const languageRow = requireElement<HTMLDivElement>(screen, '.cover__languages')
   const modeRow = requireElement<HTMLDivElement>(screen, '.cover__modes')
