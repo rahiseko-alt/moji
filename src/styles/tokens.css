@@ -11,6 +11,7 @@
   --paper-plain: #fdfaf4; /* inside a writing cell, where the texture would hide the guide */
   --ink-faint: #d3cbbe; /* the model character, there to be traced over */
   --guide: #c6bcab; /* the dotted sixteenths inside a cell */
+  --wrong: #c0392b; /* a stroke shown back to the learner before it is taken away */
 
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif;
   --sans: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;

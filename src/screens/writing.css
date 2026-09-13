@@ -40,6 +40,17 @@
   color: var(--ink);
 }
 
+.writing__score {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.writing__score[hidden] {
+  display: none;
+}
+
 .writing__cells {
   display: flex;
   align-items: center;

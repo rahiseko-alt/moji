@@ -8,8 +8,9 @@
 import type { ChoicesStore } from '../app/choices'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
-import { loadStrokeData, strokesFor, type Stroke } from '../data/stroke-data'
+import { loadStrokeData, strokesFor, type Point, type Stroke } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
+import { createWritingSession, type WritingSession } from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
 
@@ -20,10 +21,14 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
   const screen = document.createElement('div')
   screen.className = 'writing'
   screen.innerHTML = `
-    <div class="writing__bar"><button type="button" class="writing__home"></button></div>
+    <div class="writing__bar">
+      <button type="button" class="writing__home"></button>
+      <p class="writing__score" hidden></p>
+    </div>
     <div class="writing__cells"></div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
+  const score = requireElement<HTMLParagraphElement>(screen, '.writing__score')
   const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
 
   const confirm = document.createElement('div')
@@ -43,14 +48,33 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
   const no = requireElement<HTMLButtonElement>(confirm, '[data-answer="no"]')
 
   let surface: WritingSurface | null = null
+  let session: WritingSession | null = null
 
-  const showModel = (model: readonly Stroke[]): void => {
-    surface = createWritingSurface({ model })
+  const showScore = (): void => {
+    if (!session) return
+    const { phase, score: tally } = session.state()
+    score.hidden = phase !== 'finished'
+    score.textContent = STRINGS[choices.get().language].strokeScore(tally.correct, tally.total)
+  }
+
+  const start = (model: readonly Stroke[]): void => {
+    session = createWritingSession({ strokes: model, mode: choices.get().mode ?? 'practice' })
+    surface = createWritingSurface({
+      model,
+      onStrokeFinished(points) {
+        const written: Point[] = points.map(({ x, y }) => [x, y])
+        const state = session!.writeStroke(written)
+        // A wrong stroke is shown back in red and taken away, so the learner
+        // never leaves a wrong shape sitting on the paper.
+        if (state.lastVerdict?.correct === false) surface!.rejectLastStroke()
+        showScore()
+      },
+    })
     cells.replaceChildren(surface.element)
   }
 
   void loadStrokeData().then((data) => {
-    showModel(strokesFor(data, PLACEHOLDER_CHARACTER))
+    start(strokesFor(data, PLACEHOLDER_CHARACTER))
   })
 
   const render = (): void => {
@@ -59,6 +83,7 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
     question.textContent = strings.quitQuestion
     yes.textContent = strings.yes
     no.textContent = strings.no
+    showScore()
   }
 
   // Leaving throws away what has been written, so ask — but only when there is

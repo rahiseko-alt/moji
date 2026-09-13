@@ -14,6 +14,8 @@ export type TracedPoint = { readonly x: number; readonly y: number; readonly t: 
 export type WritingSurfaceOptions = {
   /** The character's model strokes, drawn faintly to trace over. Empty hides the model. */
   readonly model: readonly Stroke[]
+  /** Called once the finger lifts, with the stroke in the character's own coordinates. */
+  readonly onStrokeFinished: (points: readonly TracedPoint[]) => void
 }
 
 /** KanjiVG's coordinate square. Everything here is expressed in it. */
@@ -24,11 +26,13 @@ const MODEL_WIDTH = 5
 const INK_WIDTH = 5.5
 /** Below this, a touch is a tap rather than a stroke, and is discarded. */
 const MINIMUM_STROKE_LENGTH = 2
+/** Long enough to see what was written before it is taken away, short enough not to nag. */
+const REJECTION_MS = 450
 
 export type WritingSurface = {
   readonly element: HTMLElement
-  /** Every finished stroke, oldest first, in the character's own coordinates. */
-  strokes(): readonly (readonly TracedPoint[])[]
+  /** Shows the last stroke in red for a moment, then takes it off the paper. */
+  rejectLastStroke(): void
   hasInk(): boolean
   destroy(): void
 }
@@ -44,6 +48,9 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   const finished: TracedPoint[][] = []
   let inProgress: TracedPoint[] | null = null
+  /** The stroke currently being shown back as wrong, if any. */
+  let rejected: number | null = null
+  let rejectionTimer: ReturnType<typeof setTimeout> | null = null
 
   const style = getComputedStyle(document.documentElement)
   const colour = (token: string): string => style.getPropertyValue(token).trim()
@@ -88,10 +95,15 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.lineWidth = MODEL_WIDTH
     for (const stroke of options.model) context.stroke(new Path2D(stroke.d))
 
-    context.strokeStyle = colour('--ink')
     context.lineWidth = INK_WIDTH
-    for (const stroke of finished) strokePolyline(stroke)
-    if (inProgress) strokePolyline(inProgress)
+    for (const [index, stroke] of finished.entries()) {
+      context.strokeStyle = colour(index === rejected ? '--wrong' : '--ink')
+      strokePolyline(stroke)
+    }
+    if (inProgress) {
+      context.strokeStyle = colour('--ink')
+      strokePolyline(inProgress)
+    }
   }
 
   const strokePolyline = (points: readonly TracedPoint[]): void => {
@@ -146,6 +158,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     }
     finished.push(points)
     draw()
+    options.onStrokeFinished(points)
   }
 
   canvas.addEventListener('pointerdown', onPointerDown)
@@ -159,9 +172,20 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   return {
     element,
-    strokes: () => finished,
+    rejectLastStroke() {
+      if (finished.length === 0) return
+      rejected = finished.length - 1
+      draw()
+      rejectionTimer = setTimeout(() => {
+        finished.pop()
+        rejected = null
+        rejectionTimer = null
+        draw()
+      }, REJECTION_MS)
+    },
     hasInk: () => finished.length > 0 || inProgress !== null,
     destroy() {
+      if (rejectionTimer) clearTimeout(rejectionTimer)
       observer.disconnect()
     },
   }
