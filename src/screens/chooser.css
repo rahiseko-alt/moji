@@ -1,0 +1,86 @@
+.chooser {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  block-size: 100%;
+  inline-size: 100%;
+  background: var(--paper);
+  background-image: url('/cover.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.chooser::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--paper-veil-strong);
+  pointer-events: none;
+}
+
+.chooser > * {
+  position: relative;
+}
+
+.chooser__groups {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+}
+
+.chooser__group {
+  padding: 0.3rem 1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.chooser__group[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.chooser__list {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  min-block-size: 0;
+  padding: 0 0.7rem 0.7rem;
+}
+
+/*
+ * Every character has to be on screen at once: a learner should be able to see
+ * the whole set and pick, not hunt by scrolling. The grid is sized to fit both
+ * ways, so the tiles shrink rather than the list growing.
+ */
+.chooser__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  gap: 0.2cqh;
+  inline-size: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
+  font-size: calc(min(100cqw / var(--columns), 100cqh / var(--rows)) * 0.52);
+}
+
+.chooser__character {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  font-family: var(--serif);
+  font-size: 1em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.chooser__character:hover,
+.chooser__character:focus-visible {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+}

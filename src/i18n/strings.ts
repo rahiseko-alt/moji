@@ -19,6 +19,9 @@ export type Strings = {
   readonly no: string
   /** e.g. "10画中8画正解" — how many strokes were right at the first attempt. */
   readonly strokeScore: (correct: number, total: number) => string
+  readonly hiragana: string
+  readonly katakana: string
+  readonly kanji: string
 }
 
 export const STRINGS: Record<Language, Strings> = {
@@ -33,6 +36,9 @@ export const STRINGS: Record<Language, Strings> = {
     yes: 'はい',
     no: 'いいえ',
     strokeScore: (correct, total) => `${total}画中${correct}画正解`,
+    hiragana: 'ひらがな',
+    katakana: 'カタカナ',
+    kanji: '漢字',
   },
   en: {
     practice: 'Practice',
@@ -45,6 +51,9 @@ export const STRINGS: Record<Language, Strings> = {
     yes: 'Yes',
     no: 'No',
     strokeScore: (correct, total) => `${correct} of ${total} strokes correct`,
+    hiragana: 'Hiragana',
+    katakana: 'Katakana',
+    kanji: 'Kanji',
   },
   vi: {
     practice: 'Luyện tập',
@@ -57,6 +66,9 @@ export const STRINGS: Record<Language, Strings> = {
     yes: 'Có',
     no: 'Không',
     strokeScore: (correct, total) => `Đúng ${correct}/${total} nét`,
+    hiragana: 'Hiragana',
+    katakana: 'Katakana',
+    kanji: 'Kanji',
   },
   ne: {
     practice: 'अभ्यास',
@@ -69,5 +81,8 @@ export const STRINGS: Record<Language, Strings> = {
     yes: 'हो',
     no: 'होइन',
     strokeScore: (correct, total) => `${total} मध्ये ${correct} स्ट्रोक सही`,
+    hiragana: 'हिरागाना',
+    katakana: 'काताकाना',
+    kanji: 'कान्जी',
   },
 }

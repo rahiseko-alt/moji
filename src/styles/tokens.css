@@ -20,6 +20,7 @@
   --scrim: rgb(30 28 26 / 0.18);
   --shadow: rgb(30 28 26 / 0.18);
   --paper-veil: rgb(246 240 231 / 0.72); /* calms the artwork behind a writing cell */
+  --paper-veil-strong: rgb(246 240 231 / 0.92); /* behind dense text, where the artwork would compete */
   --paper-tint: rgb(255 255 255 / 0.6); /* a control resting on the artwork */
   --on-vermilion: #fff;
 

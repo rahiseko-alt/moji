@@ -14,10 +14,12 @@ import { createWritingSession, type WritingSession } from '../writing/writing-se
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
 
-/** Until the character-choosing screen exists (#8), everyone practises the same character. */
-const PLACEHOLDER_CHARACTER = '日'
-
-export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome: () => void): Screen {
+export function mountWriting(
+  parent: HTMLElement,
+  choices: ChoicesStore,
+  character: string,
+  onHome: () => void,
+): Screen {
   const screen = document.createElement('div')
   screen.className = 'writing'
   screen.innerHTML = `
@@ -95,7 +97,7 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
   }
 
   void loadStrokeData().then((data) => {
-    start(strokesFor(data, PLACEHOLDER_CHARACTER), data.viewBox)
+    start(strokesFor(data, character), data.viewBox)
   })
 
   const render = (): void => {
