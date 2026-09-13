@@ -12,12 +12,11 @@ import {
   type Language,
   type Mode,
 } from '../app/choices'
+import { requireElement } from '../app/dom'
 import { STRINGS } from '../i18n/strings'
 import './cover.css'
 
-export type CoverScreen = { destroy(): void }
-
-export function mountCover(parent: HTMLElement, choices: ChoicesStore): CoverScreen {
+export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
   const screen = document.createElement('div')
   screen.className = 'cover'
   screen.innerHTML = `
@@ -28,8 +27,8 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): CoverScr
       </div>
     </div>`
 
-  const languageRow = screen.querySelector('.cover__languages') as HTMLDivElement
-  const modeRow = screen.querySelector('.cover__modes') as HTMLDivElement
+  const languageRow = requireElement<HTMLDivElement>(screen, '.cover__languages')
+  const modeRow = requireElement<HTMLDivElement>(screen, '.cover__modes')
 
   const languageButtons = new Map<Language, HTMLButtonElement>()
   for (const language of LANGUAGES) {
@@ -48,7 +47,6 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): CoverScr
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'cover__mode'
-    button.dataset['mode'] = mode
     button.addEventListener('click', () => choices.setMode(mode))
     modeButtons.set(mode, button)
     modeRow.append(button)
@@ -56,25 +54,17 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): CoverScr
 
   const render = (): void => {
     const { language, mode } = choices.get()
-    const strings = STRINGS[language]
     for (const [candidate, button] of languageButtons) {
       button.setAttribute('aria-pressed', String(candidate === language))
     }
     for (const [candidate, button] of modeButtons) {
       button.lang = language
-      button.textContent = candidate === 'practice' ? strings.practice : strings.test
+      button.textContent = STRINGS[language][candidate]
       button.setAttribute('aria-pressed', String(candidate === mode))
     }
   }
 
-  const unsubscribe = choices.subscribe(render)
+  choices.subscribe(render)
   render()
   parent.append(screen)
-
-  return {
-    destroy() {
-      unsubscribe()
-      screen.remove()
-    },
-  }
 }

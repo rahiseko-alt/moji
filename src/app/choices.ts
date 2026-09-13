@@ -37,7 +37,7 @@ export type ChoicesStore = {
   subscribe(listener: (choices: Choices) => void): () => void
 }
 
-export function createChoices(): ChoicesStore {
+export function createChoicesStore(): ChoicesStore {
   let choices: Choices = { language: DEFAULT_LANGUAGE, mode: null }
   const listeners = new Set<(choices: Choices) => void>()
 

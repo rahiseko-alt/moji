@@ -15,7 +15,7 @@
   position: relative;
   container-type: size;
   aspect-ratio: var(--cover-aspect);
-  inline-size: min(100%, calc(100dvh * 1672 / 941));
+  inline-size: min(100%, calc(100dvh * var(--cover-aspect)));
   max-block-size: 100dvh;
   background-image: url('/cover.png');
   background-size: contain;
@@ -24,7 +24,7 @@
 }
 
 /* The band of still water below the wordmark: the only part of the painting
-   with nothing in it. */
+   with nothing in it. Both rows are centred, so they stay clear of the seal. */
 .cover__controls {
   position: absolute;
   inset-inline: 6%;
@@ -44,7 +44,7 @@
 
 .cover__language {
   padding: 0.9cqh 2.2cqw;
-  border: 1px solid var(--ink-faint);
+  border: 1px solid rgb(30 28 26 / 0.2);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.55);
   font-family: var(--serif);
@@ -59,25 +59,22 @@
   color: var(--paper);
 }
 
+/* Both modes read as outlines until one is chosen, so that choosing is what
+   fills a button in. */
 .cover__mode {
   min-inline-size: 17cqw;
   padding: 1.2cqh 2.6cqw;
   border: 1.5px solid var(--vermilion);
   border-radius: 2px;
-  background: var(--vermilion);
+  background: rgb(255 255 255 / 0.7);
   font-family: var(--serif);
   font-size: 3.3cqw;
   line-height: 1.2;
   letter-spacing: 0.08em;
-  color: #fff;
-}
-
-/* "Test" is the rarer choice, so it reads as the quieter of the two. */
-.cover__mode[data-mode='test'] {
-  background: rgb(255 255 255 / 0.7);
   color: var(--vermilion);
 }
 
 .cover__mode[aria-pressed='true'] {
-  box-shadow: 0 0 0 3px rgb(181 48 28 / 0.25);
+  background: var(--vermilion);
+  color: #fff;
 }

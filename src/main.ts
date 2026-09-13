@@ -1,13 +1,13 @@
 import './styles/tokens.css'
 import './styles/base.css'
-import { createChoices } from './app/choices'
+import { createChoicesStore } from './app/choices'
+import { requireElement } from './app/dom'
 import { mountOrientationGate } from './app/orientation-gate'
 import { mountCover } from './screens/cover'
 
-const root = document.querySelector<HTMLElement>('#app')
-if (!root) throw new Error('#app is missing from index.html')
+const root = requireElement<HTMLElement>(document, '#app')
 
-const choices = createChoices()
+const choices = createChoicesStore()
 const orientationGate = mountOrientationGate(root)
 choices.subscribe(({ language }) => orientationGate.setLanguage(language))
 
