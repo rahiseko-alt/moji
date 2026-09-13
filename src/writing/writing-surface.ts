@@ -7,22 +7,21 @@
  * writing session's job (#6).
  */
 import type { Stroke } from '../data/stroke-data'
-
-/** A point in the character's own 109x109 square, with the moment it was touched. */
-export type TracedPoint = { readonly x: number; readonly y: number; readonly t: number }
+import type { TracedPoint } from './traced-point'
 
 export type WritingSurfaceOptions = {
   /** The character's model strokes, drawn faintly to trace over. Empty hides the model. */
   readonly model: readonly Stroke[]
+  /** The side of the square the stroke coordinates are defined in. */
+  readonly square: number
   /** Called once the finger lifts, with the stroke in the character's own coordinates. */
   readonly onStrokeFinished: (points: readonly TracedPoint[]) => void
 }
 
-/** KanjiVG's coordinate square. Everything here is expressed in it. */
-const SIDE = 109
 /** Three dotted lines each way, splitting the square into sixteen. */
 const DIVISIONS = 4
 const MODEL_WIDTH = 5
+
 const INK_WIDTH = 5.5
 /** Below this, a touch is a tap rather than a stroke, and is discarded. */
 const MINIMUM_STROKE_LENGTH = 2
@@ -38,6 +37,8 @@ export type WritingSurface = {
 }
 
 export function createWritingSurface(options: WritingSurfaceOptions): WritingSurface {
+  const SIDE = options.square
+
   const element = document.createElement('div')
   element.className = 'cell'
   const canvas = document.createElement('canvas')

@@ -44,9 +44,9 @@
 
 .cover__language {
   padding: 0.9cqh 2.2cqw;
-  border: 1px solid rgb(30 28 26 / 0.2);
+  border: 1px solid var(--hairline);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.55);
+  background: var(--paper-tint);
   font-family: var(--serif);
   font-size: 2.7cqw;
   line-height: 1.2;
@@ -66,7 +66,7 @@
   padding: 1.2cqh 2.6cqw;
   border: 1.5px solid var(--vermilion);
   border-radius: 2px;
-  background: rgb(255 255 255 / 0.7);
+  background: var(--paper-tint);
   font-family: var(--serif);
   font-size: 3.3cqw;
   line-height: 1.2;
@@ -76,5 +76,5 @@
 
 .cover__mode[aria-pressed='true'] {
   background: var(--vermilion);
-  color: #fff;
+  color: var(--on-vermilion);
 }

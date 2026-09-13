@@ -9,11 +9,16 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Point, StrokeData } from '../data/stroke-data'
-import { createWritingSession } from './writing-session'
+import type { TracedPoint } from './traced-point'
+import { createWritingSession, DEFAULT_NAVIGATION_DELAY_MS } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
 /** Four strokes, all of them long and straight: easy to distort in a controlled way. */
 const strokes = data.characters['日']!
+
+/** A stroke as the learner's finger would report it: in place, and taking time. */
+const traced = (points: readonly Point[], startedAt = 0): TracedPoint[] =>
+  points.map(([x, y], n) => ({ x, y, t: startedAt + n * 10 }))
 
 const perfect = (index: number): Point[] => strokes[index]!.median.map(([x, y]) => [x, y])
 
@@ -23,7 +28,7 @@ const write = (
 ) => {
   const session = createWritingSession({ strokes, mode })
   let state = session.state()
-  for (const attempt of attempts) state = session.writeStroke(attempt)
+  for (const [n, attempt] of attempts.entries()) state = session.writeStroke(traced(attempt, n * 1000))
   return { session, state }
 }
 
@@ -69,8 +74,8 @@ describe('writing a character correctly', () => {
   it('waits for the strokes in order', () => {
     const session = createWritingSession({ strokes, mode: 'practice' })
     expect(session.state().awaitingStroke).toBe(0)
-    expect(session.writeStroke(perfect(0)).awaitingStroke).toBe(1)
-    expect(session.writeStroke(perfect(1)).awaitingStroke).toBe(2)
+    expect(session.writeStroke(traced(perfect(0))).awaitingStroke).toBe(1)
+    expect(session.writeStroke(traced(perfect(1), 1000)).awaitingStroke).toBe(2)
   })
 
   it('forgives hand wobble', () => {
@@ -148,9 +153,78 @@ describe('a test', () => {
   })
 })
 
+describe('remembering what went wrong', () => {
+  it('keeps the reason for each stroke, not just the last one written', () => {
+    const { state } = write('test', reversed(0), truncated(1, 0.15), perfect(2))
+    expect(state.outcomes[0]!.lastMistake).toBe('backwards')
+    expect(state.outcomes[1]!.lastMistake).toBe('tooShort')
+    expect(state.outcomes[2]!.lastMistake).toBe(null)
+  })
+
+  it('keeps the reason for a stroke that was later written correctly', () => {
+    const { state } = write('practice', reversed(0), perfect(0))
+    expect(state.outcomes[0]!.done).toBe(true)
+    expect(state.outcomes[0]!.lastMistake).toBe('backwards')
+  })
+})
+
+describe('the hint for a learner who has stalled', () => {
+  const stall = (...attempts: readonly Point[][]) => {
+    const session = createWritingSession({ strokes, mode: 'practice' })
+    attempts.forEach((attempt, n) => session.writeStroke(traced(attempt, n * 10_000)))
+    const endedAt = (attempts.length - 1) * 10_000 + (perfect(0).length - 1) * 10
+    return { session, endedAt }
+  }
+
+  it('never appears before the first stroke, however long the wait', () => {
+    const session = createWritingSession({ strokes, mode: 'practice' })
+    expect(session.tick(10_000_000).showNavigation).toBe(false)
+  })
+
+  it('appears once the learner has waited, from the second stroke on', () => {
+    const { session, endedAt } = stall(perfect(0))
+    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS).showNavigation).toBe(true)
+  })
+
+  it('stays away while the learner is still within the grace period', () => {
+    const { session, endedAt } = stall(perfect(0))
+    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS - 1).showNavigation).toBe(false)
+  })
+
+  it('goes away again as soon as something is written', () => {
+    const { session, endedAt } = stall(perfect(0))
+    session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS)
+    expect(session.writeStroke(traced(perfect(1), 20_000)).showNavigation).toBe(false)
+  })
+
+  it('appears after a refused stroke too, since that learner is stuck as well', () => {
+    const { session, endedAt } = stall(perfect(0), reversed(1))
+    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS).showNavigation).toBe(true)
+  })
+
+  it('never appears in a test', () => {
+    const session = createWritingSession({ strokes, mode: 'test' })
+    session.writeStroke(traced(perfect(0)))
+    expect(session.tick(10_000_000).showNavigation).toBe(false)
+  })
+
+  it('stops once the character is finished', () => {
+    const { session } = writeAllPerfectly('practice')
+    expect(session.tick(10_000_000).showNavigation).toBe(false)
+  })
+
+  it('can be told to wait longer', () => {
+    const session = createWritingSession({ strokes, mode: 'practice', navigationDelayMs: 5000 })
+    session.writeStroke(traced(perfect(0)))
+    const endedAt = (perfect(0).length - 1) * 10
+    expect(session.tick(endedAt + 1500).showNavigation).toBe(false)
+    expect(session.tick(endedAt + 5000).showNavigation).toBe(true)
+  })
+})
+
 describe('once the character is finished', () => {
   it('ignores anything else written', () => {
     const { session, state } = writeAllPerfectly('practice')
-    expect(session.writeStroke(perfect(0))).toEqual(state)
+    expect(session.writeStroke(traced(perfect(0)))).toEqual(state)
   })
 })

@@ -11,17 +11,40 @@ import type { StrokeData } from './stroke-data'
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
 const entries = Object.entries(data.characters)
 
+/*
+ * Transcribed independently of src/data/characters.json, from the Ministry of
+ * Education's own table, and left in that table's order rather than the app's.
+ * Comparing the app's list against itself would prove nothing; this is the
+ * second witness.
+ *
+ * https://www.mext.go.jp/a_menu/shotou/new-cs/__icsFiles/afieldfile/2017/05/15/1385768.pdf
+ */
+const FIRST_YEAR_KANJI =
+  '一円右雨火王音花下貝学気九休玉金空月犬見五口校左三山糸子四七字耳車手十女出小上森水人正青生夕石赤千川先草早足村大男中虫竹町天田土二年日入白八百文木本名目立林力六'
+
+/** The 46 plain syllables, in the order they are taught. */
+const PLAIN_HIRAGANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
+const PLAIN_KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
+
+const sorted = (characters: Iterable<string>): string[] => [...characters].sort()
+
 describe('the characters the app teaches', () => {
-  it('has the 80 kanji of the first school year, and no others', () => {
-    expect(KANJI_GRADE1).toHaveLength(80)
+  it('has exactly the 80 kanji of the first school year', () => {
+    expect(FIRST_YEAR_KANJI).toHaveLength(80)
+    expect(sorted(KANJI_GRADE1)).toEqual(sorted(FIRST_YEAR_KANJI))
     expect(new Set(KANJI_GRADE1).size).toBe(80)
   })
 
-  it('has 46 hiragana and 46 katakana', () => {
-    expect(HIRAGANA).toHaveLength(46)
-    expect(KATAKANA).toHaveLength(46)
-    expect(new Set(HIRAGANA).size).toBe(46)
-    expect(new Set(KATAKANA).size).toBe(46)
+  it('has exactly the 46 plain hiragana and the 46 plain katakana', () => {
+    expect(sorted(HIRAGANA)).toEqual(sorted(PLAIN_HIRAGANA))
+    expect(sorted(KATAKANA)).toEqual(sorted(PLAIN_KATAKANA))
+  })
+
+  it('leaves out voiced marks and small kana, which add a mark rather than strokes', () => {
+    const notPlain = [...'がざだばぱぁぃゃっガザダバパァィャッ']
+    for (const character of notPlain) {
+      expect([...HIRAGANA, ...KATAKANA], character).not.toContain(character)
+    }
   })
 
   it('carries stroke data for every one of them, and nothing spare', () => {

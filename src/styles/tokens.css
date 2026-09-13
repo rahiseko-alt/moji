@@ -13,6 +13,16 @@
   --guide: #c6bcab; /* the dotted sixteenths inside a cell */
   --wrong: #c0392b; /* a stroke shown back to the learner before it is taken away */
 
+  /* Ink and paper at less than full strength. Anything laid over the artwork
+     needs one of these rather than a colour of its own. */
+  --hairline: rgb(30 28 26 / 0.22);
+  --hairline-strong: rgb(30 28 26 / 0.45);
+  --scrim: rgb(30 28 26 / 0.18);
+  --shadow: rgb(30 28 26 / 0.18);
+  --paper-veil: rgb(246 240 231 / 0.72); /* calms the artwork behind a writing cell */
+  --paper-tint: rgb(255 255 255 / 0.6); /* a control resting on the artwork */
+  --on-vermilion: #fff;
+
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif;
   --sans: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
 

@@ -11,12 +11,14 @@
  * in its own file, apart from the application code, and carries the same
  * licence.
  *
- * Usage: node scripts/build-stroke-data.mjs [path-to-kanjivg-checkout]
+ * Usage: npm run build:data -- [path-to-kanjivg-checkout]
  * The result is committed, so a build never needs the network.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import type { Point } from '../src/data/stroke-data'
+import { resample } from '../src/writing/polyline'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const KANJIVG = process.argv[2] ?? process.env.KANJIVG_DIR ?? join(ROOT, '..', 'kanjivg')
@@ -31,23 +33,26 @@ const NUMBER = /-?\d*\.?\d+(?:[eE][-+]?\d+)?/
 const TOKEN = new RegExp(`[A-Za-z]|${NUMBER.source}`, 'g')
 
 /** KanjiVG only ever uses M, C/c and S/s. Anything else is a surprise worth failing on. */
-function toCubicSegments(d) {
+type Vector = { x: number; y: number }
+type Cubic = [Vector, Vector, Vector, Vector]
+
+function toCubicSegments(d: string): Cubic[] {
   const tokens = d.match(TOKEN) ?? []
-  const segments = []
+  const segments: Cubic[] = []
   let i = 0
   let command = ''
-  let current = null
-  let start = null
-  let previousControl = null
-  const number = () => {
+  let current: Vector = { x: 0, y: 0 }
+  let start: Vector = { x: 0, y: 0 }
+  let previousControl: Vector | null = null
+  const number = (): number => {
     const value = Number(tokens[i++])
     if (Number.isNaN(value)) throw new Error(`Expected a number in path: ${d}`)
     return value
   }
   while (i < tokens.length) {
-    if (/[A-Za-z]/.test(tokens[i])) command = tokens[i++]
+    if (/[A-Za-z]/.test(tokens[i]!)) command = tokens[i++]!
     const relative = command === command.toLowerCase()
-    const base = relative && current ? current : { x: 0, y: 0 }
+    const base = relative ? current : { x: 0, y: 0 }
     switch (command.toUpperCase()) {
       case 'M': {
         current = { x: base.x + number(), y: base.y + number() }
@@ -85,7 +90,7 @@ function toCubicSegments(d) {
         break
       }
       case 'Z': {
-        if (start) segments.push([current, current, start, start])
+        segments.push([current, current, start, start])
         current = start
         previousControl = null
         break
@@ -97,7 +102,7 @@ function toCubicSegments(d) {
   return segments
 }
 
-function cubicAt([p0, p1, p2, p3], t) {
+function cubicAt([p0, p1, p2, p3]: Cubic, t: number): Vector {
   const u = 1 - t
   return {
     x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
@@ -105,60 +110,52 @@ function cubicAt([p0, p1, p2, p3], t) {
   }
 }
 
-/** Evenly spaced by arc length, so the points describe the shape rather than the curve's parameterisation. */
-function medianOf(d) {
-  const polyline = []
+/** The curve, flattened finely enough that arc length along it is accurate. */
+function flatten(d: string): Point[] {
+  const polyline: Point[] = []
   for (const segment of toCubicSegments(d)) {
     for (let step = 0; step <= FLATTEN_STEPS; step++) {
       const point = cubicAt(segment, step / FLATTEN_STEPS)
       const last = polyline[polyline.length - 1]
-      if (!last || last.x !== point.x || last.y !== point.y) polyline.push(point)
+      if (!last || last[0] !== point.x || last[1] !== point.y) polyline.push([point.x, point.y])
     }
   }
-  if (polyline.length === 1) {
-    return Array.from({ length: POINTS_PER_STROKE }, () => [round(polyline[0].x), round(polyline[0].y)])
-  }
-  const lengths = [0]
-  for (let n = 1; n < polyline.length; n++) {
-    const dx = polyline[n].x - polyline[n - 1].x
-    const dy = polyline[n].y - polyline[n - 1].y
-    lengths.push(lengths[n - 1] + Math.hypot(dx, dy))
-  }
-  const total = lengths[lengths.length - 1]
-  const points = []
-  let cursor = 1
-  for (let n = 0; n < POINTS_PER_STROKE; n++) {
-    const target = (total * n) / (POINTS_PER_STROKE - 1)
-    while (cursor < lengths.length - 1 && lengths[cursor] < target) cursor++
-    const span = lengths[cursor] - lengths[cursor - 1]
-    const t = span === 0 ? 0 : (target - lengths[cursor - 1]) / span
-    const a = polyline[cursor - 1]
-    const b = polyline[cursor]
-    points.push([round(a.x + (b.x - a.x) * t), round(a.y + (b.y - a.y) * t)])
-  }
-  return points
+  return polyline
 }
 
-const round = (value) => Math.round(value * 10) / 10
+const round = (value: number): number => Math.round(value * 10) / 10
 
-function strokesFor(character) {
+type GeneratedStroke = { d: string; median: Point[] }
+
+function strokesFor(character: string): GeneratedStroke[] {
   const file = join(KANJIVG, 'kanji', `${ord(character)}.svg`)
   const svg = readFileSync(file, 'utf8')
-  const paths = [...svg.matchAll(/<path[^>]*\bd="([^"]+)"/g)].map((match) => match[1])
+  const paths = [...svg.matchAll(/<path[^>]*\bd="([^"]+)"/g)].map((match) => match[1]!)
   if (paths.length === 0) throw new Error(`No strokes found for ${character} in ${file}`)
-  return paths.map((d) => ({ d, median: medianOf(d) }))
+  return paths.map((d) => ({
+    d,
+    median: resample(flatten(d), POINTS_PER_STROKE).map(([x, y]): Point => [round(x), round(y)]),
+  }))
 }
 
-const ord = (character) => character.codePointAt(0).toString(16).padStart(5, '0')
+const ord = (character: string): string => {
+  const code = character.codePointAt(0)
+  if (code === undefined) throw new Error('Expected a character, got an empty string')
+  return code.toString(16).padStart(5, '0')
+}
 
-const characters = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'characters.json'), 'utf8'))
+const characters = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'characters.json'), 'utf8')) as {
+  hiragana: string
+  katakana: string
+  kanjiGrade1: string
+}
 const all = [...characters.hiragana, ...characters.katakana, ...characters.kanjiGrade1]
 
 const data = {
   attribution:
     'Stroke data from KanjiVG (http://kanjivg.tagaini.net), Copyright (C) Ulrich Apel, ' +
     'licensed under CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/). ' +
-    'Resampled into evenly spaced points by scripts/build-stroke-data.mjs.',
+    'Resampled into evenly spaced points by scripts/build-stroke-data.ts.',
   license: 'CC BY-SA 3.0',
   source: 'https://github.com/KanjiVG/kanjivg',
   /** Every coordinate lives in a square of this size, as KanjiVG defines it. */

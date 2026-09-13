@@ -8,7 +8,7 @@
 import type { ChoicesStore } from '../app/choices'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
-import { loadStrokeData, strokesFor, type Point, type Stroke } from '../data/stroke-data'
+import { loadStrokeData, strokesFor, type Stroke } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
 import { createWritingSession, type WritingSession } from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
@@ -57,16 +57,21 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
     score.textContent = STRINGS[choices.get().language].strokeScore(tally.correct, tally.total)
   }
 
-  const start = (model: readonly Stroke[]): void => {
-    session = createWritingSession({ strokes: model, mode: choices.get().mode ?? 'practice' })
+  const start = (model: readonly Stroke[], square: number): void => {
+    const mode = choices.get().mode ?? 'practice'
+    session = createWritingSession({ strokes: model, mode })
     surface = createWritingSurface({
-      model,
+      // A test shows no model: the whole point is writing it from memory.
+      model: mode === 'test' ? [] : model,
+      square,
       onStrokeFinished(points) {
-        const written: Point[] = points.map(({ x, y }) => [x, y])
-        const state = session!.writeStroke(written)
-        // A wrong stroke is shown back in red and taken away, so the learner
-        // never leaves a wrong shape sitting on the paper.
-        if (state.lastVerdict?.correct === false) surface!.rejectLastStroke()
+        const state = session!.writeStroke(points)
+        // In practice a wrong stroke is shown back in red and taken away, so the
+        // learner never leaves a wrong shape sitting on the paper. A test takes
+        // what it is given and says nothing until the end.
+        if (mode === 'practice' && state.lastVerdict?.correct === false) {
+          surface!.rejectLastStroke()
+        }
         showScore()
       },
     })
@@ -74,7 +79,7 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
   }
 
   void loadStrokeData().then((data) => {
-    start(strokesFor(data, PLACEHOLDER_CHARACTER))
+    start(strokesFor(data, PLACEHOLDER_CHARACTER), data.viewBox)
   })
 
   const render = (): void => {
@@ -86,10 +91,12 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
     showScore()
   }
 
-  // Leaving throws away what has been written, so ask — but only when there is
-  // something to lose. Asking every time would make the button tiresome.
+  // Leaving part-way throws away what has been written, so ask — but only then.
+  // Once the character is finished there is nothing left to lose, and asking
+  // every time would make the button tiresome.
   home.addEventListener('click', () => {
-    if (surface?.hasInk()) confirm.hidden = false
+    const unfinished = session?.state().phase !== 'finished'
+    if (unfinished && surface?.hasInk()) confirm.hidden = false
     else onHome()
   })
   yes.addEventListener('click', onHome)

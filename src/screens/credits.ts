@@ -14,6 +14,9 @@ import type { ChoicesStore } from '../app/choices'
 import type { Screen } from '../app/screen'
 import './credits.css'
 
+/** The address KanjiVG's licence asks to be linked. */
+const KANJIVG_SITE = 'http://kanjivg.tagaini.net'
+
 export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Screen {
   const open = document.createElement('button')
   open.type = 'button'
@@ -36,13 +39,22 @@ export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Sc
   const list = requireElement<HTMLDListElement>(panel, '.credits__list')
   const close = requireElement<HTMLButtonElement>(panel, '.credits__close')
 
-  const entry = (term: string, ...lines: string[]): void => {
+  const entry = (term: string, lines: readonly string[], urls: readonly string[]): void => {
     const dt = document.createElement('dt')
     dt.textContent = term
     list.append(dt)
     for (const line of lines) {
       const dd = document.createElement('dd')
-      dd.innerHTML = line
+      dd.textContent = line
+      list.append(dd)
+    }
+    for (const url of urls) {
+      const dd = document.createElement('dd')
+      const link = document.createElement('a')
+      link.href = url
+      link.textContent = url
+      link.rel = 'noreferrer'
+      dd.append(link)
       list.append(dd)
     }
   }
@@ -50,13 +62,9 @@ export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Sc
   const kanji = CHARACTER_SOURCES.kanjiGrade1
   void loadStrokeData().then((data) => {
     list.replaceChildren()
-    entry('筆順 / Stroke order', data.attribution, `<a href="${data.source}">${data.source}</a>`)
-    entry(
-      '漢字80字',
-      kanji.title,
-      kanji.note,
-      `<a href="${kanji.url}">${kanji.url}</a>`,
-    )
+    // KanjiVG's licence asks for a link to its own site, not only to the code.
+    entry('筆順 / Stroke order', [data.attribution], [KANJIVG_SITE, data.source])
+    entry('漢字80字', [kanji.title, kanji.note], [kanji.url])
   })
 
   const render = (): void => {

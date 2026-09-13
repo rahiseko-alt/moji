@@ -15,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgb(246 240 231 / 0.72);
+  background: var(--paper-veil);
   pointer-events: none;
 }
 
@@ -32,9 +32,9 @@
 
 .writing__home {
   padding: 0.35rem 0.9rem;
-  border: 1px solid rgb(30 28 26 / 0.25);
+  border: 1px solid var(--hairline);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.6);
+  background: var(--paper-tint);
   font-family: var(--serif);
   font-size: 0.8rem;
   color: var(--ink);
@@ -65,7 +65,7 @@
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  border: 1.5px solid rgb(30 28 26 / 0.45);
+  border: 1.5px solid var(--hairline-strong);
   background: var(--paper-plain);
 }
 
@@ -83,7 +83,7 @@
   padding: 2rem;
   /* A card rather than a wash, so the learner can still see the writing they
      are being asked to give up. */
-  background: rgb(30 28 26 / 0.18);
+  background: var(--scrim);
 }
 
 .confirm__card {
@@ -91,9 +91,9 @@
   justify-items: center;
   gap: 1.2rem;
   padding: 1.4rem 2.2rem;
-  border: 1px solid rgb(30 28 26 / 0.2);
+  border: 1px solid var(--hairline);
   background: var(--paper);
-  box-shadow: 0 0.5rem 2rem rgb(30 28 26 / 0.18);
+  box-shadow: 0 0.5rem 2rem var(--shadow);
 }
 
 .confirm[hidden] {
@@ -124,5 +124,5 @@
 /* Carrying on is the safe answer, so it is the one that reads as the default. */
 .confirm__answers button[data-answer='no'] {
   background: var(--vermilion);
-  color: #fff;
+  color: var(--on-vermilion);
 }
