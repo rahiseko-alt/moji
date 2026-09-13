@@ -89,6 +89,8 @@ export function mountWriting(
         if (mode === 'practice' && state.lastVerdict?.correct === false) {
           surface!.rejectLastStroke()
         }
+        // Nothing is left to judge, so further ink would sit there unanswered.
+        if (state.phase === 'finished') surface!.stopAcceptingStrokes()
         showScore()
       },
     })

@@ -36,6 +36,8 @@ export type WritingSurface = {
   readonly element: HTMLElement
   /** Shows the last stroke in red for a moment, then takes it off the paper. */
   rejectLastStroke(): void
+  /** Stops taking ink, for once the character is finished and there is nothing left to judge. */
+  stopAcceptingStrokes(): void
   /**
    * Shows where a stroke begins and which way it runs, by walking a lit point
    * along it over and over. Null puts the hint away.
@@ -56,11 +58,14 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   const context = canvas.getContext('2d')
   if (!context) throw new Error('This browser cannot draw on a canvas')
 
-  const finished: TracedPoint[][] = []
+  /** Only strokes the session accepted. A refused one is moved out at once. */
+  const accepted: TracedPoint[][] = []
   let inProgress: TracedPoint[] | null = null
-  /** The stroke currently being shown back as wrong, if any. */
-  let rejected: number | null = null
+  /** The refused stroke being shown back in red before it disappears. */
+  let rejectedStroke: TracedPoint[] | null = null
   let rejectionTimer: ReturnType<typeof setTimeout> | null = null
+  /** Goes false once the character is finished, so no more ink can be laid down. */
+  let accepting = true
   /** The stroke the hint is walking along, if the learner has stalled. */
   let navigation: Stroke | null = null
   let navigationStartedAt = 0
@@ -110,13 +115,12 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     for (const stroke of options.model) context.stroke(new Path2D(stroke.d))
 
     context.lineWidth = INK_WIDTH
-    for (const [index, stroke] of finished.entries()) {
-      context.strokeStyle = colour(index === rejected ? '--wrong' : '--ink')
-      strokePolyline(stroke)
-    }
-    if (inProgress) {
-      context.strokeStyle = colour('--ink')
-      strokePolyline(inProgress)
+    context.strokeStyle = colour('--ink')
+    for (const stroke of accepted) strokePolyline(stroke)
+    if (inProgress) strokePolyline(inProgress)
+    if (rejectedStroke) {
+      context.strokeStyle = colour('--wrong')
+      strokePolyline(rejectedStroke)
     }
 
     if (navigation) drawNavigation()
@@ -197,8 +201,19 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     return total
   }
 
+  const clearRejection = (): void => {
+    if (rejectionTimer) clearTimeout(rejectionTimer)
+    rejectionTimer = null
+    rejectedStroke = null
+  }
+
   const onPointerDown = (event: PointerEvent): void => {
-    if (inProgress) return
+    // A resting palm or a second finger must not take over the stroke, and it
+    // must not silently swallow the one the learner is drawing either.
+    if (!event.isPrimary || inProgress || !accepting) return
+    // Starting to write answers the refused stroke: take it away now rather
+    // than letting its timer pull the rug from under what is being written.
+    clearRejection()
     canvas.setPointerCapture(event.pointerId)
     inProgress = [toCharacterSpace(event)]
     draw()
@@ -219,8 +234,9 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       draw()
       return
     }
-    finished.push(points)
+    accepted.push(points)
     draw()
+    // The session judges it here and may call rejectLastStroke() straight back.
     options.onStrokeFinished(points)
   }
 
@@ -236,15 +252,19 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   return {
     element,
     rejectLastStroke() {
-      if (finished.length === 0) return
-      rejected = finished.length - 1
+      const stroke = accepted.pop()
+      if (!stroke) return
+      clearRejection()
+      rejectedStroke = stroke
       draw()
       rejectionTimer = setTimeout(() => {
-        finished.pop()
-        rejected = null
         rejectionTimer = null
+        rejectedStroke = null
         draw()
       }, REJECTION_MS)
+    },
+    stopAcceptingStrokes() {
+      accepting = false
     },
     setNavigation(stroke) {
       if (navigation === stroke) return
@@ -258,7 +278,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
         draw()
       }
     },
-    hasInk: () => finished.length > 0 || inProgress !== null,
+    hasInk: () => accepted.length > 0 || inProgress !== null,
     destroy() {
       if (rejectionTimer) clearTimeout(rejectionTimer)
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
