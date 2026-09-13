@@ -58,6 +58,28 @@ const truncated = (index: number, fraction: number): Point[] =>
 const wobbled = (index: number, amount: number): Point[] =>
   perfect(index).map(([x, y], n) => [x + (n % 2 ? amount : -amount), y + (n % 3 ? -amount : amount)])
 
+const rotated = (index: number, degrees: number): Point[] => {
+  const points = perfect(index)
+  const cx = points.reduce((sum, [x]) => sum + x, 0) / points.length
+  const cy = points.reduce((sum, [, y]) => sum + y, 0) / points.length
+  const r = (degrees * Math.PI) / 180
+  return points.map(([x, y]) => [
+    cx + (x - cx) * Math.cos(r) - (y - cy) * Math.sin(r),
+    cy + (x - cx) * Math.sin(r) + (y - cy) * Math.cos(r),
+  ])
+}
+
+/** The stroke's two ends joined by a ruler: the shape of a rushed learner. */
+const straightened = (index: number): Point[] => {
+  const points = perfect(index)
+  const from = points[0]!
+  const to = points[points.length - 1]!
+  return points.map((_, n) => {
+    const t = n / (points.length - 1)
+    return [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]
+  })
+}
+
 describe('writing a character correctly', () => {
   it('accepts every stroke and finishes', () => {
     const { state } = writeAllPerfectly('practice')
@@ -81,6 +103,46 @@ describe('writing a character correctly', () => {
   it('forgives hand wobble', () => {
     const { state } = write('practice', wobbled(0, 2.5))
     expect(state.lastVerdict).toEqual({ correct: true })
+  })
+
+  it('forgives a properly shaky finger', () => {
+    const { state } = write('practice', wobbled(0, 5))
+    expect(state.lastVerdict).toEqual({ correct: true })
+  })
+
+  it('forgives a stroke written a little off centre', () => {
+    const { state } = write('practice', shifted(0, 4, 4))
+    expect(state.lastVerdict).toEqual({ correct: true })
+  })
+})
+
+/*
+ * The boundary the app is tuned to. Everything above is a way of writing the
+ * stroke that deserves a pass; everything here is a way of not writing it.
+ * Move a threshold and one of these two groups will tell you.
+ */
+describe('a stroke that is close but not good enough', () => {
+  it('is refused when it sits a tenth of the square out of place', () => {
+    const { state } = write('practice', shifted(0, 9, 9))
+    expect(state.lastVerdict).toEqual({ correct: false, reason: 'misplaced' })
+  })
+
+  it('is refused when it leans noticeably', () => {
+    const { state } = write('practice', rotated(0, 45))
+    expect(state.lastVerdict?.correct).toBe(false)
+  })
+
+  it('is refused when it stops a fifth short of the end', () => {
+    const { state } = write('practice', truncated(0, 0.8))
+    expect(state.lastVerdict?.correct).toBe(false)
+  })
+
+  it('is refused when a curve is drawn as a straight line', () => {
+    // The second stroke of 日 turns a corner; a ruled line is not that stroke.
+    const session = createWritingSession({ strokes, mode: 'practice' })
+    session.writeStroke(traced(perfect(0)))
+    const state = session.writeStroke(traced(straightened(1)))
+    expect(state.lastVerdict?.correct).toBe(false)
   })
 })
 
