@@ -49,6 +49,8 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
 
   let surface: WritingSurface | null = null
   let session: WritingSession | null = null
+  let model: readonly Stroke[] = []
+  let clock: number | null = null
 
   const showScore = (): void => {
     if (!session) return
@@ -57,12 +59,25 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
     score.textContent = STRINGS[choices.get().language].strokeScore(tally.correct, tally.total)
   }
 
-  const start = (model: readonly Stroke[], square: number): void => {
+  /**
+   * The session decides when a learner has stalled, so it needs to be told the
+   * time. The traced points carry event timestamps, which share an origin with
+   * performance.now(), so hesitation is measured from the end of the last stroke.
+   */
+  const followTheClock = (): void => {
+    clock = requestAnimationFrame(followTheClock)
+    if (!session || !surface) return
+    const { showNavigation, awaitingStroke } = session.tick(performance.now())
+    surface.setNavigation(showNavigation ? (model[awaitingStroke] ?? null) : null)
+  }
+
+  const start = (strokes: readonly Stroke[], square: number): void => {
     const mode = choices.get().mode ?? 'practice'
-    session = createWritingSession({ strokes: model, mode })
+    model = strokes
+    session = createWritingSession({ strokes, mode })
     surface = createWritingSurface({
       // A test shows no model: the whole point is writing it from memory.
-      model: mode === 'test' ? [] : model,
+      model: mode === 'test' ? [] : strokes,
       square,
       onStrokeFinished(points) {
         const state = session!.writeStroke(points)
@@ -76,6 +91,7 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
       },
     })
     cells.replaceChildren(surface.element)
+    if (clock === null) clock = requestAnimationFrame(followTheClock)
   }
 
   void loadStrokeData().then((data) => {
@@ -112,6 +128,7 @@ export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome:
   return {
     destroy() {
       unsubscribe()
+      if (clock !== null) cancelAnimationFrame(clock)
       surface?.destroy()
       confirm.remove()
       screen.remove()

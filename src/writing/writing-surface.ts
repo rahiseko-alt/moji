@@ -6,7 +6,7 @@
  * points. It holds no opinion about whether a stroke was right; that is the
  * writing session's job (#6).
  */
-import type { Stroke } from '../data/stroke-data'
+import type { Point, Stroke } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
 
 export type WritingSurfaceOptions = {
@@ -27,11 +27,20 @@ const INK_WIDTH = 5.5
 const MINIMUM_STROKE_LENGTH = 2
 /** Long enough to see what was written before it is taken away, short enough not to nag. */
 const REJECTION_MS = 450
+/** One trip of the hint along a stroke. Slow enough to follow with a finger. */
+const NAVIGATION_MS = 1400
+/** The pause at the end of a trip, before it starts over. */
+const NAVIGATION_REST_MS = 350
 
 export type WritingSurface = {
   readonly element: HTMLElement
   /** Shows the last stroke in red for a moment, then takes it off the paper. */
   rejectLastStroke(): void
+  /**
+   * Shows where a stroke begins and which way it runs, by walking a lit point
+   * along it over and over. Null puts the hint away.
+   */
+  setNavigation(stroke: Stroke | null): void
   hasInk(): boolean
   destroy(): void
 }
@@ -52,6 +61,10 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   /** The stroke currently being shown back as wrong, if any. */
   let rejected: number | null = null
   let rejectionTimer: ReturnType<typeof setTimeout> | null = null
+  /** The stroke the hint is walking along, if the learner has stalled. */
+  let navigation: Stroke | null = null
+  let navigationStartedAt = 0
+  let navigationFrame: number | null = null
 
   const style = getComputedStyle(document.documentElement)
   const colour = (token: string): string => style.getPropertyValue(token).trim()
@@ -105,6 +118,55 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       context.strokeStyle = colour('--ink')
       strokePolyline(inProgress)
     }
+
+    if (navigation) drawNavigation()
+  }
+
+  /**
+   * A lit point that starts where the stroke starts and travels its length,
+   * with the part already covered drawn behind it. Direction is the thing a
+   * still picture cannot teach, so the hint has to move.
+   */
+  const drawNavigation = (): void => {
+    const median = navigation!.median
+    const elapsed = (performance.now() - navigationStartedAt) % (NAVIGATION_MS + NAVIGATION_REST_MS)
+    const progress = Math.min(elapsed / NAVIGATION_MS, 1)
+    const reached = progress * (median.length - 1)
+    const index = Math.min(Math.floor(reached), median.length - 2)
+    const from = median[index]!
+    const to = median[index + 1]!
+    const between = reached - index
+    const head: Point = [
+      from[0] + (to[0] - from[0]) * between,
+      from[1] + (to[1] - from[1]) * between,
+    ]
+
+    context.strokeStyle = colour('--vermilion')
+    context.globalAlpha = 0.35
+    context.lineWidth = MODEL_WIDTH
+    context.beginPath()
+    context.moveTo(median[0]![0], median[0]![1])
+    for (let n = 1; n <= index; n++) context.lineTo(median[n]![0], median[n]![1])
+    context.lineTo(head[0], head[1])
+    context.stroke()
+
+    context.globalAlpha = 0.25
+    context.fillStyle = colour('--vermilion')
+    context.beginPath()
+    context.arc(head[0], head[1], MODEL_WIDTH * 1.9, 0, Math.PI * 2)
+    context.fill()
+
+    context.globalAlpha = 1
+    context.beginPath()
+    context.arc(head[0], head[1], MODEL_WIDTH * 0.8, 0, Math.PI * 2)
+    context.fill()
+  }
+
+  const animateNavigation = (): void => {
+    navigationFrame = null
+    if (!navigation) return
+    draw()
+    navigationFrame = requestAnimationFrame(animateNavigation)
   }
 
   const strokePolyline = (points: readonly TracedPoint[]): void => {
@@ -184,9 +246,22 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
         draw()
       }, REJECTION_MS)
     },
+    setNavigation(stroke) {
+      if (navigation === stroke) return
+      navigation = stroke
+      if (stroke) {
+        navigationStartedAt = performance.now()
+        if (navigationFrame === null) navigationFrame = requestAnimationFrame(animateNavigation)
+      } else {
+        if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
+        navigationFrame = null
+        draw()
+      }
+    },
     hasInk: () => finished.length > 0 || inProgress !== null,
     destroy() {
       if (rejectionTimer) clearTimeout(rejectionTimer)
+      if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
       observer.disconnect()
     },
   }
