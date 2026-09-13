@@ -1,0 +1,88 @@
+/**
+ * The screen a learner writes on.
+ *
+ * At this stage it shows one cell with a model character to trace and captures
+ * what is written. Judging the strokes (#6), the navigation hint (#7) and
+ * whole words across several cells (#10) all build on top of this.
+ */
+import type { ChoicesStore } from '../app/choices'
+import { requireElement } from '../app/dom'
+import type { Screen } from '../app/screen'
+import { loadStrokeData, strokesFor, type Stroke } from '../data/stroke-data'
+import { STRINGS } from '../i18n/strings'
+import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
+import './writing.css'
+
+/** Until the character-choosing screen exists (#8), everyone practises the same character. */
+const PLACEHOLDER_CHARACTER = '日'
+
+export function mountWriting(parent: HTMLElement, choices: ChoicesStore, onHome: () => void): Screen {
+  const screen = document.createElement('div')
+  screen.className = 'writing'
+  screen.innerHTML = `
+    <div class="writing__bar"><button type="button" class="writing__home"></button></div>
+    <div class="writing__cells"></div>`
+
+  const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
+  const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
+
+  const confirm = document.createElement('div')
+  confirm.className = 'confirm'
+  confirm.hidden = true
+  confirm.setAttribute('role', 'alertdialog')
+  confirm.innerHTML = `
+    <div class="confirm__card">
+      <p class="confirm__question"></p>
+      <div class="confirm__answers">
+        <button type="button" data-answer="no"></button>
+        <button type="button" data-answer="yes"></button>
+      </div>
+    </div>`
+  const question = requireElement<HTMLParagraphElement>(confirm, '.confirm__question')
+  const yes = requireElement<HTMLButtonElement>(confirm, '[data-answer="yes"]')
+  const no = requireElement<HTMLButtonElement>(confirm, '[data-answer="no"]')
+
+  let surface: WritingSurface | null = null
+
+  const showModel = (model: readonly Stroke[]): void => {
+    surface = createWritingSurface({ model })
+    cells.replaceChildren(surface.element)
+  }
+
+  void loadStrokeData().then((data) => {
+    showModel(strokesFor(data, PLACEHOLDER_CHARACTER))
+  })
+
+  const render = (): void => {
+    const strings = STRINGS[choices.get().language]
+    home.textContent = strings.home
+    question.textContent = strings.quitQuestion
+    yes.textContent = strings.yes
+    no.textContent = strings.no
+  }
+
+  // Leaving throws away what has been written, so ask — but only when there is
+  // something to lose. Asking every time would make the button tiresome.
+  home.addEventListener('click', () => {
+    if (surface?.hasInk()) confirm.hidden = false
+    else onHome()
+  })
+  yes.addEventListener('click', onHome)
+  no.addEventListener('click', () => {
+    confirm.hidden = true
+  })
+
+  const unsubscribe = choices.subscribe(render)
+  render()
+  parent.append(screen)
+  document.body.append(confirm)
+
+  return {
+    destroy() {
+      unsubscribe()
+      surface?.destroy()
+      confirm.remove()
+      screen.remove()
+    },
+  }
+}

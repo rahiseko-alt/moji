@@ -13,11 +13,16 @@ import {
   type Mode,
 } from '../app/choices'
 import { requireElement } from '../app/dom'
+import type { Screen } from '../app/screen'
 import { mountCredits } from './credits'
 import { STRINGS } from '../i18n/strings'
 import './cover.css'
 
-export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
+export function mountCover(
+  parent: HTMLElement,
+  choices: ChoicesStore,
+  onStart: () => void,
+): Screen {
   const screen = document.createElement('div')
   screen.className = 'cover'
   screen.innerHTML = `
@@ -28,7 +33,7 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
       </div>
     </div>`
 
-  mountCredits(requireElement<HTMLElement>(screen, '.cover__frame'), choices)
+  const credits = mountCredits(requireElement<HTMLElement>(screen, '.cover__frame'), choices)
 
   const languageRow = requireElement<HTMLDivElement>(screen, '.cover__languages')
   const modeRow = requireElement<HTMLDivElement>(screen, '.cover__modes')
@@ -50,7 +55,10 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'cover__mode'
-    button.addEventListener('click', () => choices.setMode(mode))
+    button.addEventListener('click', () => {
+      choices.setMode(mode)
+      onStart()
+    })
     modeButtons.set(mode, button)
     modeRow.append(button)
   }
@@ -67,7 +75,15 @@ export function mountCover(parent: HTMLElement, choices: ChoicesStore): void {
     }
   }
 
-  choices.subscribe(render)
+  const unsubscribe = choices.subscribe(render)
   render()
   parent.append(screen)
+
+  return {
+    destroy() {
+      unsubscribe()
+      credits.destroy()
+      screen.remove()
+    },
+  }
 }

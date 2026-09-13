@@ -13,6 +13,10 @@ export type Strings = {
   readonly rotateToLandscape: string
   readonly sources: string
   readonly close: string
+  readonly home: string
+  readonly quitQuestion: string
+  readonly yes: string
+  readonly no: string
 }
 
 export const STRINGS: Record<Language, Strings> = {
@@ -22,6 +26,10 @@ export const STRINGS: Record<Language, Strings> = {
     rotateToLandscape: 'スマホを横にしてください',
     sources: '出典',
     close: '閉じる',
+    home: 'ホーム',
+    quitQuestion: 'やめますか',
+    yes: 'はい',
+    no: 'いいえ',
   },
   en: {
     practice: 'Practice',
@@ -29,6 +37,10 @@ export const STRINGS: Record<Language, Strings> = {
     rotateToLandscape: 'Please turn your phone sideways',
     sources: 'Sources',
     close: 'Close',
+    home: 'Home',
+    quitQuestion: 'Stop writing?',
+    yes: 'Yes',
+    no: 'No',
   },
   vi: {
     practice: 'Luyện tập',
@@ -36,6 +48,10 @@ export const STRINGS: Record<Language, Strings> = {
     rotateToLandscape: 'Vui lòng xoay ngang điện thoại',
     sources: 'Nguồn',
     close: 'Đóng',
+    home: 'Trang đầu',
+    quitQuestion: 'Dừng viết?',
+    yes: 'Có',
+    no: 'Không',
   },
   ne: {
     practice: 'अभ्यास',
@@ -43,5 +59,9 @@ export const STRINGS: Record<Language, Strings> = {
     rotateToLandscape: 'कृपया फोन तेर्सो पार्नुहोस्',
     sources: 'स्रोतहरू',
     close: 'बन्द गर्नुहोस्',
+    home: 'गृह',
+    quitQuestion: 'लेख्न रोक्ने?',
+    yes: 'हो',
+    no: 'होइन',
   },
 }

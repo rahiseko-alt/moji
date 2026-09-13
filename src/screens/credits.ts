@@ -11,9 +11,10 @@ import { loadStrokeData } from '../data/stroke-data'
 import { requireElement } from '../app/dom'
 import { STRINGS } from '../i18n/strings'
 import type { ChoicesStore } from '../app/choices'
+import type { Screen } from '../app/screen'
 import './credits.css'
 
-export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): void {
+export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Screen {
   const open = document.createElement('button')
   open.type = 'button'
   open.className = 'credits__open'
@@ -72,6 +73,13 @@ export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): vo
     panel.hidden = true
   })
 
-  choices.subscribe(render)
+  const unsubscribe = choices.subscribe(render)
   render()
+
+  return {
+    destroy() {
+      unsubscribe()
+      panel.remove()
+    },
+  }
 }
