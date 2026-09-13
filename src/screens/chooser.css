@@ -21,11 +21,28 @@
   position: relative;
 }
 
+.chooser__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0.45rem 0.7rem;
+}
+
+.chooser__home {
+  justify-self: start;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
 .chooser__groups {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.7rem;
 }
 
 .chooser__group {

@@ -16,12 +16,13 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
     current = next
   }
 
+  // Home means one thing everywhere: back to the cover. It costs a tap on the
+  // way to the next character, and buys a learner who picked the wrong language
+  // a way out of it from any screen, with no second kind of button to explain.
   const toCover = (): void => swap(mountCover(root, choices, toChooser))
-  const toChooser = (): void => swap(mountChooser(root, choices, toWriting))
-  // Home goes back to choosing, not to the cover: a learner who has finished one
-  // character almost always wants the next one, not the language buttons again.
+  const toChooser = (): void => swap(mountChooser(root, choices, toWriting, toCover))
   const toWriting = (character: string): void =>
-    swap(mountWriting(root, choices, character, toChooser))
+    swap(mountWriting(root, choices, character, toCover))
 
   toCover()
 }

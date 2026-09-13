@@ -109,9 +109,9 @@ export function mountWriting(
     showScore()
   }
 
-  // Leaving part-way throws away what has been written, so ask — but only then.
-  // Once the character is finished there is nothing left to lose, and asking
-  // every time would make the button tiresome.
+  // Home goes back to the cover from here. Leaving part-way throws away what has
+  // been written, so ask — but only then. Once the character is finished there is
+  // nothing left to lose, and asking every time would make the button tiresome.
   home.addEventListener('click', () => {
     const unfinished = session?.state().phase !== 'finished'
     if (unfinished && surface?.hasInk()) confirm.hidden = false

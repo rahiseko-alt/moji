@@ -42,13 +42,18 @@ export function mountChooser(
   parent: HTMLElement,
   choices: ChoicesStore,
   onCharacterChosen: (character: string) => void,
+  onHome: () => void,
 ): Screen {
   const screen = document.createElement('div')
   screen.className = 'chooser'
   screen.innerHTML = `
-    <div class="chooser__groups" role="group"></div>
+    <div class="chooser__bar">
+      <button type="button" class="chooser__home"></button>
+      <div class="chooser__groups" role="group"></div>
+    </div>
     <div class="chooser__list"><div class="chooser__grid"></div></div>`
 
+  const home = requireElement<HTMLButtonElement>(screen, '.chooser__home')
   const groupRow = requireElement<HTMLDivElement>(screen, '.chooser__groups')
   const grid = requireElement<HTMLDivElement>(screen, '.chooser__grid')
 
@@ -70,6 +75,7 @@ export function mountChooser(
 
   const render = (): void => {
     const strings = STRINGS[choices.get().language]
+    home.textContent = strings.home
     for (const [candidate, button] of groupButtons) {
       button.textContent = label(strings, candidate)
       button.setAttribute('aria-pressed', String(candidate === group))
@@ -90,6 +96,8 @@ export function mountChooser(
       }),
     )
   }
+
+  home.addEventListener('click', onHome)
 
   void loadStrokeData().then((loaded) => {
     data = loaded
