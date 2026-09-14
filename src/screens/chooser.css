@@ -118,7 +118,7 @@
   color: var(--ink);
 }
 
-.chooser__character[data-chosen='true'] {
+.chooser__character[aria-pressed='true'] {
   border-color: var(--vermilion);
   background: var(--paper-tint);
 }

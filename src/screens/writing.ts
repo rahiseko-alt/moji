@@ -84,7 +84,8 @@ export function mountWriting(
     score.hidden = !state.characterFinished
     score.textContent = strings.strokeScore(state.score.correct, state.score.total)
 
-    next.hidden = !state.characterFinished
+    // Nothing to move on to at the end of the run: #20 puts the summary here.
+    next.hidden = !state.characterFinished || state.position >= state.chosen.length
   }
 
   /** Puts a fresh cell up for the character the run is now on. */
@@ -139,9 +140,9 @@ export function mountWriting(
   // nothing left to lose, and asking every time would make the button tiresome.
   home.addEventListener('click', () => {
     const state = session.state()
-    const written = surface?.hasInk() ?? false
-    const moreToCome = state.phase === 'writing' && state.position < state.chosen.length
-    if (written || moreToCome) confirm.hidden = false
+    const runOver = state.phase === 'finished'
+      || (state.characterFinished && state.position >= state.chosen.length)
+    if (!runOver && (surface?.hasInk() ?? false)) confirm.hidden = false
     else onHome()
   })
   yes.addEventListener('click', onHome)

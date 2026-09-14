@@ -12,7 +12,7 @@ import type { ChoicesStore } from '../app/choices'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { HIRAGANA, KANJI_GRADE1, KATAKANA } from '../data/characters'
-import { loadStrokeData, type StrokeData } from '../data/stroke-data'
+import { loadStrokeData, strokeDataIfLoaded, type StrokeData } from '../data/stroke-data'
 import { STRINGS, type Strings } from '../i18n/strings'
 import type { WritingSession } from '../writing/writing-session'
 import './chooser.css'
@@ -103,9 +103,8 @@ export function mountChooser(
   const grid = requireElement<HTMLDivElement>(screen, '.chooser__grid')
 
   let group: Group = 'hiragana'
-  let data: StrokeData | null = null
-  /** The buttons of the grid on show, so the numbers can be redrawn without rebuilding it. */
-  const buttons = new Map<string, HTMLButtonElement>()
+  /** The character buttons on show, with their number, so those can be redrawn alone. */
+  const buttons = new Map<string, { button: HTMLButtonElement; number: HTMLElement }>()
 
   const groupButtons = new Map<Group, HTMLButtonElement>()
   for (const candidate of GROUPS) {
@@ -126,13 +125,13 @@ export function mountChooser(
    */
   const showChosen = (): void => {
     const { chosen } = session.state()
-    for (const [character, button] of buttons) {
+    for (const [character, { button, number }] of buttons) {
       const place = chosen.indexOf(character)
-      button.dataset.chosen = String(place !== -1)
-      const number = button.firstElementChild as HTMLElement
+      button.setAttribute('aria-pressed', String(place !== -1))
       number.textContent = place === -1 ? '' : String(place + 1)
     }
-    start.disabled = chosen.length === 0
+    // Without the stroke data there is nothing to write, so the way on stays shut.
+    start.disabled = chosen.length === 0 || strokeDataIfLoaded() === null
   }
 
   const render = (): void => {
@@ -144,7 +143,7 @@ export function mountChooser(
       button.setAttribute('aria-pressed', String(candidate === group))
     }
 
-    const { columns, rows, cells } = layoutOf(group, data)
+    const { columns, rows, cells } = layoutOf(group, strokeDataIfLoaded())
     buttons.clear()
     grid.style.setProperty('--columns', String(columns))
     grid.style.setProperty('--rows', String(rows))
@@ -162,12 +161,15 @@ export function mountChooser(
         button.lang = 'ja'
         const number = document.createElement('span')
         number.className = 'chooser__number'
+        // The character is what the button is called; its place in the run is
+        // said by the pressed state, so the number must not join the name.
+        number.setAttribute('aria-hidden', 'true')
         button.append(number, character)
         button.addEventListener('click', () => {
           session.chooseCharacter(character)
           showChosen()
         })
-        buttons.set(character, button)
+        buttons.set(character, { button, number })
         return button
       }),
     )
@@ -179,10 +181,9 @@ export function mountChooser(
     if (session.start().phase === 'writing') onStart()
   })
 
-  void loadStrokeData().then((loaded) => {
-    data = loaded
-    render()
-  })
+  // The kanji are ordered by stroke count, so the grid is drawn again once the
+  // data lands — and only then can a run begin.
+  void loadStrokeData().then(() => render())
 
   const unsubscribe = choices.subscribe(render)
   render()

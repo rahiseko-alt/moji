@@ -9,18 +9,16 @@
  */
 import type { ChoicesStore } from './choices'
 import type { Screen } from './screen'
-import { loadStrokeData, strokesFor, type StrokeData } from '../data/stroke-data'
+import { loadStrokeData, strokeDataIfLoaded, strokesFor } from '../data/stroke-data'
 import { mountChooser } from '../screens/chooser'
 import { mountCover } from '../screens/cover'
 import { mountWriting } from '../screens/writing'
-import { createWritingSession } from '../writing/writing-session'
+import { createWritingSession, type WritingSession } from '../writing/writing-session'
 
 export function startApp(root: HTMLElement, choices: ChoicesStore): void {
   let current: Screen | null = null
-  let data: StrokeData | null = null
-  void loadStrokeData().then((loaded) => {
-    data = loaded
-  })
+  // Warmed here so the first writing screen has nothing to wait for.
+  void loadStrokeData()
 
   const swap = (next: Screen): void => {
     current?.destroy()
@@ -35,12 +33,17 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
   const toChooser = (): void => {
     const session = createWritingSession({
       mode: choices.get().mode ?? 'practice',
-      strokesOf: (character) => (data ? strokesFor(data, character) : []),
+      // The chooser keeps はじめる out of reach until the data has landed, so a
+      // run never begins on the empty stand-in below.
+      strokesOf: (character) => {
+        const data = strokeDataIfLoaded()
+        return data ? strokesFor(data, character) : []
+      },
     })
     swap(mountChooser(root, choices, session, () => toWriting(session), toCover))
   }
 
-  const toWriting = (session: ReturnType<typeof createWritingSession>): void =>
+  const toWriting = (session: WritingSession): void =>
     swap(mountWriting(root, choices, session, toCover))
 
   toCover()

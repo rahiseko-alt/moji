@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Point, Stroke, StrokeData } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
-import { createWritingSession, type SessionMode } from './writing-session'
+import { createWritingSession, type SessionMode, type WritingSession } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
 const strokesOf = (character: string): readonly Stroke[] => data.characters[character] ?? []
@@ -35,11 +35,10 @@ const begin = (mode: SessionMode, ...characters: readonly string[]) => {
 }
 
 /** Writes the whole of one character, one stroke after another. */
-const writeCharacter = (session: ReturnType<typeof begin>, character: string) => {
+const writeCharacter = (session: WritingSession, character: string) => {
   let state = session.state()
-  for (const [n, stroke] of strokesOf(character).entries()) {
+  for (let n = 0; n < strokesOf(character).length; n++) {
     state = session.writeStroke(traced(perfectOf(character, n), n * 1000))
-    void stroke
   }
   return state
 }
