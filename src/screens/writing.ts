@@ -28,15 +28,26 @@ export function mountWriting(
       <button type="button" class="writing__home"></button>
       <p class="writing__progress" hidden></p>
       <p class="writing__score" hidden></p>
+      <button type="button" class="writing__retry" hidden></button>
       <button type="button" class="writing__next" hidden></button>
     </div>
-    <div class="writing__cells"></div>`
+    <div class="writing__cells"></div>
+    <div class="summary" hidden>
+      <div class="summary__card">
+        <p class="summary__total"></p>
+        <ol class="summary__characters"></ol>
+      </div>
+    </div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
   const progress = requireElement<HTMLParagraphElement>(screen, '.writing__progress')
   const score = requireElement<HTMLParagraphElement>(screen, '.writing__score')
+  const retry = requireElement<HTMLButtonElement>(screen, '.writing__retry')
   const next = requireElement<HTMLButtonElement>(screen, '.writing__next')
   const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
+  const summary = requireElement<HTMLDivElement>(screen, '.summary')
+  const summaryTotal = requireElement<HTMLParagraphElement>(summary, '.summary__total')
+  const summaryCharacters = requireElement<HTMLOListElement>(summary, '.summary__characters')
 
   const confirm = document.createElement('div')
   confirm.className = 'confirm'
@@ -73,6 +84,7 @@ export function mountWriting(
     const state = session.state()
     home.textContent = strings.home
     next.textContent = strings.next
+    retry.textContent = strings.retry
     question.textContent = strings.quitQuestion
     yes.textContent = strings.yes
     no.textContent = strings.no
@@ -81,11 +93,36 @@ export function mountWriting(
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
-    score.hidden = !state.characterFinished
+    // A test says nothing about a character until the whole run is over.
+    const mode = choices.get().mode ?? 'practice'
+    score.hidden = !state.characterFinished || (mode === 'test' && state.phase !== 'finished')
     score.textContent = strings.strokeScore(state.score.correct, state.score.total)
+
+    // The summary lies over the last character, which stays on the paper below it.
+    summary.hidden = state.phase !== 'finished'
+    summaryTotal.textContent = strings.runScore(
+      state.results.filter((result) => result.firstTimeCorrect).length,
+      state.results.length,
+    )
+    summaryCharacters.replaceChildren(
+      ...state.results.map((result) => {
+        const item = document.createElement('li')
+        item.className = 'summary__character'
+        item.dataset.correct = String(result.firstTimeCorrect)
+        const character = document.createElement('span')
+        character.lang = 'ja'
+        character.textContent = result.character
+        const mark = document.createElement('span')
+        mark.className = 'summary__mark'
+        mark.textContent = result.firstTimeCorrect ? '○' : '×'
+        item.append(character, mark)
+        return item
+      }),
+    )
 
     // Nothing to move on to at the end of the run: #20 puts the summary here.
     next.hidden = !state.characterFinished || state.position >= state.chosen.length
+    retry.hidden = !state.characterFinished
   }
 
   /** Puts a fresh cell up for the character the run is now on. */
@@ -95,7 +132,7 @@ export function mountWriting(
     const state = session.state()
     const mode = choices.get().mode ?? 'practice'
 
-    if (data && state.phase === 'writing' && state.character) {
+    if (data && state.character && !state.characterFinished) {
       model = strokesFor(data, state.character)
       surface = createWritingSurface({
         // A test shows no model: the whole point is writing it from memory.
@@ -132,6 +169,11 @@ export function mountWriting(
 
   next.addEventListener('click', () => {
     session.nextCharacter()
+    showCharacter()
+  })
+
+  retry.addEventListener('click', () => {
+    session.retryCharacter()
     showCharacter()
   })
 

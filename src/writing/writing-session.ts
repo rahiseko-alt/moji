@@ -37,6 +37,13 @@ export type StrokeOutcome = {
   readonly lastMistake: MistakeReason | null
 }
 
+/** How one character of the run went, settled the first time it was written. */
+export type CharacterResult = {
+  readonly character: string
+  /** Every one of its strokes was right at the first attempt. */
+  readonly firstTimeCorrect: boolean
+}
+
 export type WritingSessionState = {
   /** Choosing characters, writing them, or done with the lot. */
   readonly phase: 'choosing' | 'writing' | 'finished'
@@ -44,9 +51,9 @@ export type WritingSessionState = {
   readonly chosen: readonly string[]
   /** Which character of the run is in hand, counting from one. Zero when not writing. */
   readonly position: number
-  /** The character in hand, or null before the run starts and after it ends. */
+  /** The character in hand, or null while still choosing. It stays in hand at the end. */
   readonly character: string | null
-  /** Every stroke of the character in hand is written; the run waits to be moved on. */
+  /** Every stroke of the character in hand is written; it can be left or written again. */
   readonly characterFinished: boolean
   /** Index of the stroke being waited for; equal to the stroke count once the character is done. */
   readonly awaitingStroke: number
@@ -62,6 +69,11 @@ export type WritingSessionState = {
   readonly navigationStroke: number | null
   /** Strokes of the character in hand written correctly at the first attempt. */
   readonly score: { readonly correct: number; readonly total: number }
+  /**
+   * How the characters written so far went, in the order they were written.
+   * A test holds them all back until the run is finished.
+   */
+  readonly results: readonly CharacterResult[]
 }
 
 export type WritingSession = {
@@ -79,6 +91,8 @@ export type WritingSession = {
   writeStroke(points: readonly TracedPoint[]): WritingSessionState
   /** Leaves the character in hand for the next one, once it has been written. */
   nextCharacter(): WritingSessionState
+  /** Wipes the character in hand so it can be written again. Its result stands. */
+  retryCharacter(): WritingSessionState
 }
 
 export type WritingSessionOptions = {
@@ -106,10 +120,12 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   let outcomes: StrokeOutcome[] = []
   let awaiting = 0
   let lastVerdict: StrokeVerdict | null = null
+  /** One per character already written, settled at its first attempt. */
+  const results: CharacterResult[] = []
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
 
-  const characterFinished = (): boolean => phase === 'writing' && awaiting >= strokes.length
+  const characterFinished = (): boolean => phase !== 'choosing' && awaiting >= strokes.length
 
   /**
    * One ahead of the stroke in hand: from the middle of stroke N the hint shows
@@ -138,8 +154,8 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   const state = (): WritingSessionState => ({
     phase,
     chosen: [...chosen],
-    position: phase === 'writing' ? at + 1 : 0,
-    character: phase === 'writing' ? chosen[at]! : null,
+    position: phase === 'choosing' ? 0 : at + 1,
+    character: phase === 'choosing' ? null : chosen[at]!,
     characterFinished: characterFinished(),
     awaitingStroke: awaiting,
     outcomes: outcomes.map((outcome) => ({ ...outcome })),
@@ -149,6 +165,9 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       correct: outcomes.filter((outcome) => outcome.firstTimeCorrect).length,
       total: strokes.length,
     },
+    // A test says nothing until it is over: a result shown part way through
+    // would turn the rest of the run into practice.
+    results: mode === 'test' && phase !== 'finished' ? [] : results.map((result) => ({ ...result })),
   })
 
   return {
@@ -199,19 +218,35 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // a test takes what it is given and moves on regardless.
       if (verdict.correct || mode === 'test') awaiting += 1
 
+      // How a character went is settled the first time it is written through:
+      // writing it again afterwards is practice, not a second chance at the
+      // tally (see 一発正解 in CONTEXT.md).
+      if (characterFinished() && results.length === at) {
+        results.push({
+          character: chosen[at]!,
+          firstTimeCorrect: outcomes.every((outcome) => outcome.firstTimeCorrect),
+        })
+        // The run ends with its last character: there is nothing else to wait for.
+        if (at + 1 === chosen.length) phase = 'finished'
+      }
+
       pastHalfway = false
       return state()
     },
     nextCharacter() {
       // Moving on is the learner's to ask for: a character that vanished the
       // instant its last stroke landed would leave nothing to look at.
+      if (phase !== 'writing' || !characterFinished() || at + 1 >= chosen.length) return state()
+      at += 1
+      takeUpCharacter()
+      return state()
+    },
+    retryCharacter() {
       if (!characterFinished()) return state()
-      if (at + 1 < chosen.length) {
-        at += 1
-        takeUpCharacter()
-      } else {
-        phase = 'finished'
-      }
+      // A finished run reopens on its last character. The tally was settled
+      // when it was first written, so nothing about it changes here.
+      phase = 'writing'
+      takeUpCharacter()
       return state()
     },
   }

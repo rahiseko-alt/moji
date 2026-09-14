@@ -23,8 +23,12 @@ export type Strings = {
   readonly start: string
   /** Leaves the finished character for the next one of the run. */
   readonly next: string
+  /** Wipes the finished character so it can be written again. */
+  readonly retry: string
   /** e.g. "3 / 10" — how far through the run the learner is. */
   readonly progress: (position: number, total: number) => string
+  /** e.g. "10字中8字、一発正解" — the whole run, counting characters. */
+  readonly runScore: (correct: number, total: number) => string
   readonly hiragana: string
   readonly katakana: string
   readonly kanji: string
@@ -44,7 +48,9 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${total}画中${correct}画正解`,
     start: 'はじめる',
     next: '次へ',
+    retry: 'やり直す',
     progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `${total}字中${correct}字、一発正解`,
     hiragana: 'ひらがな',
     katakana: 'カタカナ',
     kanji: '漢字',
@@ -62,7 +68,9 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${correct} of ${total} strokes correct`,
     start: 'Start',
     next: 'Next',
+    retry: 'Again',
     progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `${correct} of ${total} characters right first time`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -80,7 +88,9 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `Đúng ${correct}/${total} nét`,
     start: 'Bắt đầu',
     next: 'Tiếp theo',
+    retry: 'Viết lại',
     progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `Đúng ngay lần đầu ${correct}/${total} chữ`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -98,7 +108,9 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${total} मध्ये ${correct} स्ट्रोक सही`,
     start: 'सुरु',
     next: 'अर्को',
+    retry: 'फेरि',
     progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `${total} मध्ये ${correct} अक्षर पहिलो पटकमै सही`,
     hiragana: 'हिरागाना',
     katakana: 'काताकाना',
     kanji: 'कान्जी',

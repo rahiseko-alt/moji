@@ -137,8 +137,27 @@
 }
 
 .writing__progress[hidden],
+.writing__retry[hidden],
 .writing__next[hidden] {
   display: none;
+}
+
+/* The quieter of the two ways on: writing the character again is a choice, not
+   the expected path. */
+.writing__retry {
+  margin-inline-start: auto;
+  padding: 0.35rem 1.1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+/* With やり直す beside it, 次へ no longer needs to push itself out. */
+.writing__retry + .writing__next {
+  margin-inline-start: 0.5rem;
 }
 
 /* Sits at the far end of the bar, away from ホーム: the two mean opposite
@@ -152,4 +171,78 @@
   font-family: var(--serif);
   font-size: 0.85rem;
   color: var(--on-vermilion);
+}
+
+/*
+ * The whole run, once it is written. It lies over the last character rather
+ * than replacing it, so the learner still sees what they just wrote — and it
+ * lets taps through, so ホーム and やり直す stay within reach underneath.
+ */
+.summary {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-content: center;
+  padding: 2rem;
+  background: var(--scrim);
+  pointer-events: none;
+}
+
+.summary[hidden] {
+  display: none;
+}
+
+.summary__card {
+  pointer-events: auto;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  box-shadow: 0 0.5rem 2rem var(--shadow);
+}
+
+.summary__total {
+  margin: 0 0 0.9rem;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--ink);
+}
+
+.summary__characters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0.7rem;
+  max-inline-size: 80vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* One card per character, marked as it was written the first time. */
+.summary__character {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  min-inline-size: 2.2rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.summary__mark {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.summary__character[data-correct='false'] {
+  border-color: var(--vermilion);
+}
+
+.summary__character[data-correct='false'] .summary__mark {
+  color: var(--vermilion);
 }
