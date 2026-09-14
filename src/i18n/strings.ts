@@ -15,10 +15,16 @@ export type Strings = {
   readonly close: string
   readonly home: string
   readonly quitQuestion: string
+  /** Asked when the characters picked out for a run would be thrown away. */
+  readonly quitChosenQuestion: string
+  /** e.g. "あと7字あります。やめますか" — asked part way through a run. */
+  readonly quitRunQuestion: (remaining: number) => string
   readonly yes: string
   readonly no: string
   /** e.g. "10画中8画正解" — how many strokes were right at the first attempt. */
   readonly strokeScore: (correct: number, total: number) => string
+  /** Chooses every character of the kind on show, or takes them all back out. */
+  readonly all: string
   /** Begins writing the characters that have been chosen. */
   readonly start: string
   /** Leaves the finished character for the next one of the run. */
@@ -43,9 +49,12 @@ export const STRINGS: Record<Language, Strings> = {
     close: '閉じる',
     home: 'ホーム',
     quitQuestion: 'やめますか',
+    quitChosenQuestion: '選んだ字が消えます。やめますか',
+    quitRunQuestion: (remaining) => `あと${remaining}字あります。やめますか`,
     yes: 'はい',
     no: 'いいえ',
     strokeScore: (correct, total) => `${total}画中${correct}画正解`,
+    all: 'ぜんぶ',
     start: 'はじめる',
     next: '次へ',
     retry: 'やり直す',
@@ -63,9 +72,12 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'Close',
     home: 'Home',
     quitQuestion: 'Stop writing?',
+    quitChosenQuestion: 'Your chosen characters will be lost. Stop?',
+    quitRunQuestion: (remaining) => `${remaining} characters to go. Stop?`,
     yes: 'Yes',
     no: 'No',
     strokeScore: (correct, total) => `${correct} of ${total} strokes correct`,
+    all: 'All',
     start: 'Start',
     next: 'Next',
     retry: 'Again',
@@ -83,9 +95,12 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'Đóng',
     home: 'Trang đầu',
     quitQuestion: 'Dừng viết?',
+    quitChosenQuestion: 'Các chữ đã chọn sẽ mất. Dừng lại?',
+    quitRunQuestion: (remaining) => `Còn ${remaining} chữ. Dừng lại?`,
     yes: 'Có',
     no: 'Không',
     strokeScore: (correct, total) => `Đúng ${correct}/${total} nét`,
+    all: 'Tất cả',
     start: 'Bắt đầu',
     next: 'Tiếp theo',
     retry: 'Viết lại',
@@ -103,9 +118,12 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'बन्द गर्नुहोस्',
     home: 'गृह',
     quitQuestion: 'लेख्न रोक्ने?',
+    quitChosenQuestion: 'छानिएका अक्षरहरू हराउँछन्। रोक्ने?',
+    quitRunQuestion: (remaining) => `${remaining} अक्षर बाँकी छन्। रोक्ने?`,
     yes: 'हो',
     no: 'होइन',
     strokeScore: (correct, total) => `${total} मध्ये ${correct} स्ट्रोक सही`,
+    all: 'सबै',
     start: 'सुरु',
     next: 'अर्को',
     retry: 'फेरि',

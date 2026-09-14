@@ -9,6 +9,7 @@
  * on screen at once: a learner picks by looking, not by scrolling.
  */
 import type { ChoicesStore } from '../app/choices'
+import { createConfirm } from '../app/confirm'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { HIRAGANA, KANJI_GRADE1, KATAKANA } from '../data/characters'
@@ -68,16 +69,22 @@ function gojuonLayout(characters: readonly string[]): Layout {
   return { columns, rows: VOWELS, cells }
 }
 
-function layoutOf(group: Group, data: StrokeData | null): Layout {
-  if (group === 'hiragana') return gojuonLayout(HIRAGANA)
-  if (group === 'katakana') return gojuonLayout(KATAKANA)
+/** The characters of one kind, in the order they are taught and shown. */
+function charactersOf(group: Group, data: StrokeData | null): readonly string[] {
+  if (group === 'hiragana') return HIRAGANA
+  if (group === 'katakana') return KATAKANA
   // Fewest strokes first, and alphabetically within a stroke count so the order
   // never shifts around. Before the data arrives, the table order will do.
   const strokes = (character: string): number => data?.characters[character]?.length ?? 0
-  const sorted = data
+  return data
     ? [...KANJI_GRADE1].sort((a, b) => strokes(a) - strokes(b) || a.localeCompare(b, 'ja'))
     : KANJI_GRADE1
-  return { ...KANJI_GRID, cells: sorted }
+}
+
+function layoutOf(group: Group, data: StrokeData | null): Layout {
+  const characters = charactersOf(group, data)
+  if (group === 'kanji') return { ...KANJI_GRID, cells: characters }
+  return gojuonLayout(characters)
 }
 
 export function mountChooser(
@@ -93,15 +100,20 @@ export function mountChooser(
     <div class="chooser__bar">
       <button type="button" class="chooser__home"></button>
       <div class="chooser__groups" role="group"></div>
-      <button type="button" class="chooser__start"></button>
+      <div class="chooser__actions">
+        <button type="button" class="chooser__all"></button>
+        <button type="button" class="chooser__start"></button>
+      </div>
     </div>
     <div class="chooser__list"><div class="chooser__grid"></div></div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.chooser__home')
   const groupRow = requireElement<HTMLDivElement>(screen, '.chooser__groups')
+  const all = requireElement<HTMLButtonElement>(screen, '.chooser__all')
   const start = requireElement<HTMLButtonElement>(screen, '.chooser__start')
   const grid = requireElement<HTMLDivElement>(screen, '.chooser__grid')
 
+  const confirm = createConfirm()
   let group: Group = 'hiragana'
   /** The character buttons on show, with their number, so those can be redrawn alone. */
   const buttons = new Map<string, { button: HTMLButtonElement; number: HTMLElement }>()
@@ -137,7 +149,9 @@ export function mountChooser(
   const render = (): void => {
     const strings = STRINGS[choices.get().language]
     home.textContent = strings.home
+    all.textContent = strings.all
     start.textContent = strings.start
+    confirm.setAnswers(strings.yes, strings.no)
     for (const [candidate, button] of groupButtons) {
       button.textContent = label(strings, candidate)
       button.setAttribute('aria-pressed', String(candidate === group))
@@ -176,7 +190,20 @@ export function mountChooser(
     showChosen()
   }
 
-  home.addEventListener('click', onHome)
+  // The whole kind on show, in the order it is taught — not the order the
+  // table happens to read in.
+  all.addEventListener('click', () => {
+    session.chooseAll(charactersOf(group, strokeDataIfLoaded()))
+    showChosen()
+  })
+
+  // Choosing thirty characters is work of its own, so it is not thrown away
+  // on one tap. With nothing chosen there is nothing to ask about.
+  home.addEventListener('click', () => {
+    const strings = STRINGS[choices.get().language]
+    if (session.state().chosen.length === 0) onHome()
+    else confirm.ask(strings.quitChosenQuestion, onHome)
+  })
   start.addEventListener('click', () => {
     if (session.start().phase === 'writing') onStart()
   })
@@ -192,6 +219,7 @@ export function mountChooser(
   return {
     destroy() {
       unsubscribe()
+      confirm.destroy()
       screen.remove()
     },
   }

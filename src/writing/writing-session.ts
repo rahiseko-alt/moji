@@ -80,6 +80,11 @@ export type WritingSession = {
   state(): WritingSessionState
   /** Adds a character to the run, or takes it out again if it is already in. */
   chooseCharacter(character: string): WritingSessionState
+  /**
+   * Adds a whole kind of character at once — or, when every one of them is
+   * already in the run, takes that kind back out.
+   */
+  chooseAll(characters: readonly string[]): WritingSessionState
   /** Begins writing the chosen characters. Does nothing if none were chosen. */
   start(): WritingSessionState
   /**
@@ -179,6 +184,18 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       const already = chosen.indexOf(character)
       if (already === -1) chosen.push(character)
       else chosen.splice(already, 1)
+      return state()
+    },
+    chooseAll(characters) {
+      if (phase !== 'choosing') return state()
+      const missing = characters.filter((character) => !chosen.includes(character))
+      if (missing.length > 0) chosen.push(...missing)
+      else {
+        for (const character of characters) {
+          const place = chosen.indexOf(character)
+          if (place !== -1) chosen.splice(place, 1)
+        }
+      }
       return state()
     },
     start() {

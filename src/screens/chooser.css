@@ -39,10 +39,27 @@
   color: var(--ink);
 }
 
+.chooser__actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Every character of the kind on show, in one tap — and out again in the next. */
+.chooser__all {
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
 /* The way on. Dressed as the one action of the screen, and dimmed until there
    is something to start with. */
 .chooser__start {
-  justify-self: end;
   padding: 0.3rem 1.1rem;
   border: 1.5px solid var(--vermilion);
   border-radius: 999px;

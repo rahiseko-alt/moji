@@ -158,6 +158,34 @@ describe('choosing what to write', () => {
   })
 })
 
+describe('choosing a whole kind at once', () => {
+  const choosing = () => createWritingSession({ mode: 'practice', strokesOf })
+  const kana = ['あ', 'い', 'う']
+
+  it('adds them all, in the order they were handed over', () => {
+    expect(choosing().chooseAll(kana).chosen).toEqual(kana)
+  })
+
+  it('leaves the ones already chosen where they are', () => {
+    const session = choosing()
+    session.chooseCharacter('う')
+    expect(session.chooseAll(kana).chosen).toEqual(['う', 'あ', 'い'])
+  })
+
+  it('takes them all out again when every one is already in', () => {
+    const session = choosing()
+    session.chooseAll(kana)
+    expect(session.chooseAll(kana).chosen).toEqual([])
+  })
+
+  it('leaves characters of another kind alone when it takes them out', () => {
+    const session = choosing()
+    session.chooseCharacter('日')
+    session.chooseAll(kana)
+    expect(session.chooseAll(kana).chosen).toEqual(['日'])
+  })
+})
+
 describe('writing one character after another', () => {
   const run = () => begin('practice', '一', '人')
 

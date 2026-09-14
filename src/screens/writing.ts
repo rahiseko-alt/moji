@@ -7,6 +7,7 @@
  * back what the finger did.
  */
 import type { ChoicesStore } from '../app/choices'
+import { createConfirm } from '../app/confirm'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { loadStrokeData, strokesFor, type Stroke, type StrokeData } from '../data/stroke-data'
@@ -49,21 +50,7 @@ export function mountWriting(
   const summaryTotal = requireElement<HTMLParagraphElement>(summary, '.summary__total')
   const summaryCharacters = requireElement<HTMLOListElement>(summary, '.summary__characters')
 
-  const confirm = document.createElement('div')
-  confirm.className = 'confirm'
-  confirm.hidden = true
-  confirm.setAttribute('role', 'alertdialog')
-  confirm.innerHTML = `
-    <div class="confirm__card">
-      <p class="confirm__question"></p>
-      <div class="confirm__answers">
-        <button type="button" data-answer="no"></button>
-        <button type="button" data-answer="yes"></button>
-      </div>
-    </div>`
-  const question = requireElement<HTMLParagraphElement>(confirm, '.confirm__question')
-  const yes = requireElement<HTMLButtonElement>(confirm, '[data-answer="yes"]')
-  const no = requireElement<HTMLButtonElement>(confirm, '[data-answer="no"]')
+  const confirm = createConfirm()
 
   let data: StrokeData | null = null
   let surface: WritingSurface | null = null
@@ -85,9 +72,7 @@ export function mountWriting(
     home.textContent = strings.home
     next.textContent = strings.next
     retry.textContent = strings.retry
-    question.textContent = strings.quitQuestion
-    yes.textContent = strings.yes
-    no.textContent = strings.no
+    confirm.setAnswers(strings.yes, strings.no)
 
     // One character on its own needs no counting: the learner can see it.
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
@@ -177,31 +162,30 @@ export function mountWriting(
     showCharacter()
   })
 
-  // Home goes back to the cover from here. Leaving part-way throws away what has
-  // been written, so ask — but only then. Once the run is finished there is
-  // nothing left to lose, and asking every time would make the button tiresome.
+  // Home goes back to the cover from here. Leaving part-way throws away the
+  // whole run, so ask — and say how much of it is still to come. Once the run
+  // is finished there is nothing left to lose and the button just works.
   home.addEventListener('click', () => {
+    const strings = STRINGS[choices.get().language]
     const state = session.state()
-    const runOver = state.phase === 'finished'
-      || (state.characterFinished && state.position >= state.chosen.length)
-    if (!runOver && (surface?.hasInk() ?? false)) confirm.hidden = false
-    else onHome()
-  })
-  yes.addEventListener('click', onHome)
-  no.addEventListener('click', () => {
-    confirm.hidden = true
+    const toCome = state.chosen.length - state.position + (state.characterFinished ? 0 : 1)
+    const written = surface?.hasInk() ?? false
+    if (state.phase === 'finished' || (!written && state.position === 1 && toCome <= 1)) {
+      onHome()
+      return
+    }
+    confirm.ask(toCome > 1 ? strings.quitRunQuestion(toCome) : strings.quitQuestion, onHome)
   })
 
   const unsubscribe = choices.subscribe(render)
   render()
   parent.append(screen)
-  document.body.append(confirm)
 
   return {
     destroy() {
       unsubscribe()
       surface?.destroy()
-      confirm.remove()
+      confirm.destroy()
       screen.remove()
     },
   }

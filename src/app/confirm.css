@@ -1,0 +1,56 @@
+/*
+ * A card over a light wash rather than a full curtain, so the learner can still
+ * see the writing or the choices they are being asked to give up.
+ */
+.confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-content: center;
+  padding: 2rem;
+  /* A card rather than a wash, so the learner can still see the writing they
+     are being asked to give up. */
+  background: var(--scrim);
+}
+
+.confirm__card {
+  display: grid;
+  justify-items: center;
+  gap: 1.2rem;
+  padding: 1.4rem 2.2rem;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  box-shadow: 0 0.5rem 2rem var(--shadow);
+}
+
+.confirm[hidden] {
+  display: none;
+}
+
+.confirm__question {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+}
+
+.confirm__answers {
+  display: flex;
+  gap: 1rem;
+}
+
+.confirm__answers button {
+  min-inline-size: 6rem;
+  padding: 0.5rem 1.2rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 2px;
+  background: none;
+  font-family: var(--serif);
+  color: var(--vermilion);
+}
+
+/* Carrying on is the safe answer, so it is the one that reads as the default. */
+.confirm__answers button[data-answer='no'] {
+  background: var(--vermilion);
+  color: var(--on-vermilion);
+}
