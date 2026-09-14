@@ -11,15 +11,20 @@
  * again, so a learner never builds the muscle memory of a wrong shape. In a
  * test, every stroke is taken as written and judged at the end, with no model
  * and no hint.
+ *
+ * The hint runs one stroke ahead: once a learner is about halfway through the
+ * stroke in hand, it already shows where the next one begins. Waiting until the
+ * current stroke is finished arrives too late to be of any use.
  */
 import type { Stroke } from '../data/stroke-data'
+import { length } from './polyline'
 import { DEFAULT_THRESHOLDS, matchStroke, type MistakeReason, type StrokeVerdict } from './stroke-matcher'
 import { asPoint, type TracedPoint } from './traced-point'
 
-export type SessionMode = 'practice' | 'test'
+/** How much of the stroke in hand has to be drawn before the hint moves on. */
+const HINT_MOVES_ON_AT = 0.5
 
-/** How long a learner may hesitate before the hint appears. */
-export const DEFAULT_NAVIGATION_DELAY_MS = 1500
+export type SessionMode = 'practice' | 'test'
 
 export type StrokeOutcome = {
   /** Has this stroke been written acceptably yet? */
@@ -38,10 +43,11 @@ export type WritingSessionState = {
   /** The verdict on the stroke most recently written, if any. */
   readonly lastVerdict: StrokeVerdict | null
   /**
-   * Whether to show the learner where the awaited stroke begins and which way
-   * it runs. Never for the first stroke: that one they attempt on their own.
+   * Which stroke the hint should point at, or null for no hint. From halfway
+   * through the stroke in hand it points at the one after it. Nothing is shown
+   * for the very first stroke until the learner has got it wrong once.
    */
-  readonly showNavigation: boolean
+  readonly navigationStroke: number | null
   readonly phase: 'writing' | 'finished'
   /** Strokes written correctly at the first attempt, out of the character's total. */
   readonly score: { readonly correct: number; readonly total: number }
@@ -49,24 +55,22 @@ export type WritingSessionState = {
 
 export type WritingSession = {
   state(): WritingSessionState
+  /**
+   * The stroke being drawn right now, as far as it has got. Once it is about
+   * half as long as the one it is tracing, the hint moves on to the next stroke.
+   */
+  traceStroke(points: readonly TracedPoint[]): WritingSessionState
   /** Judges one finished stroke and moves the session on. */
   writeStroke(points: readonly TracedPoint[]): WritingSessionState
-  /**
-   * Moves the clock on. The time must come from the same clock as the traced
-   * points, so that hesitation is measured from when the last stroke ended.
-   */
-  tick(now: number): WritingSessionState
 }
 
 export type WritingSessionOptions = {
   readonly strokes: readonly Stroke[]
   readonly mode: SessionMode
-  readonly navigationDelayMs?: number
 }
 
 export function createWritingSession(options: WritingSessionOptions): WritingSession {
   const { strokes, mode } = options
-  const navigationDelayMs = options.navigationDelayMs ?? DEFAULT_NAVIGATION_DELAY_MS
 
   const outcomes: StrokeOutcome[] = strokes.map(() => ({
     done: false,
@@ -76,14 +80,30 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   }))
   let awaiting = 0
   let lastVerdict: StrokeVerdict | null = null
-  let waitingSince: number | null = null
-  let navigating = false
+  /** Is the stroke in hand far enough along for the hint to move on? */
+  let pastHalfway = false
+
+  /**
+   * One ahead of the stroke in hand: from the middle of stroke N the hint shows
+   * N+1, and the moment N is accepted it is already there. Nothing is shown
+   * before the learner has started, nor during a test, nor once there is no
+   * next stroke to point at.
+   */
+  const navigationStroke = (): number | null => {
+    if (mode === 'test' || awaiting >= strokes.length) return null
+    const target = awaiting + (pastHalfway ? 1 : 0)
+    if (target >= strokes.length) return null
+    // The very first stroke is the learner's own to attempt. Only once they
+    // have got it wrong does the hint step in and show it.
+    if (target === 0 && outcomes[0]!.attempts === 0) return null
+    return target
+  }
 
   const state = (): WritingSessionState => ({
     awaitingStroke: awaiting,
     outcomes: outcomes.map((outcome) => ({ ...outcome })),
     lastVerdict,
-    showNavigation: navigating,
+    navigationStroke: navigationStroke(),
     phase: awaiting >= strokes.length ? 'finished' : 'writing',
     score: {
       correct: outcomes.filter((outcome) => outcome.firstTimeCorrect).length,
@@ -93,6 +113,14 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
 
   return {
     state,
+    traceStroke(points) {
+      const model = strokes[awaiting]
+      // A fresh stroke starts short, so this falls back to false on its own the
+      // moment the learner lifts and begins the next one.
+      pastHalfway = model !== undefined
+        && length(points.map(asPoint)) >= length(model.median) * HINT_MOVES_ON_AT
+      return state()
+    },
     writeStroke(points) {
       const model = strokes[awaiting]
       if (!model) return state()
@@ -113,16 +141,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // a test takes what it is given and moves on regardless.
       if (verdict.correct || mode === 'test') awaiting += 1
 
-      // Hesitation is measured from the end of whatever was just written,
-      // right or wrong, so the hint arrives when the learner is actually stuck.
-      navigating = false
-      waitingSince = points[points.length - 1]?.t ?? null
-      return state()
-    },
-    tick(now) {
-      const canNavigate =
-        mode === 'practice' && awaiting > 0 && awaiting < strokes.length && waitingSince !== null
-      navigating = canNavigate && now - waitingSince! >= navigationDelayMs
+      pastHalfway = false
       return state()
     },
   }

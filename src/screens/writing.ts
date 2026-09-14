@@ -10,7 +10,11 @@ import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { loadStrokeData, strokesFor, type Stroke } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
-import { createWritingSession, type WritingSession } from '../writing/writing-session'
+import {
+  createWritingSession,
+  type WritingSession,
+  type WritingSessionState,
+} from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
 
@@ -52,7 +56,6 @@ export function mountWriting(
   let surface: WritingSurface | null = null
   let session: WritingSession | null = null
   let model: readonly Stroke[] = []
-  let clock: number | null = null
 
   const showScore = (): void => {
     if (!session) return
@@ -62,15 +65,13 @@ export function mountWriting(
   }
 
   /**
-   * The session decides when a learner has stalled, so it needs to be told the
-   * time. The traced points carry event timestamps, which share an origin with
-   * performance.now(), so hesitation is measured from the end of the last stroke.
+   * The session says which stroke the hint belongs on; this puts it there. It
+   * has to be called after anything that moves the session on, since the hint
+   * runs ahead of the writing rather than on a clock of its own.
    */
-  const followTheClock = (): void => {
-    clock = requestAnimationFrame(followTheClock)
-    if (!session || !surface) return
-    const { showNavigation, awaitingStroke } = session.tick(performance.now())
-    surface.setNavigation(showNavigation ? (model[awaitingStroke] ?? null) : null)
+  const showHint = (state: WritingSessionState): void => {
+    const stroke = state.navigationStroke
+    surface?.setNavigation(stroke === null ? null : (model[stroke] ?? null))
   }
 
   const start = (strokes: readonly Stroke[], square: number): void => {
@@ -81,8 +82,12 @@ export function mountWriting(
       // A test shows no model: the whole point is writing it from memory.
       model: mode === 'test' ? [] : strokes,
       square,
+      onStrokeTraced(points) {
+        showHint(session!.traceStroke(points))
+      },
       onStrokeFinished(points) {
         const state = session!.writeStroke(points)
+        showHint(state)
         // In practice a wrong stroke is shown back in red and taken away, so the
         // learner never leaves a wrong shape sitting on the paper. A test takes
         // what it is given and says nothing until the end.
@@ -95,7 +100,6 @@ export function mountWriting(
       },
     })
     cells.replaceChildren(surface.element)
-    if (clock === null) clock = requestAnimationFrame(followTheClock)
   }
 
   void loadStrokeData().then((data) => {
@@ -132,7 +136,6 @@ export function mountWriting(
   return {
     destroy() {
       unsubscribe()
-      if (clock !== null) cancelAnimationFrame(clock)
       surface?.destroy()
       confirm.remove()
       screen.remove()

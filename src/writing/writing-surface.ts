@@ -14,6 +14,8 @@ export type WritingSurfaceOptions = {
   readonly model: readonly Stroke[]
   /** The side of the square the stroke coordinates are defined in. */
   readonly square: number
+  /** Called as the finger moves, with the stroke so far. The hint follows this. */
+  readonly onStrokeTraced: (points: readonly TracedPoint[]) => void
   /** Called once the finger lifts, with the stroke in the character's own coordinates. */
   readonly onStrokeFinished: (points: readonly TracedPoint[]) => void
 }
@@ -27,10 +29,10 @@ const INK_WIDTH = 5.5
 const MINIMUM_STROKE_LENGTH = 2
 /** Long enough to see what was written before it is taken away, short enough not to nag. */
 const REJECTION_MS = 450
-/** One trip of the hint along a stroke. Slow enough to follow with a finger. */
-const NAVIGATION_MS = 1400
+/** One trip of the hint along a stroke. Brisk, but still a movement rather than a flash. */
+const NAVIGATION_MS = 800
 /** The pause at the end of a trip, before it starts over. */
-const NAVIGATION_REST_MS = 350
+const NAVIGATION_REST_MS = 250
 
 export type WritingSurface = {
   readonly element: HTMLElement
@@ -217,12 +219,14 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     canvas.setPointerCapture(event.pointerId)
     inProgress = [toCharacterSpace(event)]
     draw()
+    options.onStrokeTraced(inProgress)
   }
 
   const onPointerMove = (event: PointerEvent): void => {
     if (!inProgress || !canvas.hasPointerCapture(event.pointerId)) return
     inProgress.push(toCharacterSpace(event))
     draw()
+    options.onStrokeTraced(inProgress)
   }
 
   const onPointerUp = (event: PointerEvent): void => {

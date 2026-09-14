@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Point, StrokeData } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
-import { createWritingSession, DEFAULT_NAVIGATION_DELAY_MS } from './writing-session'
+import { createWritingSession } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
 /** Four strokes, all of them long and straight: easy to distort in a controlled way. */
@@ -230,57 +230,55 @@ describe('remembering what went wrong', () => {
   })
 })
 
-describe('the hint for a learner who has stalled', () => {
-  const stall = (...attempts: readonly Point[][]) => {
-    const session = createWritingSession({ strokes, mode: 'practice' })
-    attempts.forEach((attempt, n) => session.writeStroke(traced(attempt, n * 10_000)))
-    const endedAt = (attempts.length - 1) * 10_000 + (perfect(0).length - 1) * 10
-    return { session, endedAt }
-  }
+describe('the hint, which runs one stroke ahead', () => {
+  const practising = () => createWritingSession({ strokes, mode: 'practice' })
 
-  it('never appears before the first stroke, however long the wait', () => {
-    const session = createWritingSession({ strokes, mode: 'practice' })
-    expect(session.tick(10_000_000).showNavigation).toBe(false)
+  it('shows nothing before the learner has put a finger down', () => {
+    expect(practising().state().navigationStroke).toBeNull()
   })
 
-  it('appears once the learner has waited, from the second stroke on', () => {
-    const { session, endedAt } = stall(perfect(0))
-    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS).showNavigation).toBe(true)
+  it('stays away while the first stroke has barely begun', () => {
+    const session = practising()
+    expect(session.traceStroke(traced(truncated(0, 0.2))).navigationStroke).toBeNull()
   })
 
-  it('stays away while the learner is still within the grace period', () => {
-    const { session, endedAt } = stall(perfect(0))
-    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS - 1).showNavigation).toBe(false)
+  it('points at the next stroke once the one in hand is half written', () => {
+    const session = practising()
+    expect(session.traceStroke(traced(truncated(0, 0.6))).navigationStroke).toBe(1)
   })
 
-  it('goes away again as soon as something is written', () => {
-    const { session, endedAt } = stall(perfect(0))
-    session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS)
-    expect(session.writeStroke(traced(perfect(1), 20_000)).showNavigation).toBe(false)
+  it('is already there when the stroke in hand is accepted', () => {
+    const session = practising()
+    session.traceStroke(traced(truncated(0, 0.6)))
+    expect(session.writeStroke(traced(perfect(0))).navigationStroke).toBe(1)
   })
 
-  it('appears after a refused stroke too, since that learner is stuck as well', () => {
-    const { session, endedAt } = stall(perfect(0), reversed(1))
-    expect(session.tick(endedAt + DEFAULT_NAVIGATION_DELAY_MS).showNavigation).toBe(true)
+  it('keeps running ahead as the character is written', () => {
+    const session = practising()
+    session.writeStroke(traced(perfect(0)))
+    expect(session.traceStroke(traced(truncated(1, 0.6))).navigationStroke).toBe(2)
+  })
+
+  it('points at the stroke in hand once the learner has got it wrong', () => {
+    const session = practising()
+    expect(session.writeStroke(traced(reversed(0))).navigationStroke).toBe(0)
+  })
+
+  it('has nothing to point at beyond the last stroke', () => {
+    const session = practising()
+    strokes.slice(0, -1).forEach((_, index) => session.writeStroke(traced(perfect(index))))
+    const last = strokes.length - 1
+    expect(session.traceStroke(traced(truncated(last, 0.6))).navigationStroke).toBeNull()
   })
 
   it('never appears in a test', () => {
     const session = createWritingSession({ strokes, mode: 'test' })
-    session.writeStroke(traced(perfect(0)))
-    expect(session.tick(10_000_000).showNavigation).toBe(false)
+    expect(session.traceStroke(traced(truncated(0, 0.6))).navigationStroke).toBeNull()
   })
 
   it('stops once the character is finished', () => {
-    const { session } = writeAllPerfectly('practice')
-    expect(session.tick(10_000_000).showNavigation).toBe(false)
-  })
-
-  it('can be told to wait longer', () => {
-    const session = createWritingSession({ strokes, mode: 'practice', navigationDelayMs: 5000 })
-    session.writeStroke(traced(perfect(0)))
-    const endedAt = (perfect(0).length - 1) * 10
-    expect(session.tick(endedAt + 1500).showNavigation).toBe(false)
-    expect(session.tick(endedAt + 5000).showNavigation).toBe(true)
+    const { state } = writeAllPerfectly('practice')
+    expect(state.navigationStroke).toBeNull()
   })
 })
 
