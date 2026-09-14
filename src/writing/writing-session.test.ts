@@ -285,6 +285,17 @@ describe('writing a character again', () => {
     expect(session.retryCharacter().awaitingStroke).toBe(0)
   })
 
+  it('finishes the run again when the last character is written a second time', () => {
+    const session = run()
+    writeCharacter(session, '日')
+    session.nextCharacter()
+    writeCharacter(session, '一')
+    session.retryCharacter()
+    const state = writeCharacter(session, '一')
+    expect(state.phase).toBe('finished')
+    expect(state.results).toHaveLength(2)
+  })
+
   it('reopens the last character after the run has finished', () => {
     const session = run()
     writeCharacter(session, '日')
@@ -421,7 +432,7 @@ describe('practice', () => {
     const { state } = write('practice', reversed(0), perfect(0), perfect(1))
     expect(state.outcomes[0]!.firstTimeCorrect).toBe(false)
     expect(state.outcomes[0]!.attempts).toBe(2)
-    expect(state.score.correct).toBe(1)
+    expect(state.score?.correct).toBe(1)
   })
 
   it('cannot be finished by writing the wrong stroke over and over', () => {
@@ -447,6 +458,7 @@ describe('a test', () => {
       perfect(3),
     )
     expect(state.characterFinished).toBe(true)
+    expect(state.phase).toBe('finished')
     expect(state.score).toEqual({ correct: 3, total: 4 })
   })
 })
@@ -474,6 +486,7 @@ describe('a test keeps its results back', () => {
     const state = writeCharacter(session, '一')
     expect(state.characterFinished).toBe(true)
     expect(state.results).toEqual([])
+    expect(state.score).toBeNull()
   })
 
   it('hands over every result once the run is finished', () => {
@@ -486,6 +499,29 @@ describe('a test keeps its results back', () => {
       { character: '一', firstTimeCorrect: true },
       { character: '人', firstTimeCorrect: true },
     ])
+  })
+})
+
+describe('how much of the run is left', () => {
+  it('counts the characters after the one in hand', () => {
+    const session = begin('practice', '一', '人', '日')
+    expect(session.state().remaining).toBe(2)
+    writeCharacter(session, '一')
+    expect(session.nextCharacter().remaining).toBe(1)
+  })
+
+  it('has nothing left over on the last character', () => {
+    const session = begin('practice', '一')
+    expect(session.state().remaining).toBe(0)
+  })
+
+  it('counts the run as characters written right first time', () => {
+    const session = begin('practice', '一', '人')
+    session.writeStroke(traced(reversed(0)))
+    expect(session.state().runScore).toEqual({ correct: 0, total: 2 })
+    writeCharacter(session, '一')
+    session.nextCharacter()
+    expect(writeCharacter(session, '人').runScore).toEqual({ correct: 1, total: 2 })
   })
 })
 

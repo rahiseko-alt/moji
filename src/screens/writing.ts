@@ -29,8 +29,10 @@ export function mountWriting(
       <button type="button" class="writing__home"></button>
       <p class="writing__progress" hidden></p>
       <p class="writing__score" hidden></p>
-      <button type="button" class="writing__retry" hidden></button>
-      <button type="button" class="writing__next" hidden></button>
+      <div class="writing__actions">
+        <button type="button" class="writing__retry" hidden></button>
+        <button type="button" class="writing__next" hidden></button>
+      </div>
     </div>
     <div class="writing__cells"></div>
     <div class="summary" hidden>
@@ -51,6 +53,8 @@ export function mountWriting(
   const summaryCharacters = requireElement<HTMLOListElement>(summary, '.summary__characters')
 
   const confirm = createConfirm()
+
+  const modeNow = (): 'practice' | 'test' => choices.get().mode ?? 'practice'
 
   let data: StrokeData | null = null
   let surface: WritingSurface | null = null
@@ -78,17 +82,14 @@ export function mountWriting(
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
-    // A test says nothing about a character until the whole run is over.
-    const mode = choices.get().mode ?? 'practice'
-    score.hidden = !state.characterFinished || (mode === 'test' && state.phase !== 'finished')
-    score.textContent = strings.strokeScore(state.score.correct, state.score.total)
+    // The session holds a test's results back until the run is over, so there
+    // is simply nothing to show until then.
+    score.hidden = !state.characterFinished || state.score === null
+    if (state.score) score.textContent = strings.strokeScore(state.score.correct, state.score.total)
 
     // The summary lies over the last character, which stays on the paper below it.
     summary.hidden = state.phase !== 'finished'
-    summaryTotal.textContent = strings.runScore(
-      state.results.filter((result) => result.firstTimeCorrect).length,
-      state.results.length,
-    )
+    summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
     summaryCharacters.replaceChildren(
       ...state.results.map((result) => {
         const item = document.createElement('li')
@@ -105,8 +106,8 @@ export function mountWriting(
       }),
     )
 
-    // Nothing to move on to at the end of the run: #20 puts the summary here.
-    next.hidden = !state.characterFinished || state.position >= state.chosen.length
+    // At the end of the run there is nowhere to go on to: the summary is there.
+    next.hidden = !state.characterFinished || state.remaining === 0
     retry.hidden = !state.characterFinished
   }
 
@@ -115,7 +116,7 @@ export function mountWriting(
     surface?.destroy()
     surface = null
     const state = session.state()
-    const mode = choices.get().mode ?? 'practice'
+    const mode = modeNow()
 
     if (data && state.character && !state.characterFinished) {
       model = strokesFor(data, state.character)
@@ -168,13 +169,18 @@ export function mountWriting(
   home.addEventListener('click', () => {
     const strings = STRINGS[choices.get().language]
     const state = session.state()
-    const toCome = state.chosen.length - state.position + (state.characterFinished ? 0 : 1)
-    const written = surface?.hasInk() ?? false
-    if (state.phase === 'finished' || (!written && state.position === 1 && toCome <= 1)) {
+    // Nothing written yet and nothing written before: there is nothing to lose,
+    // and a question there would only be in the way. Once the run is over, the
+    // same is true — the tally has already been shown.
+    const written = (surface?.hasInk() ?? false) || state.position > 1
+    if (state.phase === 'finished' || !written) {
       onHome()
       return
     }
-    confirm.ask(toCome > 1 ? strings.quitRunQuestion(toCome) : strings.quitQuestion, onHome)
+    confirm.ask(
+      state.remaining > 0 ? strings.quitRunQuestion(state.remaining) : strings.quitQuestion,
+      onHome,
+    )
   })
 
   const unsubscribe = choices.subscribe(render)

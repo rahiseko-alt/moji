@@ -9,8 +9,6 @@
   display: grid;
   place-content: center;
   padding: 2rem;
-  /* A card rather than a wash, so the learner can still see the writing they
-     are being asked to give up. */
   background: var(--scrim);
 }
 

@@ -67,8 +67,15 @@ export type WritingSessionState = {
    * for the very first stroke until the learner has got it wrong once.
    */
   readonly navigationStroke: number | null
-  /** Strokes of the character in hand written correctly at the first attempt. */
-  readonly score: { readonly correct: number; readonly total: number }
+  /**
+   * Strokes of the character in hand written correctly at the first attempt,
+   * or null while a test keeps them back.
+   */
+  readonly score: { readonly correct: number; readonly total: number } | null
+  /** Characters of the run still to come after the one in hand. */
+  readonly remaining: number
+  /** Characters of the run written correctly at the first attempt, out of them all. */
+  readonly runScore: { readonly correct: number; readonly total: number }
   /**
    * How the characters written so far went, in the order they were written.
    * A test holds them all back until the run is finished.
@@ -132,6 +139,9 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
 
   const characterFinished = (): boolean => phase !== 'choosing' && awaiting >= strokes.length
 
+  /** A test tells the learner nothing about how it went until the run is over. */
+  const heldBack = (): boolean => mode === 'test' && phase !== 'finished'
+
   /**
    * One ahead of the stroke in hand: from the middle of stroke N the hint shows
    * N+1, and the moment N is accepted it is already there. Nothing is shown
@@ -166,13 +176,20 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     outcomes: outcomes.map((outcome) => ({ ...outcome })),
     lastVerdict,
     navigationStroke: navigationStroke(),
-    score: {
-      correct: outcomes.filter((outcome) => outcome.firstTimeCorrect).length,
-      total: strokes.length,
-    },
     // A test says nothing until it is over: a result shown part way through
     // would turn the rest of the run into practice.
-    results: mode === 'test' && phase !== 'finished' ? [] : results.map((result) => ({ ...result })),
+    score: heldBack()
+      ? null
+      : {
+          correct: outcomes.filter((outcome) => outcome.firstTimeCorrect).length,
+          total: strokes.length,
+        },
+    remaining: phase === 'choosing' ? chosen.length : chosen.length - (at + 1),
+    runScore: {
+      correct: heldBack() ? 0 : results.filter((result) => result.firstTimeCorrect).length,
+      total: chosen.length,
+    },
+    results: heldBack() ? [] : results.map((result) => ({ ...result })),
   })
 
   return {
@@ -235,15 +252,18 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // a test takes what it is given and moves on regardless.
       if (verdict.correct || mode === 'test') awaiting += 1
 
-      // How a character went is settled the first time it is written through:
-      // writing it again afterwards is practice, not a second chance at the
-      // tally (see 一発正解 in CONTEXT.md).
-      if (characterFinished() && results.length === at) {
-        results.push({
-          character: chosen[at]!,
-          firstTimeCorrect: outcomes.every((outcome) => outcome.firstTimeCorrect),
-        })
-        // The run ends with its last character: there is nothing else to wait for.
+      if (characterFinished()) {
+        // How a character went is settled the first time it is written through:
+        // writing it again afterwards is practice, not a second chance at the
+        // tally (see 一発正解 in CONTEXT.md).
+        if (results.length === at) {
+          results.push({
+            character: chosen[at]!,
+            firstTimeCorrect: outcomes.every((outcome) => outcome.firstTimeCorrect),
+          })
+        }
+        // The run ends with its last character: there is nothing else to wait
+        // for. Written again after that, it ends the run again.
         if (at + 1 === chosen.length) phase = 'finished'
       }
 
