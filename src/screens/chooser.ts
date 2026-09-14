@@ -14,6 +14,7 @@ import type { Screen } from '../app/screen'
 import { HIRAGANA, KANJI_GRADE1, KATAKANA } from '../data/characters'
 import { loadStrokeData, type StrokeData } from '../data/stroke-data'
 import { STRINGS, type Strings } from '../i18n/strings'
+import type { WritingSession } from '../writing/writing-session'
 import './chooser.css'
 
 type Group = 'hiragana' | 'katakana' | 'kanji'
@@ -82,7 +83,8 @@ function layoutOf(group: Group, data: StrokeData | null): Layout {
 export function mountChooser(
   parent: HTMLElement,
   choices: ChoicesStore,
-  onCharacterChosen: (character: string) => void,
+  session: WritingSession,
+  onStart: () => void,
   onHome: () => void,
 ): Screen {
   const screen = document.createElement('div')
@@ -91,15 +93,19 @@ export function mountChooser(
     <div class="chooser__bar">
       <button type="button" class="chooser__home"></button>
       <div class="chooser__groups" role="group"></div>
+      <button type="button" class="chooser__start"></button>
     </div>
     <div class="chooser__list"><div class="chooser__grid"></div></div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.chooser__home')
   const groupRow = requireElement<HTMLDivElement>(screen, '.chooser__groups')
+  const start = requireElement<HTMLButtonElement>(screen, '.chooser__start')
   const grid = requireElement<HTMLDivElement>(screen, '.chooser__grid')
 
   let group: Group = 'hiragana'
   let data: StrokeData | null = null
+  /** The buttons of the grid on show, so the numbers can be redrawn without rebuilding it. */
+  const buttons = new Map<string, HTMLButtonElement>()
 
   const groupButtons = new Map<Group, HTMLButtonElement>()
   for (const candidate of GROUPS) {
@@ -114,15 +120,32 @@ export function mountChooser(
     groupRow.append(button)
   }
 
+  /**
+   * The number a character carries is its place in the run, so taking one out
+   * renumbers everything behind it. Cheap enough to redraw them all.
+   */
+  const showChosen = (): void => {
+    const { chosen } = session.state()
+    for (const [character, button] of buttons) {
+      const place = chosen.indexOf(character)
+      button.dataset.chosen = String(place !== -1)
+      const number = button.firstElementChild as HTMLElement
+      number.textContent = place === -1 ? '' : String(place + 1)
+    }
+    start.disabled = chosen.length === 0
+  }
+
   const render = (): void => {
     const strings = STRINGS[choices.get().language]
     home.textContent = strings.home
+    start.textContent = strings.start
     for (const [candidate, button] of groupButtons) {
       button.textContent = label(strings, candidate)
       button.setAttribute('aria-pressed', String(candidate === group))
     }
 
     const { columns, rows, cells } = layoutOf(group, data)
+    buttons.clear()
     grid.style.setProperty('--columns', String(columns))
     grid.style.setProperty('--rows', String(rows))
     grid.replaceChildren(
@@ -137,14 +160,24 @@ export function mountChooser(
         button.type = 'button'
         button.className = 'chooser__character'
         button.lang = 'ja'
-        button.textContent = character
-        button.addEventListener('click', () => onCharacterChosen(character))
+        const number = document.createElement('span')
+        number.className = 'chooser__number'
+        button.append(number, character)
+        button.addEventListener('click', () => {
+          session.chooseCharacter(character)
+          showChosen()
+        })
+        buttons.set(character, button)
         return button
       }),
     )
+    showChosen()
   }
 
   home.addEventListener('click', onHome)
+  start.addEventListener('click', () => {
+    if (session.start().phase === 'writing') onStart()
+  })
 
   void loadStrokeData().then((loaded) => {
     data = loaded

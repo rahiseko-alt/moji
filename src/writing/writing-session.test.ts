@@ -1,18 +1,19 @@
 /**
- * The one seam this project tests thoroughly: what happens as a learner writes.
- * Scoring runs inside the session, so it is exercised here too rather than
- * poked at directly.
+ * The one seam this project tests thoroughly: what happens as a learner chooses
+ * characters and writes them. Scoring runs inside the session, so it is
+ * exercised here too rather than poked at directly.
  *
  * Strokes are built from the shipped model data, so "perfect" means what the
  * app actually asks for, and every imperfection is a deliberate distortion of it.
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import type { Point, StrokeData } from '../data/stroke-data'
+import type { Point, Stroke, StrokeData } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
-import { createWritingSession } from './writing-session'
+import { createWritingSession, type SessionMode } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
+const strokesOf = (character: string): readonly Stroke[] => data.characters[character] ?? []
 /** Four strokes, all of them long and straight: easy to distort in a controlled way. */
 const strokes = data.characters['日']!
 
@@ -20,19 +21,40 @@ const strokes = data.characters['日']!
 const traced = (points: readonly Point[], startedAt = 0): TracedPoint[] =>
   points.map(([x, y], n) => ({ x, y, t: startedAt + n * 10 }))
 
-const perfect = (index: number): Point[] => strokes[index]!.median.map(([x, y]) => [x, y])
+const perfectOf = (character: string, index: number): Point[] =>
+  strokesOf(character)[index]!.median.map(([x, y]) => [x, y])
+
+const perfect = (index: number): Point[] => perfectOf('日', index)
+
+/** A session that has been given characters and told to begin. */
+const begin = (mode: SessionMode, ...characters: readonly string[]) => {
+  const session = createWritingSession({ mode, strokesOf })
+  for (const character of characters) session.chooseCharacter(character)
+  session.start()
+  return session
+}
+
+/** Writes the whole of one character, one stroke after another. */
+const writeCharacter = (session: ReturnType<typeof begin>, character: string) => {
+  let state = session.state()
+  for (const [n, stroke] of strokesOf(character).entries()) {
+    state = session.writeStroke(traced(perfectOf(character, n), n * 1000))
+    void stroke
+  }
+  return state
+}
 
 const write = (
-  mode: 'practice' | 'test',
+  mode: SessionMode,
   ...attempts: readonly Point[][]
 ) => {
-  const session = createWritingSession({ strokes, mode })
+  const session = begin(mode, '日')
   let state = session.state()
   for (const [n, attempt] of attempts.entries()) state = session.writeStroke(traced(attempt, n * 1000))
   return { session, state }
 }
 
-const writeAllPerfectly = (mode: 'practice' | 'test') =>
+const writeAllPerfectly = (mode: SessionMode) =>
   write(mode, ...strokes.map((_, index) => perfect(index)))
 
 const reversed = (index: number): Point[] => [...perfect(index)].reverse()
@@ -80,10 +102,130 @@ const straightened = (index: number): Point[] => {
   })
 }
 
-describe('writing a character correctly', () => {
-  it('accepts every stroke and finishes', () => {
-    const { state } = writeAllPerfectly('practice')
+describe('choosing what to write', () => {
+  const choosing = () => createWritingSession({ mode: 'practice', strokesOf })
+
+  it('starts with nothing chosen and nothing being written', () => {
+    const state = choosing().state()
+    expect(state.chosen).toEqual([])
+    expect(state.phase).toBe('choosing')
+    expect(state.character).toBeNull()
+  })
+
+  it('keeps the characters in the order they were chosen', () => {
+    const session = choosing()
+    session.chooseCharacter('人')
+    session.chooseCharacter('日')
+    expect(session.chooseCharacter('一').chosen).toEqual(['人', '日', '一'])
+  })
+
+  it('takes a character out when it is chosen a second time', () => {
+    const session = choosing()
+    session.chooseCharacter('日')
+    expect(session.chooseCharacter('日').chosen).toEqual([])
+  })
+
+  it('closes the gap when a character in the middle is taken out', () => {
+    const session = choosing()
+    for (const character of ['人', '日', '一']) session.chooseCharacter(character)
+    expect(session.chooseCharacter('日').chosen).toEqual(['人', '一'])
+  })
+
+  it('holds characters of every kind at once', () => {
+    const session = choosing()
+    session.chooseCharacter('あ')
+    session.chooseCharacter('ア')
+    expect(session.chooseCharacter('日').chosen).toEqual(['あ', 'ア', '日'])
+  })
+
+  it('will not begin with nothing chosen', () => {
+    const session = choosing()
+    expect(session.start().phase).toBe('choosing')
+  })
+
+  it('begins with the first character that was chosen', () => {
+    const session = choosing()
+    session.chooseCharacter('人')
+    session.chooseCharacter('日')
+    const state = session.start()
+    expect(state.phase).toBe('writing')
+    expect(state.character).toBe('人')
+    expect(state.position).toBe(1)
+  })
+
+  it('takes no more characters once the writing has begun', () => {
+    const session = begin('practice', '日')
+    expect(session.chooseCharacter('一').chosen).toEqual(['日'])
+  })
+})
+
+describe('writing one character after another', () => {
+  const run = () => begin('practice', '一', '人')
+
+  it('says which character of how many is in hand', () => {
+    const state = run().state()
+    expect(state.position).toBe(1)
+    expect(state.chosen).toHaveLength(2)
+  })
+
+  it('does not move on by itself when a character is written', () => {
+    const session = run()
+    const state = writeCharacter(session, '一')
+    expect(state.characterFinished).toBe(true)
+    expect(state.position).toBe(1)
+    expect(state.phase).toBe('writing')
+  })
+
+  it('moves on to the next character when told to', () => {
+    const session = run()
+    writeCharacter(session, '一')
+    const state = session.nextCharacter()
+    expect(state.character).toBe('人')
+    expect(state.position).toBe(2)
+    expect(state.awaitingStroke).toBe(0)
+    expect(state.characterFinished).toBe(false)
+  })
+
+  it('gives the next character a clean sheet of paper', () => {
+    const session = run()
+    writeCharacter(session, '一')
+    const state = session.nextCharacter()
+    expect(state.outcomes.every((outcome) => !outcome.done)).toBe(true)
+    expect(state.outcomes).toHaveLength(strokesOf('人').length)
+    expect(state.lastVerdict).toBeNull()
+  })
+
+  it('stays put while the character in hand is unfinished', () => {
+    const session = run()
+    const state = session.nextCharacter()
+    expect(state.character).toBe('一')
+    expect(state.position).toBe(1)
+  })
+
+  it('is finished once the last character has been written and left', () => {
+    const session = run()
+    writeCharacter(session, '一')
+    session.nextCharacter()
+    writeCharacter(session, '人')
+    const state = session.nextCharacter()
     expect(state.phase).toBe('finished')
+    expect(state.character).toBeNull()
+  })
+
+  it('ignores anything written after the run is finished', () => {
+    const session = run()
+    writeCharacter(session, '一')
+    session.nextCharacter()
+    writeCharacter(session, '人')
+    const finished = session.nextCharacter()
+    expect(session.writeStroke(traced(perfectOf('人', 0)))).toEqual(finished)
+  })
+})
+
+describe('writing a character correctly', () => {
+  it('accepts every stroke and finishes the character', () => {
+    const { state } = writeAllPerfectly('practice')
+    expect(state.characterFinished).toBe(true)
     expect(state.awaitingStroke).toBe(strokes.length)
     expect(state.outcomes.every((outcome) => outcome.done)).toBe(true)
   })
@@ -94,7 +236,7 @@ describe('writing a character correctly', () => {
   })
 
   it('waits for the strokes in order', () => {
-    const session = createWritingSession({ strokes, mode: 'practice' })
+    const session = begin('practice', '日')
     expect(session.state().awaitingStroke).toBe(0)
     expect(session.writeStroke(traced(perfect(0))).awaitingStroke).toBe(1)
     expect(session.writeStroke(traced(perfect(1), 1000)).awaitingStroke).toBe(2)
@@ -139,7 +281,7 @@ describe('a stroke that is close but not good enough', () => {
 
   it('is refused when a curve is drawn as a straight line', () => {
     // The second stroke of 日 turns a corner; a ruled line is not that stroke.
-    const session = createWritingSession({ strokes, mode: 'practice' })
+    const session = begin('practice', '日')
     session.writeStroke(traced(perfect(0)))
     const state = session.writeStroke(traced(straightened(1)))
     expect(state.lastVerdict?.correct).toBe(false)
@@ -202,7 +344,7 @@ describe('a test', () => {
     expect(state.outcomes[0]!.done).toBe(false)
   })
 
-  it('reaches the end and reports how many were right', () => {
+  it('reaches the end of the character and reports how many were right', () => {
     const { state } = write(
       'test',
       reversed(0),
@@ -210,7 +352,7 @@ describe('a test', () => {
       perfect(2),
       perfect(3),
     )
-    expect(state.phase).toBe('finished')
+    expect(state.characterFinished).toBe(true)
     expect(state.score).toEqual({ correct: 3, total: 4 })
   })
 })
@@ -231,7 +373,7 @@ describe('remembering what went wrong', () => {
 })
 
 describe('the hint, which runs one stroke ahead', () => {
-  const practising = () => createWritingSession({ strokes, mode: 'practice' })
+  const practising = () => begin('practice', '日')
 
   it('shows nothing before the learner has put a finger down', () => {
     expect(practising().state().navigationStroke).toBeNull()
@@ -272,7 +414,7 @@ describe('the hint, which runs one stroke ahead', () => {
   })
 
   it('never appears in a test', () => {
-    const session = createWritingSession({ strokes, mode: 'test' })
+    const session = begin('test', '日')
     expect(session.traceStroke(traced(truncated(0, 0.6))).navigationStroke).toBeNull()
   })
 

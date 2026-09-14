@@ -39,6 +39,25 @@
   color: var(--ink);
 }
 
+/* The way on. Dressed as the one action of the screen, and dimmed until there
+   is something to start with. */
+.chooser__start {
+  justify-self: end;
+  padding: 0.3rem 1.1rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 999px;
+  background: var(--vermilion);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--on-vermilion);
+}
+
+.chooser__start:disabled {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+  color: var(--ink-soft);
+}
+
 .chooser__groups {
   display: flex;
   justify-content: center;
@@ -85,6 +104,7 @@
 }
 
 .chooser__character {
+  position: relative;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -96,6 +116,23 @@
   font-size: 1em;
   line-height: 1;
   color: var(--ink);
+}
+
+.chooser__character[data-chosen='true'] {
+  border-color: var(--vermilion);
+  background: var(--paper-tint);
+}
+
+/* Where the character stands in the run. Out of the flow, so the character
+   itself stays centred in its square. */
+.chooser__number {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0.08em;
+  font-family: var(--sans);
+  font-size: 0.34em;
+  line-height: 1.2;
+  color: var(--vermilion);
 }
 
 /* A syllable the table does not have. It holds its place and nothing else. */

@@ -126,3 +126,30 @@
   background: var(--vermilion);
   color: var(--on-vermilion);
 }
+
+/* How far through the run the learner is. Absent when there is only one
+   character to write: counting to one helps nobody. */
+.writing__progress {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.writing__progress[hidden],
+.writing__next[hidden] {
+  display: none;
+}
+
+/* Sits at the far end of the bar, away from ホーム: the two mean opposite
+   things and a mis-tap costs the learner their writing. */
+.writing__next {
+  margin-inline-start: auto;
+  padding: 0.35rem 1.4rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 2px;
+  background: var(--vermilion);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--on-vermilion);
+}
