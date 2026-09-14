@@ -77,7 +77,9 @@
 .chooser__grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), 1fr);
-  gap: 0.2cqh;
+  /* A wider gap between columns than between rows, so the kana table reads as
+     ten separate rows of the syllabary rather than one block of characters. */
+  gap: 0.2cqh 1.4cqh;
   inline-size: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
   font-size: calc(min(100cqw / var(--columns), 100cqh / var(--rows)) * 0.52);
 }
@@ -94,6 +96,11 @@
   font-size: 1em;
   line-height: 1;
   color: var(--ink);
+}
+
+/* A syllable the table does not have. It holds its place and nothing else. */
+.chooser__gap {
+  aspect-ratio: 1;
 }
 
 .chooser__character:hover,
