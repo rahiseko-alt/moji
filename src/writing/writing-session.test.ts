@@ -361,6 +361,16 @@ describe('writing a character correctly', () => {
     const { state } = write('practice', shifted(0, 4, 4))
     expect(state.lastVerdict).toEqual({ correct: true })
   })
+
+  it('forgives a stroke written well off centre, as a finger writes', () => {
+    const { state } = write('practice', shifted(0, 9, 9))
+    expect(state.lastVerdict).toEqual({ correct: true })
+  })
+
+  it('forgives a stroke that stops a fifth short of the end', () => {
+    const { state } = write('practice', truncated(0, 0.8))
+    expect(state.lastVerdict).toEqual({ correct: true })
+  })
 })
 
 /*
@@ -369,9 +379,9 @@ describe('writing a character correctly', () => {
  * Move a threshold and one of these two groups will tell you.
  */
 describe('a stroke that is close but not good enough', () => {
-  it('is refused when it sits a tenth of the square out of place', () => {
-    const { state } = write('practice', shifted(0, 9, 9))
-    expect(state.lastVerdict).toEqual({ correct: false, reason: 'misplaced' })
+  it('is refused when it sits a sixth of the square out of place', () => {
+    const { state } = write('practice', shifted(0, 17, 17))
+    expect(state.lastVerdict?.correct).toBe(false)
   })
 
   it('is refused when it leans noticeably', () => {
@@ -379,8 +389,8 @@ describe('a stroke that is close but not good enough', () => {
     expect(state.lastVerdict?.correct).toBe(false)
   })
 
-  it('is refused when it stops a fifth short of the end', () => {
-    const { state } = write('practice', truncated(0, 0.8))
+  it('is refused when it stops half way', () => {
+    const { state } = write('practice', truncated(0, 0.5))
     expect(state.lastVerdict?.correct).toBe(false)
   })
 

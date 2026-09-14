@@ -27,7 +27,7 @@ export type MistakeReason =
 export type StrokeVerdict = { readonly correct: true } | { readonly correct: false; readonly reason: MistakeReason }
 
 export type MatchThresholds = {
-  /** Minimum cosine between the two directions. 0.8 allows about 37 degrees. */
+  /** Minimum cosine between the two directions. 0.6 allows about 53 degrees. */
   readonly direction: number
   /** How far the start and the end may sit from the model's, in a 109-wide square. */
   readonly ends: number
@@ -41,17 +41,18 @@ export type MatchThresholds = {
 
 /*
  * Chosen by measuring how real ways of writing actually score, not by feel.
- * Steady-hand jitter, a shaky finger and a stroke a little off centre all land
- * well inside these; a stroke that is visibly misplaced, noticeably slanted,
- * stopped short, or drawn straight where the model curves, all land outside.
+ * A finger on a phone is not a pen on paper: a shaky line, a stroke a little
+ * off centre, and one that stops a fifth short are all still that stroke, and
+ * all land inside these. A stroke written from the wrong end, barely drawn at
+ * all, half length, or plainly in the wrong place lands outside.
  * The numbers are in the character's own 109-wide square.
  */
 export const DEFAULT_THRESHOLDS: MatchThresholds = {
-  direction: 0.8,
-  ends: 12,
-  shape: 0.2,
-  shapeFloor: 8,
-  length: 0.85,
+  direction: 0.6,
+  ends: 22,
+  shape: 0.3,
+  shapeFloor: 13,
+  length: 0.6,
 }
 
 /** Enough to describe a stroke's shape without being fussy about wobble. */

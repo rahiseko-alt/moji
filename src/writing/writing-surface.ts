@@ -28,7 +28,7 @@ const INK_WIDTH = 5.5
 /** Below this, a touch is a tap rather than a stroke, and is discarded. */
 const MINIMUM_STROKE_LENGTH = 2
 /** Long enough to see what was written before it is taken away, short enough not to nag. */
-const REJECTION_MS = 450
+const REJECTION_MS = 650
 /** One trip of the hint along a stroke. Brisk, but still a movement rather than a flash. */
 const NAVIGATION_MS = 800
 /** The pause at the end of a trip, before it starts over. */
