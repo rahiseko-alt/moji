@@ -1,0 +1,81 @@
+/* A quiet link in the corner of the cover: present for anyone who looks, and
+   invisible to a learner who just wants to write. */
+.credits__open {
+  position: absolute;
+  inset-inline-end: 2%;
+  inset-block-end: 2.5%;
+  padding: 0.6cqh 1.6cqw;
+  border: 0;
+  background: none;
+  font-family: var(--serif);
+  font-size: 2.2cqw;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.credits {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  /* Block layout rather than centring, so a panel taller than the screen can
+     still be scrolled to the end. This list only grows as sources are added. */
+  padding: 4vh 6vw;
+  background: var(--paper);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.credits[hidden] {
+  display: none;
+}
+
+.credits__panel {
+  max-inline-size: 46rem;
+  margin-inline: auto;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.credits__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+.credits__list {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.credits__list dt {
+  font-family: var(--serif);
+  color: var(--ink);
+}
+
+.credits__list dd {
+  margin: 0.15rem 0 0;
+  word-break: break-word;
+}
+
+.credits__list a {
+  color: var(--vermilion);
+}
+
+.credits__close {
+  justify-self: start;
+  padding: 0.5rem 1.4rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 2px;
+  background: none;
+  font-family: var(--serif);
+  color: var(--vermilion);
+}

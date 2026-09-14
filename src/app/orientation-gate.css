@@ -1,0 +1,53 @@
+.orientation-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: var(--paper);
+  text-align: center;
+}
+
+.orientation-gate[hidden] {
+  display: none;
+}
+
+.orientation-gate__phone {
+  inline-size: 4.5rem;
+  color: var(--ink-soft);
+  animation: orientation-gate-turn 2.4s ease-in-out infinite;
+}
+
+@keyframes orientation-gate-turn {
+  0%, 35% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orientation-gate__phone { animation: none; transform: rotate(90deg); }
+}
+
+.orientation-gate__messages {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orientation-gate__messages li {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* Only the first line is the learner's own language; the rest are a safety net
+   for someone who has not chosen a language yet. */
+.orientation-gate__messages li + li {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}

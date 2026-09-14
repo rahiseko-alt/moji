@@ -1,0 +1,21 @@
+{
+  "name": "mojidrill",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:data": "vite-node scripts/build-stroke-data.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7",
+    "vite-node": "^6.0.0",
+    "vitest": "^3.2.4"
+  }
+}

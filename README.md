@@ -1,4 +1,39 @@
-# MattStyle-0
+# MojiDrill
+
+日本語学校に通う外国人留学生のための、日本語の手書き練習アプリです。
+スマホを横に持ってQRコードから開き、登録も入力もなしに使えます。
+
+- 仕様書: [Issue #2](https://github.com/rahiseko-alt/moji/issues/2)
+- 作業の単位: [#3 〜 #15](https://github.com/rahiseko-alt/moji/issues?q=is%3Aissue+label%3Aready-for-agent)
+
+## 開発
+
+```bash
+npm install
+npm run dev        # 開発サーバー
+npm run typecheck  # 型の確認
+npm test           # 自動テスト
+npm run build      # 配信用の組み立て
+```
+
+`main` に取り込むと GitHub Pages へ自動で配信されます。
+初回だけ、GitHubの Settings > Pages で公開元を「GitHub Actions」に設定する必要があります。
+
+## 中身の出どころ
+
+市販教材の漢字リスト・語彙リストは使っていません。自由に使えるものだけで構成しています。
+
+- 筆順: [KanjiVG](https://kanjivg.tagaini.net/)（CC BY-SA 3.0）
+- 漢字80字: [学年別漢字配当表 小学1年](https://www.mext.go.jp/content/1413522_001.pdf)（告示のため著作権の対象外）
+- 場面の分類: [文化庁「生活上の行為の分類一覧」](https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/94276701_01.pdf)
+- 語の裏取り: [国立国語研究所『日本語教育のための基本語彙調査』](https://mmsrv.ninjal.ac.jp/bvjsl84/)（CC BY 4.0）
+
+`assets/cover.png` は本プロジェクトのために用意した表紙です。
+`assets/favicon.png` はその円相部分を切り出したものです。
+
+---
+
+# 開発フローの仕組み
 
 Matt Pocock 氏の [mattpocock/skills](https://github.com/mattpocock/skills) をそのまま使う開発フロー用リポジトリです。
 
