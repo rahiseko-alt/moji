@@ -209,6 +209,9 @@ export function mountWriting(
         },
       })
       cells.replaceChildren(surface.element)
+      // The hint is on before the first stroke: a learner who does not know
+      // where the character starts should not have to guess to find out.
+      showHint(state)
     } else {
       cells.replaceChildren()
     }
@@ -226,13 +229,23 @@ export function mountWriting(
     // The ink stays where it is; the marking only colours it.
     surface?.stopAcceptingStrokes()
     surface?.setNavigation(null)
-    // A test says nothing at 送信, not even on the last お題 that ends the run:
-    // its marking waits in the results, where the learner can ask for it.
-    if (modeNow() === 'practice') showMarking(state.outcomes)
     if (state.phase === 'finished') {
       resultsExist = true
       showingResults = true
     }
+    // A test says nothing at 送信, so there is nothing to stop and look at: it
+    // goes straight on to the next お題 rather than asking for a second tap.
+    // The last お題 stays on the paper, under the results.
+    if (modeNow() === 'test') {
+      if (state.phase === 'finished') {
+        render()
+        return
+      }
+      session.nextItem()
+      showItem()
+      return
+    }
+    showMarking(state.outcomes)
     render()
   })
 

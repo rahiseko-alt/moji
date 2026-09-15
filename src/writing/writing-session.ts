@@ -78,9 +78,9 @@ export type WritingSessionState = {
    */
   readonly outcomes: readonly StrokeOutcome[]
   /**
-   * Which stroke the hint should point at while writing, or null. From halfway
-   * through the stroke in hand it points at the one after it. The first stroke
-   * is never pointed at: that one the learner attempts on their own.
+   * Which stroke the hint should point at while writing, or null. It starts on
+   * the first stroke, and from halfway through the stroke in hand it points at
+   * the one after it.
    */
   readonly navigationStroke: number | null
   /**
@@ -184,15 +184,15 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   }
 
   /**
-   * One ahead of the stroke in hand: from the middle of stroke N the hint shows
-   * N+1. Nothing is shown during a test, nor once the お題 has been sent, nor
-   * when there is no next stroke to point at. The first stroke is the learner's
-   * own to attempt.
+   * One ahead of the stroke in hand: the first stroke from the moment the お題
+   * comes up — a learner who does not know where a character starts is exactly
+   * who practice is for — and from the middle of stroke N, the stroke N+1.
+   * Nothing is shown during a test, nor once the お題 has been sent.
    */
   const navigationStroke = (): number | null => {
     if (mode === 'test' || phase === 'choosing' || marked) return null
     const target = written.length + (pastHalfway ? 1 : 0)
-    if (target === 0 || target >= strokes.length) return null
+    if (target >= strokes.length) return null
     return target
   }
 

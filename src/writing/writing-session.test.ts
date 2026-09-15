@@ -543,13 +543,13 @@ describe('a test keeps its marking back', () => {
 describe('the hint while writing, which runs one stroke ahead', () => {
   const practising = () => begin('practice', '日')
 
-  it('shows nothing before the learner has put a finger down', () => {
-    expect(practising().state().navigationStroke).toBeNull()
+  it('points at the first stroke before the learner has put a finger down', () => {
+    expect(practising().state().navigationStroke).toBe(0)
   })
 
-  it('stays away while the first stroke has barely begun', () => {
+  it('stays on it while that stroke has barely begun', () => {
     const session = practising()
-    expect(session.traceStroke(traced(truncated(0, 0.2))).navigationStroke).toBeNull()
+    expect(session.traceStroke(traced(truncated(0, 0.2))).navigationStroke).toBe(0)
   })
 
   it('points at the next stroke once the one in hand is half written', () => {
