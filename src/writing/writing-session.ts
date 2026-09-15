@@ -37,6 +37,13 @@ export type StrokeOutcome = {
   readonly problem: StrokeProblem | null
 }
 
+/** What the learner put on the paper for one お題, and what the marking said. */
+export type Attempt = {
+  readonly character: string
+  readonly written: readonly (readonly TracedPoint[])[]
+  readonly outcomes: readonly StrokeOutcome[]
+}
+
 /** How one お題 went, settled the first time it was sent. */
 export type CharacterResult = {
   readonly character: string
@@ -115,6 +122,11 @@ export type WritingSession = {
   retryCharacter(): WritingSessionState
   /** The strokes the learner has written for the お題 in hand. */
   writing(): readonly (readonly TracedPoint[])[]
+  /**
+   * What was written and marked for one お題 of the run, counting from one, so
+   * a learner can look back at it. Null while a test holds its marking back.
+   */
+  attempt(position: number): Attempt | null
 }
 
 export type WritingSessionOptions = {
@@ -138,6 +150,11 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   let marked = false
   /** One per お題 already sent, settled at its first 送信. */
   const results: CharacterResult[] = []
+  /**
+   * The last thing written for each お題, kept for the whole run so the learner
+   * can look back at it. In memory only: nothing is stored (ADR 0005).
+   */
+  const attempts: Attempt[] = []
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
 
@@ -204,6 +221,11 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   return {
     state,
     writing: () => written.map((stroke) => [...stroke]),
+    attempt(position) {
+      const kept = attempts[position - 1]
+      if (!kept || heldBack()) return null
+      return kept
+    },
     chooseCharacter(character) {
       // Once the writing has begun the run is settled: a stray tap must not
       // lengthen or shorten what the learner is part way through.
@@ -268,6 +290,13 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       })
       marked = true
       pastHalfway = false
+      // Written again, an お題 keeps only its latest attempt: the tally was
+      // settled at the first 送信 and does not change.
+      attempts[at] = {
+        character: chosen[at]!,
+        written: written.map((stroke) => [...stroke]),
+        outcomes: outcomes.map((outcome) => ({ ...outcome })),
+      }
 
       // How an お題 went is settled the first time it is sent: writing it again
       // afterwards is practice, not a second chance at the tally (一発正解).

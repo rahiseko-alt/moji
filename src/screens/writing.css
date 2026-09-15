@@ -84,6 +84,7 @@
 }
 
 .writing__progress[hidden],
+.writing__list[hidden],
 .writing__submit[hidden],
 .writing__retry[hidden],
 .writing__next[hidden] {
@@ -114,6 +115,8 @@
   gap: 0.5rem;
 }
 
+/* Back to the list of results from the お題 being looked at. */
+.writing__list,
 /* The quieter of the two ways on: writing the character again is a choice, not
    the expected path. */
 .writing__retry {
@@ -174,6 +177,10 @@
   color: var(--ink);
 }
 
+.summary__characters li {
+  display: contents;
+}
+
 .summary__characters {
   display: flex;
   flex-wrap: wrap;
@@ -185,7 +192,8 @@
   list-style: none;
 }
 
-/* One card per character, marked as it was written the first time. */
+/* One card per お題, marked as it was written the first time. Tapping it puts
+   what was written back on the paper. */
 .summary__character {
   display: grid;
   justify-items: center;

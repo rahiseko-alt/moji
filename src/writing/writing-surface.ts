@@ -21,6 +21,10 @@ export type WritingSurfaceOptions = {
   readonly onStrokeTraced: (points: readonly TracedPoint[]) => void
   /** Called once the finger lifts, with the stroke in the character's own coordinates. */
   readonly onStrokeFinished: (points: readonly TracedPoint[]) => void
+  /** Ink to start with: an お題 being looked back at, rather than written. */
+  readonly ink?: readonly (readonly TracedPoint[])[]
+  /** Takes no ink at all, for looking back at what was written. */
+  readonly readOnly?: boolean
 }
 
 /** Three dotted lines each way, splitting the square into sixteen. */
@@ -67,12 +71,12 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   if (!context) throw new Error('This browser cannot draw on a canvas')
 
   /** Everything the learner has written, right or wrong. Nothing is removed. */
-  const written: TracedPoint[][] = []
+  const written: TracedPoint[][] = (options.ink ?? []).map((stroke) => [...stroke])
   /** Which of them the marking called wrong. */
   const wrong = new Set<number>()
   let inProgress: TracedPoint[] | null = null
-  /** Goes false once the character is finished, so no more ink can be laid down. */
-  let accepting = true
+  /** Goes false once the お題 is sent, so no more ink can be laid down. */
+  let accepting = options.readOnly !== true
   /** The stroke the hint is walking along while the learner writes. */
   let navigation: Stroke | null = null
   /** The strokes the hint walks through once, to answer an お題 that went wrong. */

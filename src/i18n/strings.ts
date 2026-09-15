@@ -29,6 +29,8 @@ export type Strings = {
   readonly start: string
   /** Sends the お題 to be marked. Nothing is judged before this. */
   readonly submit: string
+  /** Goes back to the list of results from the お題 being looked at. */
+  readonly list: string
   /** Leaves the marked お題 for the next one of the run. */
   readonly next: string
   /** Wipes the finished character so it can be written again. */
@@ -59,6 +61,7 @@ export const STRINGS: Record<Language, Strings> = {
     all: 'ぜんぶ',
     start: 'はじめる',
     submit: '送信',
+    list: '一覧',
     next: '次へ',
     retry: 'やり直す',
     progress: (position, total) => `${position} / ${total}`,
@@ -83,6 +86,7 @@ export const STRINGS: Record<Language, Strings> = {
     all: 'All',
     start: 'Start',
     submit: 'Send',
+    list: 'Results',
     next: 'Next',
     retry: 'Again',
     progress: (position, total) => `${position} / ${total}`,
@@ -107,6 +111,7 @@ export const STRINGS: Record<Language, Strings> = {
     all: 'Tất cả',
     start: 'Bắt đầu',
     submit: 'Gửi',
+    list: 'Kết quả',
     next: 'Tiếp theo',
     retry: 'Viết lại',
     progress: (position, total) => `${position} / ${total}`,
@@ -131,6 +136,7 @@ export const STRINGS: Record<Language, Strings> = {
     all: 'सबै',
     start: 'सुरु',
     submit: 'पठाउनुहोस्',
+    list: 'नतिजा',
     next: 'अर्को',
     retry: 'फेरि',
     progress: (position, total) => `${position} / ${total}`,

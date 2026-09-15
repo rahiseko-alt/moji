@@ -424,6 +424,56 @@ describe('writing an お題 again', () => {
   })
 })
 
+describe('looking back at what was written', () => {
+  it('keeps what was written for each お題 of the run', () => {
+    const session = begin('practice', '日', '一')
+    writeCharacter(session, '日')
+    session.submit()
+    session.nextCharacter()
+    writeCharacter(session, '一')
+    session.submit()
+    expect(session.attempt(1)?.character).toBe('日')
+    expect(session.attempt(1)?.written).toHaveLength(strokes.length)
+    expect(session.attempt(2)?.character).toBe('一')
+  })
+
+  it('carries the marking with it', () => {
+    const session = begin('practice', '日')
+    session.addStroke(traced(reversed(0)))
+    session.submit()
+    expect(session.attempt(1)?.outcomes[0]).toEqual({ correct: false, problem: 'backwards' })
+  })
+
+  it('replaces it when the お題 is written again', () => {
+    const session = begin('practice', '日')
+    session.addStroke(traced(reversed(0)))
+    session.submit()
+    session.retryCharacter()
+    writeCharacter(session, '日')
+    session.submit()
+    expect(session.attempt(1)?.written).toHaveLength(strokes.length)
+    expect(session.attempt(1)?.outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
+
+  it('has nothing for an お題 that has not been sent', () => {
+    const session = begin('practice', '日', '一')
+    writeCharacter(session, '日')
+    expect(session.attempt(1)).toBeNull()
+    expect(session.attempt(2)).toBeNull()
+  })
+
+  it('is kept from a test until the run is finished', () => {
+    const session = begin('test', '一', '人')
+    writeCharacter(session, '一')
+    session.submit()
+    expect(session.attempt(1)).toBeNull()
+    session.nextCharacter()
+    writeCharacter(session, '人')
+    session.submit()
+    expect(session.attempt(1)?.character).toBe('一')
+  })
+})
+
 describe('counting a run', () => {
   it('records each お題 as it is sent', () => {
     const session = begin('practice', '日', '一')

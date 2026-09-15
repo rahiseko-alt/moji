@@ -30,6 +30,7 @@ export function mountWriting(
       <p class="writing__progress" hidden></p>
       <p class="writing__score" hidden></p>
       <div class="writing__actions">
+        <button type="button" class="writing__list" hidden></button>
         <button type="button" class="writing__submit"></button>
         <button type="button" class="writing__retry" hidden></button>
         <button type="button" class="writing__next" hidden></button>
@@ -46,6 +47,7 @@ export function mountWriting(
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
   const progress = requireElement<HTMLParagraphElement>(screen, '.writing__progress')
   const score = requireElement<HTMLParagraphElement>(screen, '.writing__score')
+  const list = requireElement<HTMLButtonElement>(screen, '.writing__list')
   const submit = requireElement<HTMLButtonElement>(screen, '.writing__submit')
   const retry = requireElement<HTMLButtonElement>(screen, '.writing__retry')
   const next = requireElement<HTMLButtonElement>(screen, '.writing__next')
@@ -61,6 +63,8 @@ export function mountWriting(
   let data: StrokeData | null = null
   let surface: WritingSurface | null = null
   let model: readonly Stroke[] = []
+  /** Which お題 of the finished run is being looked back at, counting from one. */
+  let reviewing: number | null = null
 
   /**
    * The session says which stroke the hint belongs on; this puts it there. It
@@ -77,6 +81,7 @@ export function mountWriting(
     const state = session.state()
     home.textContent = strings.home
     submit.textContent = strings.submit
+    list.textContent = strings.list
     next.textContent = strings.next
     retry.textContent = strings.retry
     confirm.setAnswers(strings.yes, strings.no)
@@ -86,39 +91,80 @@ export function mountWriting(
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
     // The session holds a test's marking back until the run is over, so there
-    // is simply nothing to show until then.
-    score.hidden = state.score === null
-    if (state.score) score.textContent = strings.strokeScore(state.score.correct, state.score.total)
+    // is simply nothing to show until then. While an お題 is being looked back
+    // at, the count belongs to that one rather than to the one in hand.
+    const reviewed = reviewing === null ? null : session.attempt(reviewing)
+    const showing = reviewed
+      ? {
+          correct: reviewed.outcomes.filter((outcome) => outcome.correct).length,
+          total: reviewed.outcomes.length,
+        }
+      : state.score
+    score.hidden = showing === null
+    if (showing) score.textContent = strings.strokeScore(showing.correct, showing.total)
 
-    // The summary lies over the last character, which stays on the paper below it.
-    summary.hidden = state.phase !== 'finished'
+    // The summary lies over the last お題, which stays on the paper below it.
+    // Looking back at one of them puts it away until 一覧 brings it back.
+    summary.hidden = state.phase !== 'finished' || reviewing !== null
     summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
     summaryCharacters.replaceChildren(
-      ...state.results.map((result) => {
+      ...state.results.map((result, index) => {
         const item = document.createElement('li')
-        item.className = 'summary__character'
-        item.dataset.correct = String(result.firstTimeCorrect)
+        // Each one opens what was written for it, so a learner can see why.
+        const open = document.createElement('button')
+        open.type = 'button'
+        open.className = 'summary__character'
+        open.dataset.correct = String(result.firstTimeCorrect)
         const character = document.createElement('span')
         character.lang = 'ja'
         character.textContent = result.character
         const mark = document.createElement('span')
         mark.className = 'summary__mark'
         mark.textContent = result.firstTimeCorrect ? '○' : '×'
-        item.append(character, mark)
+        open.append(character, mark)
+        open.addEventListener('click', () => showAttempt(index + 1))
+        item.append(open)
         return item
       }),
     )
 
     // Sending is the only way on, and only once something is on the paper.
-    submit.hidden = state.marked
+    submit.hidden = state.marked || reviewing !== null
     submit.disabled = !state.canSubmit
     // At the end of the run there is nowhere to go on to: the summary is there.
-    next.hidden = !state.marked || state.remaining === 0
-    retry.hidden = !state.marked
+    next.hidden = !state.marked || state.remaining === 0 || reviewing !== null
+    retry.hidden = !state.marked || reviewing !== null
+    list.hidden = reviewing === null
   }
 
-  /** Puts a fresh cell up for the character the run is now on. */
+  /** Puts what was written for one お題 of the finished run back on the paper. */
+  const showAttempt = (position: number): void => {
+    const attempt = session.attempt(position)
+    if (!data || !attempt) return
+    reviewing = position
+    surface?.destroy()
+    model = strokesFor(data, attempt.character)
+    surface = createWritingSurface({
+      model: modeNow() === 'test' ? [] : model,
+      guide: modeNow() === 'practice',
+      square: data.viewBox,
+      ink: attempt.written,
+      readOnly: true,
+      onStrokeTraced: () => {},
+      onStrokeFinished: () => {},
+    })
+    cells.replaceChildren(surface.element)
+    surface.markWrong(
+      attempt.outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
+    )
+    // The same answer the learner saw when they sent it.
+    surface.showAnswer(attempt.outcomes.some((outcome) => !outcome.correct) ? model : [])
+    render()
+  }
+
+  /** Puts a fresh cell up for the お題 the run is now on. */
   const showCharacter = (): void => {
+    reviewing = null
     surface?.destroy()
     surface = null
     const state = session.state()
@@ -167,6 +213,11 @@ export function mountWriting(
     // from its first stroke, over what the learner wrote.
     surface?.showAnswer(state.navigationCharacters.length > 0 ? model : [])
     render()
+  })
+
+  list.addEventListener('click', () => {
+    // Back to the results; the last お題 goes back under the card.
+    showCharacter()
   })
 
   next.addEventListener('click', () => {
