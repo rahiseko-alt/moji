@@ -163,7 +163,6 @@ export function mountWriting(
     model = strokesFor(data, attempt.item)
     surface = createWritingSurface({
       model,
-      guide: true,
       square: data.viewBox,
       ink: attempt.written,
       readOnly: true,
@@ -188,7 +187,6 @@ export function mountWriting(
       model = strokesFor(data, state.item)
       surface = createWritingSurface({
         model,
-        guide: true,
         square: data.viewBox,
         onStrokeTraced(points) {
           showHint(session.traceStroke(points))

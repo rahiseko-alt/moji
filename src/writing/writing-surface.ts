@@ -11,12 +11,10 @@ import type { Point, Stroke } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
 
 export type WritingSurfaceOptions = {
-  /** The character's model strokes, drawn faintly to trace over. Empty hides the model. */
+  /** The character's model strokes, drawn faintly to trace over. */
   readonly model: readonly Stroke[]
   /** The side of the square the stroke coordinates are defined in. */
   readonly square: number
-  /** Draw the dotted sixteenths? Practice does; a test leaves the square bare. */
-  readonly guide: boolean
   /** Called as the finger moves, with the stroke so far. The hint follows this. */
   readonly onStrokeTraced: (points: readonly TracedPoint[]) => void
   /** Called once the finger lifts, with the stroke in the character's own coordinates. */
@@ -106,7 +104,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.fillStyle = colour('--paper-plain')
     context.fillRect(0, 0, SIDE, SIDE)
 
-    if (options.guide) {
+    {
       context.lineWidth = 0.6
       context.strokeStyle = colour('--guide')
       context.setLineDash([2, 2.6])

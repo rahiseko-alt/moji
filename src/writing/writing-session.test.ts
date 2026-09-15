@@ -270,13 +270,6 @@ describe('sending an お題 written correctly', () => {
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
-  it('forgives a whole character written a little off centre', () => {
-    // The dotted guide says where the character goes, but a finger still lands
-    // a few units either side of it.
-    const { state } = send(...strokes.map((_, n) => shifted(n, 9, 8)))
-    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
-  })
-
   it('forgives a stroke that stops a fifth short of the end', () => {
     const { state } = send(truncated(0, 0.8))
     expect(state.outcomes[0]!.correct).toBe(true)
@@ -381,13 +374,29 @@ describe('a stroke that is plainly wrong', () => {
  */
 describe('where in the 升目 the character was written', () => {
   it('passes a character written 12 off centre', () => {
-    const { state } = send(...strokes.map((_, n) => shifted(n, 8.5, 8.5)))
+    // A finger lands either side of the dotted guide. Every one of the shipped
+    // characters passes at 12; from 13 they start to fail.
+    const { state } = send(...strokes.map((_, n) => shifted(n, 12, 0)))
     expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
   })
 
   it('fails a character written 20 off centre', () => {
-    const { state } = send(...strokes.map((_, n) => shifted(n, 14, 14)))
+    const { state } = send(...strokes.map((_, n) => shifted(n, 20, 0)))
     expect(state.outcomes.some((outcome) => !outcome.correct)).toBe(true)
+  })
+
+  /*
+   * The exception, and it is the rule working rather than failing: what a
+   * stroke may be out by is a share of its own length, capped at 22, and that
+   * cap is what lets a long stroke stop a fifth short and still pass. 一 is one
+   * long stroke, so the same budget lets the whole character sit 20 to one side.
+   * Tightening the cap costs the honest finger far more than it costs this.
+   */
+  it('passes 一 written 20 off centre, because it is one long stroke', () => {
+    const { state } = sendCharacter('一', (n) =>
+      perfectOf('一', n).map(([x, y]) => [x + 20, y] as Point),
+    )
+    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
   })
 
   it('marks a single stroke where the 升目 puts it, not where it was drawn', () => {
@@ -601,7 +610,6 @@ describe('counting a run', () => {
     expect(session.submit().runScore).toEqual({ correct: 1, total: 2 })
   })
 })
-
 
 describe('the hint while writing, which runs one stroke ahead', () => {
   const writing = () => begin('日')

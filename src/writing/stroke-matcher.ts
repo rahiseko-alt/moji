@@ -60,8 +60,8 @@ export type MatchThresholds = {
  * length rather than against the square, so a short stroke is judged as closely
  * as a long one. Before that, い's second stroke could miss by more than half
  * its own length and still pass (ADR 0011). The floor under it is what lets a
- * finger land a little either side of the dotted guide: a whole character 12
- * off centre passes, 14 and beyond does not (ADR 0013).
+ * finger land a little either side of the dotted guide: every one of the 172
+ * characters passes 12 off centre, and from 13 they start to fail (ADR 0013).
  *
  * The numbers are in the character's own 109-wide square.
  */

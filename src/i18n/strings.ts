@@ -1,5 +1,8 @@
 /**
- * Every word the interface says, in the four languages the school needs.
+ * Every word the interface says, in the four languages the school needs — with
+ * one deliberate exception: the cover's START. A learner who cannot yet read any
+ * of the four has to be able to see where to press, so that one word is the same
+ * everywhere and lives in the cover's own markup.
  *
  * The Vietnamese and Nepali wordings are drafts awaiting a native speaker's
  * review (see issue #2). Only interface wording lives here: the Japanese being
