@@ -116,6 +116,7 @@ const showTask = (): void => {
   instruction.textContent = `「${task.character}」を ${task.instruction}`
   surface = createWritingSurface({
     model,
+    guide: true,
     square: data.viewBox,
     onStrokeTraced: () => {},
     onStrokeFinished(points) {

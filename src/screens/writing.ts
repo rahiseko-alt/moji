@@ -127,8 +127,10 @@ export function mountWriting(
     if (data && state.character && !state.marked) {
       model = strokesFor(data, state.character)
       surface = createWritingSurface({
-        // A test shows no model: the whole point is writing it from memory.
+        // A test shows no model and no dotted guide: the whole point is
+        // writing it from memory, on a bare square.
         model: mode === 'test' ? [] : model,
+        guide: mode === 'practice',
         square: data.viewBox,
         onStrokeTraced(points) {
           showHint(session.traceStroke(points))
