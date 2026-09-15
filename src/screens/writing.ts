@@ -58,8 +58,6 @@ export function mountWriting(
 
   const confirm = createConfirm()
 
-  const modeNow = (): 'practice' | 'test' => choices.get().mode ?? 'practice'
-
   let data: StrokeData | null = null
   let surface: WritingSurface | null = null
   let model: readonly Stroke[] = []
@@ -98,13 +96,10 @@ export function mountWriting(
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
-    // The session holds a test's marking back until the run is over, so there
-    // is simply nothing to show until then. While an お題 is being looked back
-    // at, the count belongs to that one rather than to the one in hand.
-    // A test says nothing about an お題 at 送信, even the last one that ends the
-    // run: its count waits until the learner opens it from the results.
+    // While an お題 is being looked back at, the count belongs to that one
+    // rather than to the one in hand.
     const reviewed = reviewing === null ? null : session.attempt(reviewing)
-    const showing = reviewed ? reviewed.score : modeNow() === 'practice' ? state.score : null
+    const showing = reviewed ? reviewed.score : state.score
     score.hidden = showing === null
     if (showing) score.textContent = strings.strokeScore(showing.correct, showing.total)
 
@@ -167,8 +162,8 @@ export function mountWriting(
     surface?.destroy()
     model = strokesFor(data, attempt.item)
     surface = createWritingSurface({
-      model: modeNow() === 'test' ? [] : model,
-      guide: modeNow() === 'practice',
+      model,
+      guide: true,
       square: data.viewBox,
       ink: attempt.written,
       readOnly: true,
@@ -188,15 +183,12 @@ export function mountWriting(
     surface?.destroy()
     surface = null
     const state = session.state()
-    const mode = modeNow()
 
     if (data && state.item && !state.marked) {
       model = strokesFor(data, state.item)
       surface = createWritingSurface({
-        // A test shows no model and no dotted guide: the whole point is
-        // writing it from memory, on a bare square.
-        model: mode === 'test' ? [] : model,
-        guide: mode === 'practice',
+        model,
+        guide: true,
         square: data.viewBox,
         onStrokeTraced(points) {
           showHint(session.traceStroke(points))
@@ -232,18 +224,6 @@ export function mountWriting(
     if (state.phase === 'finished') {
       resultsExist = true
       showingResults = true
-    }
-    // A test says nothing at 送信, so there is nothing to stop and look at: it
-    // goes straight on to the next お題 rather than asking for a second tap.
-    // The last お題 stays on the paper, under the results.
-    if (modeNow() === 'test') {
-      if (state.phase === 'finished') {
-        render()
-        return
-      }
-      session.nextItem()
-      showItem()
-      return
     }
     showMarking(state.outcomes)
     render()

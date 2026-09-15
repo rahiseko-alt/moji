@@ -28,8 +28,6 @@ import { asPoint, type TracedPoint } from './traced-point'
 /** How much of the stroke in hand has to be drawn before the hint moves on. */
 const HINT_MOVES_ON_AT = 0.5
 
-export type SessionMode = 'practice' | 'test'
-
 /** What was wrong with one stroke: how it was drawn, or that it is not a stroke of this character. */
 export type StrokeProblem =
   | MistakeReason
@@ -79,8 +77,7 @@ export type WritingSessionState = {
   readonly marked: boolean
   /**
    * One per stroke, once the お題 has been marked: the strokes the learner wrote,
-   * then any the model has and they never wrote. Empty before 送信, and while a
-   * test keeps its marking back.
+   * then any the model has and they never wrote. Empty before 送信.
    */
   readonly outcomes: readonly StrokeOutcome[]
   /**
@@ -94,14 +91,11 @@ export type WritingSessionState = {
    * because something in them was wrong. Empty when nothing was.
    */
   readonly navigationCharacters: readonly number[]
-  /** Strokes of the お題 in hand written correctly at the first 送信, or null while held back. */
+  /** Strokes of the お題 in hand written correctly at the first 送信, or null before it. */
   readonly score: { readonly correct: number; readonly total: number } | null
   /** お題 written correctly at the first 送信, out of them all. */
   readonly runScore: { readonly correct: number; readonly total: number }
-  /**
-   * How the お題 written so far went, in order. A test holds them all back until
-   * the run is finished.
-   */
+  /** How the お題 written so far went, in order. */
   readonly results: readonly ItemResult[]
 }
 
@@ -131,19 +125,18 @@ export type WritingSession = {
   retryItem(): WritingSessionState
   /**
    * What was written and marked for one お題 of the run, counting from one, so
-   * a learner can look back at it. Null while a test holds its marking back.
+   * a learner can look back at it. Null until it has been sent.
    */
   attempt(position: number): Attempt | null
 }
 
 export type WritingSessionOptions = {
-  readonly mode: SessionMode
   /** The model strokes of any character that might be chosen. */
   readonly strokesOf: (character: string) => readonly Stroke[]
 }
 
 export function createWritingSession(options: WritingSessionOptions): WritingSession {
-  const { mode, strokesOf } = options
+  const { strokesOf } = options
 
   const chosen: string[] = []
   let phase: WritingSessionState['phase'] = 'choosing'
@@ -169,9 +162,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   const firstMarking: StrokeOutcome[][] = []
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
-
-  /** A test tells the learner nothing about how it went until the run is over. */
-  const heldBack = (): boolean => mode === 'test' && phase !== 'finished'
 
   /**
    * Lays what was written over the model by the middle of both: the learner may
@@ -210,11 +200,11 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   /**
    * One ahead of the stroke in hand: the first stroke from the moment the お題
    * comes up — a learner who does not know where a character starts is exactly
-   * who practice is for — and from the middle of stroke N, the stroke N+1.
-   * Nothing is shown during a test, nor once the お題 has been sent.
+   * who this app is for — and from the middle of stroke N, the stroke N+1.
+   * Nothing is shown once the お題 has been sent.
    */
   const navigationStroke = (): number | null => {
-    if (mode === 'test' || phase === 'choosing' || marked) return null
+    if (phase === 'choosing' || marked) return null
     const target = written.length + (pastHalfway ? 1 : 0)
     if (target >= strokes.length) return null
     return target
@@ -226,7 +216,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
    * position; it is a list so that a word's cells can each answer for themselves.
    */
   const navigationCharacters = (): readonly number[] => {
-    if (!marked || heldBack()) return []
+    if (!marked) return []
     return outcomes.some((outcome) => !outcome.correct) ? [0] : []
   }
 
@@ -239,23 +229,21 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     writtenStrokes: written.length,
     canSubmit: phase !== 'choosing' && !marked && written.length > 0,
     marked,
-    outcomes: heldBack() ? [] : outcomes.map((outcome) => ({ ...outcome })),
+    outcomes: outcomes.map((outcome) => ({ ...outcome })),
     navigationStroke: navigationStroke(),
     navigationCharacters: navigationCharacters(),
-    score: heldBack() ? null : countOf(firstMarking[at]),
+    score: countOf(firstMarking[at]),
     runScore: {
-      correct: heldBack() ? 0 : results.filter((result) => result.firstTimeCorrect).length,
+      correct: results.filter((result) => result.firstTimeCorrect).length,
       total: chosen.length,
     },
-    results: heldBack() ? [] : results.map((result) => ({ ...result })),
+    results: results.map((result) => ({ ...result })),
   })
 
   return {
     state,
     attempt(position) {
-      const kept = attempts[position - 1]
-      if (!kept || heldBack()) return null
-      return kept
+      return attempts[position - 1] ?? null
     },
     chooseItem(item) {
       // Once the writing has begun the run is settled: a stray tap must not

@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Point, Stroke, StrokeData } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
-import { createWritingSession, type SessionMode, type WritingSession } from './writing-session'
+import { createWritingSession, type WritingSession } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
 const strokesOf = (character: string): readonly Stroke[] => data.characters[character] ?? []
@@ -27,8 +27,8 @@ const perfectOf = (character: string, index: number): Point[] =>
 const perfect = (index: number): Point[] => perfectOf('日', index)
 
 /** A session that has been given お題 and told to begin. */
-const begin = (mode: SessionMode, ...characters: readonly string[]) => {
-  const session = createWritingSession({ mode, strokesOf })
+const begin = (...characters: readonly string[]) => {
+  const session = createWritingSession({ strokesOf })
   for (const character of characters) session.chooseItem(character)
   session.start()
   return session
@@ -44,14 +44,13 @@ const writeCharacter = (session: WritingSession, character: string) => {
 }
 
 /** Writes the given attempts at 日 and sends them to be marked. */
-const send = (mode: SessionMode, ...attempts: readonly Point[][]) => {
-  const session = begin(mode, '日')
+const send = (...attempts: readonly Point[][]) => {
+  const session = begin('日')
   for (const [n, attempt] of attempts.entries()) session.addStroke(traced(attempt, n * 1000))
   return { session, state: session.submit() }
 }
 
-const sendAllPerfectly = (mode: SessionMode) =>
-  send(mode, ...strokes.map((_, index) => perfect(index)))
+const sendAllPerfectly = () => send(...strokes.map((_, index) => perfect(index)))
 
 const reversed = (index: number): Point[] => [...perfect(index)].reverse()
 
@@ -114,7 +113,7 @@ const flattened = (points: readonly Point[], towards: number): Point[] => {
 
 /** Writes a character other than 日, one stroke at a time, and sends it. */
 const sendCharacter = (character: string, strokeOf: (index: number) => Point[]) => {
-  const session = begin('practice', character)
+  const session = begin(character)
   for (let n = 0; n < strokesOf(character).length; n++) {
     session.addStroke(traced(strokeOf(n), n * 1000))
   }
@@ -125,7 +124,7 @@ const sendCharacter = (character: string, strokeOf: (index: number) => Point[]) 
 const hiraganaI = (index: number): Point[] => perfectOf('い', index)
 
 describe('choosing what to write', () => {
-  const choosing = () => createWritingSession({ mode: 'practice', strokesOf })
+  const choosing = () => createWritingSession({ strokesOf })
 
   it('starts with nothing chosen and nothing being written', () => {
     const state = choosing().state()
@@ -175,13 +174,13 @@ describe('choosing what to write', () => {
   })
 
   it('takes no more お題 once the writing has begun', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     expect(session.chooseItem('一').chosen).toEqual(['日'])
   })
 })
 
 describe('choosing a whole kind at once', () => {
-  const choosing = () => createWritingSession({ mode: 'practice', strokesOf })
+  const choosing = () => createWritingSession({ strokesOf })
   const kana = ['あ', 'い', 'う']
 
   it('adds them all, in the order they were handed over', () => {
@@ -210,7 +209,7 @@ describe('choosing a whole kind at once', () => {
 
 describe('writing, before anything is sent', () => {
   it('judges nothing while strokes are being written', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     const state = session.addStroke(traced(reversed(0)))
     expect(state.marked).toBe(false)
     expect(state.outcomes).toEqual([])
@@ -218,25 +217,25 @@ describe('writing, before anything is sent', () => {
   })
 
   it('keeps every stroke on the paper, right or wrong', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     session.addStroke(traced(perfect(1), 1000))
     expect(session.state().writtenStrokes).toBe(2)
   })
 
   it('cannot be sent with nothing written', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     expect(session.state().canSubmit).toBe(false)
     expect(session.submit().marked).toBe(false)
   })
 
   it('can be sent as soon as one stroke is there', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     expect(session.addStroke(traced(perfect(0))).canSubmit).toBe(true)
   })
 
   it('takes no more ink once the お題 has been sent', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(perfect(0)))
     session.submit()
     expect(session.addStroke(traced(perfect(1), 1000)).writtenStrokes).toBe(1)
@@ -245,44 +244,44 @@ describe('writing, before anything is sent', () => {
 
 describe('sending an お題 written correctly', () => {
   it('marks every stroke right and counts them all', () => {
-    const { state } = sendAllPerfectly('practice')
+    const { state } = sendAllPerfectly()
     expect(state.marked).toBe(true)
     expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
     expect(state.score).toEqual({ correct: strokes.length, total: strokes.length })
   })
 
   it('forgives hand wobble', () => {
-    const { state } = send('practice', wobbled(0, 2.5))
+    const { state } = send(wobbled(0, 2.5))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
   it('forgives a properly shaky finger', () => {
-    const { state } = send('practice', wobbled(0, 5))
+    const { state } = send(wobbled(0, 5))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
   it('forgives a stroke written a little off centre', () => {
-    const { state } = send('practice', shifted(0, 4, 4))
+    const { state } = send(shifted(0, 4, 4))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
   it('forgives a stroke written well off centre, as a finger writes', () => {
-    const { state } = send('practice', shifted(0, 9, 9))
+    const { state } = send(shifted(0, 9, 9))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
   it('forgives a whole character written off to one side of the square', () => {
-    const { state } = send('practice', ...strokes.map((_, n) => shifted(n, 22, 16)))
+    const { state } = send(...strokes.map((_, n) => shifted(n, 22, 16)))
     expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
   })
 
   it('forgives a whole character written high in the square', () => {
-    const { state } = send('practice', ...strokes.map((_, n) => shifted(n, 0, -20)))
+    const { state } = send(...strokes.map((_, n) => shifted(n, 0, -20)))
     expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
   })
 
   it('forgives a stroke that stops a fifth short of the end', () => {
-    const { state } = send('practice', truncated(0, 0.8))
+    const { state } = send(truncated(0, 0.8))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
@@ -303,25 +302,24 @@ describe('sending an お題 written correctly', () => {
 describe('a stroke that is close but not good enough', () => {
   it('is wrong when it sits out of place inside the character', () => {
     const { state } = send(
-      'practice',
       ...strokes.map((_, n) => (n === 2 ? shifted(2, 17, 17) : perfect(n))),
     )
     expect(state.outcomes[2]!.correct).toBe(false)
   })
 
   it('is wrong when it leans noticeably', () => {
-    const { state } = send('practice', rotated(0, 45))
+    const { state } = send(rotated(0, 45))
     expect(state.outcomes[0]!.correct).toBe(false)
   })
 
   it('is wrong when it stops half way', () => {
-    const { state } = send('practice', truncated(0, 0.5))
+    const { state } = send(truncated(0, 0.5))
     expect(state.outcomes[0]!.correct).toBe(false)
   })
 
   it('is wrong when a curve is drawn as a straight line', () => {
     // The second stroke of 日 turns a corner; a ruled line is not that stroke.
-    const { state } = send('practice', perfect(0), straightened(1))
+    const { state } = send(perfect(0), straightened(1))
     expect(state.outcomes[1]!.correct).toBe(false)
   })
 
@@ -356,12 +354,12 @@ describe('a stroke that is close but not good enough', () => {
 
 describe('a stroke that is plainly wrong', () => {
   it('is marked as written from the wrong end', () => {
-    const { state } = send('practice', reversed(0))
+    const { state } = send(reversed(0))
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'backwards' })
   })
 
   it('is marked as barely moving', () => {
-    const { state } = send('practice', truncated(0, 0.15))
+    const { state } = send(truncated(0, 0.15))
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'tooShort' })
   })
 
@@ -372,7 +370,6 @@ describe('a stroke that is plainly wrong', () => {
    */
   it('is marked as out of place when it starts and ends well away', () => {
     const { state } = send(
-      'practice',
       ...strokes.map((_, n) => (n === 0 ? shifted(0, 40, 0) : perfect(n))),
     )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'misplaced' })
@@ -380,7 +377,6 @@ describe('a stroke that is plainly wrong', () => {
 
   it('is marked as the wrong shape when it wanders off on the way', () => {
     const { state } = send(
-      'practice',
       ...strokes.map((_, n) => (n === 0 ? bulged(0, 35) : perfect(n))),
     )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'shape' })
@@ -389,27 +385,27 @@ describe('a stroke that is plainly wrong', () => {
 
 describe('marking what was written against what the お題 needs', () => {
   it('takes the strokes in the order they were written', () => {
-    const { state } = send('practice', perfect(1), perfect(0))
+    const { state } = send(perfect(1), perfect(0))
     expect(state.outcomes[0]!.correct).toBe(false)
     expect(state.outcomes[1]!.correct).toBe(false)
   })
 
   it('counts a stroke too many as wrong', () => {
-    const { state } = send('practice', ...strokes.map((_, n) => perfect(n)), perfect(0))
+    const { state } = send(...strokes.map((_, n) => perfect(n)), perfect(0))
     expect(state.outcomes).toHaveLength(strokes.length + 1)
     expect(state.outcomes[strokes.length]).toEqual({ correct: false, problem: 'extra' })
     expect(state.score).toEqual({ correct: strokes.length, total: strokes.length + 1 })
   })
 
   it('counts a stroke never written as wrong', () => {
-    const { state } = send('practice', perfect(0), perfect(1))
+    const { state } = send(perfect(0), perfect(1))
     expect(state.outcomes).toHaveLength(strokes.length)
     expect(state.outcomes[2]).toEqual({ correct: false, problem: 'missing' })
     expect(state.outcomes[3]).toEqual({ correct: false, problem: 'missing' })
   })
 
   it('marks an お題 wrong when a single stroke was wrong', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     for (let n = 1; n < strokes.length; n++) session.addStroke(traced(perfect(n), n * 1000))
     expect(session.submit().results[0]).toEqual({ item: '日', firstTimeCorrect: false })
@@ -417,7 +413,7 @@ describe('marking what was written against what the お題 needs', () => {
 })
 
 describe('writing one お題 after another', () => {
-  const run = () => begin('practice', '一', '人')
+  const run = () => begin('一', '人')
 
   it('says which お題 of how many is in hand', () => {
     const state = run().state()
@@ -466,7 +462,7 @@ describe('writing one お題 after another', () => {
 
 describe('counting the first 送信 and no other', () => {
   it('keeps the stroke count of the first attempt when the お題 is rewritten', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     for (let n = 1; n < strokes.length; n++) session.addStroke(traced(perfect(n), n * 1000))
     const first = session.submit().score
@@ -477,7 +473,7 @@ describe('counting the first 送信 and no other', () => {
   })
 
   it('hands the same count back with the attempt', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     session.submit()
     expect(session.attempt(1)?.score).toEqual({ correct: 0, total: strokes.length })
@@ -485,7 +481,7 @@ describe('counting the first 送信 and no other', () => {
 })
 
 describe('writing an お題 again', () => {
-  const run = () => begin('practice', '日', '一')
+  const run = () => begin('日', '一')
 
   it('hands back a clean square when the learner asks', () => {
     const session = run()
@@ -531,7 +527,7 @@ describe('writing an お題 again', () => {
 
 describe('looking back at what was written', () => {
   it('keeps what was written for each お題 of the run', () => {
-    const session = begin('practice', '日', '一')
+    const session = begin('日', '一')
     writeCharacter(session, '日')
     session.submit()
     session.nextItem()
@@ -543,14 +539,14 @@ describe('looking back at what was written', () => {
   })
 
   it('carries the marking with it', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     session.submit()
     expect(session.attempt(1)?.outcomes[0]).toEqual({ correct: false, problem: 'backwards' })
   })
 
   it('replaces it when the お題 is written again', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     session.addStroke(traced(reversed(0)))
     session.submit()
     session.retryItem()
@@ -561,33 +557,22 @@ describe('looking back at what was written', () => {
   })
 
   it('has nothing for an お題 that has not been sent', () => {
-    const session = begin('practice', '日', '一')
+    const session = begin('日', '一')
     writeCharacter(session, '日')
     expect(session.attempt(1)).toBeNull()
     expect(session.attempt(2)).toBeNull()
-  })
-
-  it('is kept from a test until the run is finished', () => {
-    const session = begin('test', '一', '人')
-    writeCharacter(session, '一')
-    session.submit()
-    expect(session.attempt(1)).toBeNull()
-    session.nextItem()
-    writeCharacter(session, '人')
-    session.submit()
-    expect(session.attempt(1)?.item).toBe('一')
   })
 })
 
 describe('counting a run', () => {
   it('records each お題 as it is sent', () => {
-    const session = begin('practice', '日', '一')
+    const session = begin('日', '一')
     writeCharacter(session, '日')
     expect(session.submit().results).toEqual([{ item: '日', firstTimeCorrect: true }])
   })
 
   it('counts an お題 as right only when every stroke was right first time', () => {
-    const session = begin('practice', '日', '一')
+    const session = begin('日', '一')
     session.addStroke(traced(reversed(0)))
     session.submit()
     expect(session.state().runScore).toEqual({ correct: 0, total: 2 })
@@ -597,104 +582,71 @@ describe('counting a run', () => {
   })
 })
 
-describe('a test keeps its marking back', () => {
-  const run = () => begin('test', '一', '人')
-
-  it('says nothing when an お題 is sent part way through the run', () => {
-    const session = run()
-    writeCharacter(session, '一')
-    const state = session.submit()
-    expect(state.marked).toBe(true)
-    expect(state.outcomes).toEqual([])
-    expect(state.score).toBeNull()
-    expect(state.results).toEqual([])
-    expect(state.navigationCharacters).toEqual([])
-  })
-
-  it('hands over every result once the run is finished', () => {
-    const session = run()
-    writeCharacter(session, '一')
-    session.submit()
-    session.nextItem()
-    writeCharacter(session, '人')
-    const state = session.submit()
-    expect(state.phase).toBe('finished')
-    expect(state.results).toEqual([
-      { item: '一', firstTimeCorrect: true },
-      { item: '人', firstTimeCorrect: true },
-    ])
-  })
-})
 
 describe('the hint while writing, which runs one stroke ahead', () => {
-  const practising = () => begin('practice', '日')
+  const writing = () => begin('日')
 
   it('points at the first stroke before the learner has put a finger down', () => {
-    expect(practising().state().navigationStroke).toBe(0)
+    expect(writing().state().navigationStroke).toBe(0)
   })
 
   it('stays on it while that stroke has barely begun', () => {
-    const session = practising()
+    const session = writing()
     expect(session.traceStroke(traced(truncated(0, 0.2))).navigationStroke).toBe(0)
   })
 
   it('points at the next stroke once the one in hand is half written', () => {
-    const session = practising()
+    const session = writing()
     expect(session.traceStroke(traced(truncated(0, 0.6))).navigationStroke).toBe(1)
   })
 
   it('is already there when the stroke in hand lands on the paper', () => {
-    const session = practising()
+    const session = writing()
     session.traceStroke(traced(truncated(0, 0.6)))
     expect(session.addStroke(traced(perfect(0))).navigationStroke).toBe(1)
   })
 
   it('keeps running ahead as the お題 is written', () => {
-    const session = practising()
+    const session = writing()
     session.addStroke(traced(perfect(0)))
     expect(session.traceStroke(traced(truncated(1, 0.6))).navigationStroke).toBe(2)
   })
 
   it('has nothing to point at beyond the last stroke', () => {
-    const session = practising()
+    const session = writing()
     strokes.slice(0, -1).forEach((_, index) => session.addStroke(traced(perfect(index))))
     expect(session.traceStroke(traced(truncated(strokes.length - 1, 0.6))).navigationStroke).toBeNull()
   })
 
-  it('never appears in a test', () => {
-    const session = begin('test', '日')
-    expect(session.traceStroke(traced(truncated(0, 0.6))).navigationStroke).toBeNull()
-  })
-
   it('stops once the お題 has been sent', () => {
-    const { state } = sendAllPerfectly('practice')
+    const { state } = sendAllPerfectly()
     expect(state.navigationStroke).toBeNull()
   })
 })
 
 describe('the hint after marking, which shows the answer', () => {
   it('walks the お題 that went wrong', () => {
-    const { state } = send('practice', reversed(0))
+    const { state } = send(reversed(0))
     expect(state.navigationCharacters).toEqual([0])
   })
 
   it('walks an お題 with a stroke missing', () => {
-    const { state } = send('practice', perfect(0))
+    const { state } = send(perfect(0))
     expect(state.navigationCharacters).toEqual([0])
   })
 
   it('leaves an お題 written correctly alone', () => {
-    const { state } = sendAllPerfectly('practice')
+    const { state } = sendAllPerfectly()
     expect(state.navigationCharacters).toEqual([])
   })
 
   it('says nothing before the お題 has been sent', () => {
-    const session = begin('practice', '日')
+    const session = begin('日')
     expect(session.addStroke(traced(reversed(0))).navigationCharacters).toEqual([])
   })
 
   it('goes away when the お題 is written again', () => {
-    const { session } = send('practice', reversed(0))
+    const { session } = send(reversed(0))
     expect(session.retryItem().navigationCharacters).toEqual([])
   })
 })

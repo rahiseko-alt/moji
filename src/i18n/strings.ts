@@ -8,8 +8,6 @@
 import type { Language } from '../app/choices'
 
 export type Strings = {
-  readonly practice: string
-  readonly test: string
   readonly rotateToLandscape: string
   readonly sources: string
   readonly close: string
@@ -46,8 +44,6 @@ export type Strings = {
 
 export const STRINGS: Record<Language, Strings> = {
   ja: {
-    practice: '練習',
-    test: 'テスト',
     rotateToLandscape: 'スマホを横にしてください',
     sources: '出典',
     close: '閉じる',
@@ -71,8 +67,6 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: '漢字',
   },
   en: {
-    practice: 'Practice',
-    test: 'Test',
     rotateToLandscape: 'Please turn your phone sideways',
     sources: 'Sources',
     close: 'Close',
@@ -96,8 +90,6 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: 'Kanji',
   },
   vi: {
-    practice: 'Luyện tập',
-    test: 'Kiểm tra',
     rotateToLandscape: 'Vui lòng xoay ngang điện thoại',
     sources: 'Nguồn',
     close: 'Đóng',
@@ -121,8 +113,6 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: 'Kanji',
   },
   ne: {
-    practice: 'अभ्यास',
-    test: 'परीक्षा',
     rotateToLandscape: 'कृपया फोन तेर्सो पार्नुहोस्',
     sources: 'स्रोतहरू',
     close: 'बन्द गर्नुहोस्',

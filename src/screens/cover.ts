@@ -1,21 +1,12 @@
 /**
  * The cover: the first thing a learner sees after scanning the classroom QR
- * code. It carries the school's seal, and asks for the only two things the app
- * needs before it can start — which language to speak, and whether this is
- * practice or a test.
+ * code. It carries the school's seal, and asks for the only thing the app needs
+ * before it can start — which language to speak.
  */
-import {
-  LANGUAGES,
-  LANGUAGE_ENDONYMS,
-  MODES,
-  type ChoicesStore,
-  type Language,
-  type Mode,
-} from '../app/choices'
+import { LANGUAGES, LANGUAGE_ENDONYMS, type ChoicesStore, type Language } from '../app/choices'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { mountCredits } from './credits'
-import { STRINGS } from '../i18n/strings'
 import './cover.css'
 
 export function mountCover(
@@ -29,14 +20,14 @@ export function mountCover(
     <div class="cover__frame">
       <div class="cover__controls">
         <div class="cover__languages" role="group"></div>
-        <div class="cover__modes" role="group"></div>
+        <button type="button" class="cover__start">START</button>
       </div>
     </div>`
 
   const credits = mountCredits(requireElement<HTMLElement>(screen, '.cover__frame'), choices)
 
   const languageRow = requireElement<HTMLDivElement>(screen, '.cover__languages')
-  const modeRow = requireElement<HTMLDivElement>(screen, '.cover__modes')
+  const start = requireElement<HTMLButtonElement>(screen, '.cover__start')
 
   const languageButtons = new Map<Language, HTMLButtonElement>()
   for (const language of LANGUAGES) {
@@ -50,28 +41,14 @@ export function mountCover(
     languageRow.append(button)
   }
 
-  const modeButtons = new Map<Mode, HTMLButtonElement>()
-  for (const mode of MODES) {
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'cover__mode'
-    button.addEventListener('click', () => {
-      choices.setMode(mode)
-      onStart()
-    })
-    modeButtons.set(mode, button)
-    modeRow.append(button)
-  }
+  // The one word on the cover that is not translated: a learner who cannot yet
+  // read any of the four languages can still see where to press.
+  start.addEventListener('click', onStart)
 
   const render = (): void => {
-    const { language, mode } = choices.get()
+    const { language } = choices.get()
     for (const [candidate, button] of languageButtons) {
       button.setAttribute('aria-pressed', String(candidate === language))
-    }
-    for (const [candidate, button] of modeButtons) {
-      button.lang = language
-      button.textContent = STRINGS[language][candidate]
-      button.setAttribute('aria-pressed', String(candidate === mode))
     }
   }
 

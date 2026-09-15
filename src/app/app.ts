@@ -32,7 +32,6 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
 
   const toChooser = (): void => {
     const session = createWritingSession({
-      mode: choices.get().mode ?? 'practice',
       // The chooser keeps はじめる out of reach until the data has landed, so a
       // run never begins on the empty stand-in below.
       strokesOf: (character) => {
