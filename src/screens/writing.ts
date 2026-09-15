@@ -94,12 +94,18 @@ export function mountWriting(
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
-    // While an お題 is being looked back at, the count belongs to that one
-    // rather than to the one in hand.
+    // While an お題 is being looked back at, the verdict belongs to that one
+    // rather than to the one in hand. An お題 is 一発正解 or it is not: every
+    // stroke right at the first 送信, or not, and which strokes went wrong is
+    // already on the paper in red.
     const reviewed = reviewing === null ? null : session.attempt(reviewing)
     const showing = reviewed ? reviewed.score : state.score
     score.hidden = showing === null
-    if (showing) score.textContent = strings.strokeScore(showing.correct, showing.total)
+    if (showing) {
+      const allRight = showing.correct === showing.total
+      score.textContent = allRight ? strings.correct : strings.incorrect
+      score.dataset.correct = String(allRight)
+    }
 
     // The results sit above the paper rather than over it: the answer walks
     // through the last お題 as they appear, and a card in the way would hide the

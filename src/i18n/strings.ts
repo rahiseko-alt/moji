@@ -22,8 +22,13 @@ export type Strings = {
   readonly quitRunQuestion: (remaining: number) => string
   readonly yes: string
   readonly no: string
-  /** e.g. "10画中8画正解" — how many strokes were right at the first attempt. */
-  readonly strokeScore: (correct: number, total: number) => string
+  /**
+   * How the お題 just sent went. It is one or the other: every stroke right at
+   * the first 送信, or not. A count of strokes says nothing a learner can act
+   * on — the red ink already shows which ones went wrong.
+   */
+  readonly correct: string
+  readonly incorrect: string
   /** Chooses every character of the kind on show, or takes them all back out. */
   readonly all: string
   /** Begins writing the characters that have been chosen. */
@@ -61,7 +66,8 @@ export const STRINGS: Record<Language, Strings> = {
     quitRunQuestion: (remaining) => `あと${remaining}字あります。やめますか`,
     yes: 'はい',
     no: 'いいえ',
-    strokeScore: (correct, total) => `${total}画中${correct}画正解`,
+    correct: '正解',
+    incorrect: '不正解',
     all: 'ぜんぶ',
     start: 'はじめる',
     submit: '送信',
@@ -84,7 +90,8 @@ export const STRINGS: Record<Language, Strings> = {
     quitRunQuestion: (remaining) => `${remaining} characters to go. Stop?`,
     yes: 'Yes',
     no: 'No',
-    strokeScore: (correct, total) => `${correct} of ${total} strokes correct`,
+    correct: 'Correct',
+    incorrect: 'Not correct',
     all: 'All',
     start: 'Start',
     submit: 'Send',
@@ -107,7 +114,8 @@ export const STRINGS: Record<Language, Strings> = {
     quitRunQuestion: (remaining) => `Còn ${remaining} chữ. Dừng lại?`,
     yes: 'Có',
     no: 'Không',
-    strokeScore: (correct, total) => `Đúng ${correct}/${total} nét`,
+    correct: 'Đúng',
+    incorrect: 'Chưa đúng',
     all: 'Tất cả',
     start: 'Bắt đầu',
     submit: 'Gửi',
@@ -130,7 +138,8 @@ export const STRINGS: Record<Language, Strings> = {
     quitRunQuestion: (remaining) => `${remaining} अक्षर बाँकी छन्। रोक्ने?`,
     yes: 'हो',
     no: 'होइन',
-    strokeScore: (correct, total) => `${total} मध्ये ${correct} स्ट्रोक सही`,
+    correct: 'सही',
+    incorrect: 'गलत',
     all: 'सबै',
     start: 'सुरु',
     submit: 'पठाउनुहोस्',

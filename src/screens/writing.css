@@ -47,6 +47,11 @@
   color: var(--ink);
 }
 
+/* Wrong reads in the same vermilion as the ink it is talking about. */
+.writing__score[data-correct='false'] {
+  color: var(--vermilion);
+}
+
 .writing__score[hidden] {
   display: none;
 }
