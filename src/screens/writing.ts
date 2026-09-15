@@ -30,6 +30,7 @@ export function mountWriting(
       <p class="writing__progress" hidden></p>
       <p class="writing__score" hidden></p>
       <div class="writing__actions">
+        <button type="button" class="writing__submit"></button>
         <button type="button" class="writing__retry" hidden></button>
         <button type="button" class="writing__next" hidden></button>
       </div>
@@ -45,6 +46,7 @@ export function mountWriting(
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
   const progress = requireElement<HTMLParagraphElement>(screen, '.writing__progress')
   const score = requireElement<HTMLParagraphElement>(screen, '.writing__score')
+  const submit = requireElement<HTMLButtonElement>(screen, '.writing__submit')
   const retry = requireElement<HTMLButtonElement>(screen, '.writing__retry')
   const next = requireElement<HTMLButtonElement>(screen, '.writing__next')
   const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
@@ -74,6 +76,7 @@ export function mountWriting(
     const strings = STRINGS[choices.get().language]
     const state = session.state()
     home.textContent = strings.home
+    submit.textContent = strings.submit
     next.textContent = strings.next
     retry.textContent = strings.retry
     confirm.setAnswers(strings.yes, strings.no)
@@ -82,9 +85,9 @@ export function mountWriting(
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
-    // The session holds a test's results back until the run is over, so there
+    // The session holds a test's marking back until the run is over, so there
     // is simply nothing to show until then.
-    score.hidden = !state.characterFinished || state.score === null
+    score.hidden = state.score === null
     if (state.score) score.textContent = strings.strokeScore(state.score.correct, state.score.total)
 
     // The summary lies over the last character, which stays on the paper below it.
@@ -106,9 +109,12 @@ export function mountWriting(
       }),
     )
 
+    // Sending is the only way on, and only once something is on the paper.
+    submit.hidden = state.marked
+    submit.disabled = !state.canSubmit
     // At the end of the run there is nowhere to go on to: the summary is there.
-    next.hidden = !state.characterFinished || state.remaining === 0
-    retry.hidden = !state.characterFinished
+    next.hidden = !state.marked || state.remaining === 0
+    retry.hidden = !state.marked
   }
 
   /** Puts a fresh cell up for the character the run is now on. */
@@ -118,7 +124,7 @@ export function mountWriting(
     const state = session.state()
     const mode = modeNow()
 
-    if (data && state.character && !state.characterFinished) {
+    if (data && state.character && !state.marked) {
       model = strokesFor(data, state.character)
       surface = createWritingSurface({
         // A test shows no model: the whole point is writing it from memory.
@@ -128,16 +134,9 @@ export function mountWriting(
           showHint(session.traceStroke(points))
         },
         onStrokeFinished(points) {
-          const written = session.writeStroke(points)
-          // In practice a wrong stroke is shown back in red and taken away, so the
-          // learner never leaves a wrong shape sitting on the paper. A test takes
-          // what it is given and says nothing until the end.
-          if (mode === 'practice' && written.lastVerdict?.correct === false) {
-            surface!.rejectLastStroke()
-          }
-          // Nothing is left to judge, so further ink would sit there unanswered.
-          if (written.characterFinished) surface!.stopAcceptingStrokes()
-          showHint(written)
+          // Nothing is judged here: the stroke goes on the paper and stays
+          // there until the learner sends the お題 (ADR 0009).
+          showHint(session.addStroke(points))
           render()
         },
       })
@@ -151,6 +150,18 @@ export function mountWriting(
   void loadStrokeData().then((loaded) => {
     data = loaded
     showCharacter()
+  })
+
+  submit.addEventListener('click', () => {
+    const state = session.submit()
+    if (!state.marked) return
+    // The ink stays where it is; the marking only colours it.
+    surface?.stopAcceptingStrokes()
+    surface?.setNavigation(null)
+    surface?.markWrong(
+      state.outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
+    )
+    render()
   })
 
   next.addEventListener('click', () => {

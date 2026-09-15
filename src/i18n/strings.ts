@@ -27,7 +27,9 @@ export type Strings = {
   readonly all: string
   /** Begins writing the characters that have been chosen. */
   readonly start: string
-  /** Leaves the finished character for the next one of the run. */
+  /** Sends the お題 to be marked. Nothing is judged before this. */
+  readonly submit: string
+  /** Leaves the marked お題 for the next one of the run. */
   readonly next: string
   /** Wipes the finished character so it can be written again. */
   readonly retry: string
@@ -56,6 +58,7 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${total}画中${correct}画正解`,
     all: 'ぜんぶ',
     start: 'はじめる',
+    submit: '送信',
     next: '次へ',
     retry: 'やり直す',
     progress: (position, total) => `${position} / ${total}`,
@@ -79,6 +82,7 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${correct} of ${total} strokes correct`,
     all: 'All',
     start: 'Start',
+    submit: 'Send',
     next: 'Next',
     retry: 'Again',
     progress: (position, total) => `${position} / ${total}`,
@@ -102,6 +106,7 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `Đúng ${correct}/${total} nét`,
     all: 'Tất cả',
     start: 'Bắt đầu',
+    submit: 'Gửi',
     next: 'Tiếp theo',
     retry: 'Viết lại',
     progress: (position, total) => `${position} / ${total}`,
@@ -125,6 +130,7 @@ export const STRINGS: Record<Language, Strings> = {
     strokeScore: (correct, total) => `${total} मध्ये ${correct} स्ट्रोक सही`,
     all: 'सबै',
     start: 'सुरु',
+    submit: 'पठाउनुहोस्',
     next: 'अर्को',
     retry: 'फेरि',
     progress: (position, total) => `${position} / ${total}`,

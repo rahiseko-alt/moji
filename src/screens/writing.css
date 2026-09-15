@@ -84,9 +84,27 @@
 }
 
 .writing__progress[hidden],
+.writing__submit[hidden],
 .writing__retry[hidden],
 .writing__next[hidden] {
   display: none;
+}
+
+/* The one way on while writing. Dim until there is something to send. */
+.writing__submit {
+  padding: 0.35rem 1.4rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 2px;
+  background: var(--vermilion);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--on-vermilion);
+}
+
+.writing__submit:disabled {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+  color: var(--ink-soft);
 }
 
 .writing__actions {

@@ -3,8 +3,9 @@
  *
  * It draws three things — the dotted guide, the faint model character, and the
  * ink the learner lays down — and reports each finished stroke as a list of
- * points. It holds no opinion about whether a stroke was right; that is the
- * writing session's job (#6).
+ * points. It holds no opinion about whether a stroke was right; the writing
+ * session says so at 送信 (ADR 0009), and the ink then turns red where it was
+ * wrong. Nothing is ever taken off the paper.
  */
 import type { Point, Stroke } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
@@ -27,8 +28,6 @@ const MODEL_WIDTH = 5
 const INK_WIDTH = 5.5
 /** Below this, a touch is a tap rather than a stroke, and is discarded. */
 const MINIMUM_STROKE_LENGTH = 2
-/** Long enough to see what was written before it is taken away, short enough not to nag. */
-const REJECTION_MS = 650
 /** One trip of the hint along a stroke. Brisk, but still a movement rather than a flash. */
 const NAVIGATION_MS = 800
 /** The pause at the end of a trip, before it starts over. */
@@ -36,8 +35,8 @@ const NAVIGATION_REST_MS = 250
 
 export type WritingSurface = {
   readonly element: HTMLElement
-  /** Shows the last stroke in red for a moment, then takes it off the paper. */
-  rejectLastStroke(): void
+  /** Turns the given strokes red: the marking said they were wrong. */
+  markWrong(strokes: readonly number[]): void
   /** Stops taking ink, for once the character is finished and there is nothing left to judge. */
   stopAcceptingStrokes(): void
   /**
@@ -60,12 +59,11 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   const context = canvas.getContext('2d')
   if (!context) throw new Error('This browser cannot draw on a canvas')
 
-  /** Only strokes the session accepted. A refused one is moved out at once. */
-  const accepted: TracedPoint[][] = []
+  /** Everything the learner has written, right or wrong. Nothing is removed. */
+  const written: TracedPoint[][] = []
+  /** Which of them the marking called wrong. */
+  const wrong = new Set<number>()
   let inProgress: TracedPoint[] | null = null
-  /** The refused stroke being shown back in red before it disappears. */
-  let rejectedStroke: TracedPoint[] | null = null
-  let rejectionTimer: ReturnType<typeof setTimeout> | null = null
   /** Goes false once the character is finished, so no more ink can be laid down. */
   let accepting = true
   /** The stroke the hint is walking along, if the learner has stalled. */
@@ -117,13 +115,12 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     for (const stroke of options.model) context.stroke(new Path2D(stroke.d))
 
     context.lineWidth = INK_WIDTH
-    context.strokeStyle = colour('--ink')
-    for (const stroke of accepted) strokePolyline(stroke)
-    if (inProgress) strokePolyline(inProgress)
-    if (rejectedStroke) {
-      context.strokeStyle = colour('--wrong')
-      strokePolyline(rejectedStroke)
+    for (const [index, stroke] of written.entries()) {
+      context.strokeStyle = colour(wrong.has(index) ? '--wrong' : '--ink')
+      strokePolyline(stroke)
     }
+    context.strokeStyle = colour('--ink')
+    if (inProgress) strokePolyline(inProgress)
 
     if (navigation) drawNavigation()
   }
@@ -203,19 +200,10 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     return total
   }
 
-  const clearRejection = (): void => {
-    if (rejectionTimer) clearTimeout(rejectionTimer)
-    rejectionTimer = null
-    rejectedStroke = null
-  }
-
   const onPointerDown = (event: PointerEvent): void => {
     // A resting palm or a second finger must not take over the stroke, and it
     // must not silently swallow the one the learner is drawing either.
     if (!event.isPrimary || inProgress || !accepting) return
-    // Starting to write answers the refused stroke: take it away now rather
-    // than letting its timer pull the rug from under what is being written.
-    clearRejection()
     canvas.setPointerCapture(event.pointerId)
     inProgress = [toCharacterSpace(event)]
     draw()
@@ -238,9 +226,9 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       draw()
       return
     }
-    accepted.push(points)
+    written.push(points)
     draw()
-    // The session judges it here and may call rejectLastStroke() straight back.
+    // The session only takes it down; judging waits for 送信.
     options.onStrokeFinished(points)
   }
 
@@ -255,17 +243,10 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   return {
     element,
-    rejectLastStroke() {
-      const stroke = accepted.pop()
-      if (!stroke) return
-      clearRejection()
-      rejectedStroke = stroke
+    markWrong(strokes) {
+      wrong.clear()
+      for (const index of strokes) wrong.add(index)
       draw()
-      rejectionTimer = setTimeout(() => {
-        rejectionTimer = null
-        rejectedStroke = null
-        draw()
-      }, REJECTION_MS)
     },
     stopAcceptingStrokes() {
       accepting = false
@@ -282,9 +263,8 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
         draw()
       }
     },
-    hasInk: () => accepted.length > 0 || inProgress !== null,
+    hasInk: () => written.length > 0 || inProgress !== null,
     destroy() {
-      if (rejectionTimer) clearTimeout(rejectionTimer)
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
       observer.disconnect()
     },

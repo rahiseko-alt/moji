@@ -1,25 +1,22 @@
 /**
- * まとめ書き: choosing characters, then writing them one after another.
+ * まとめ書き: choosing お題, writing them, and marking each one when it is sent.
  *
- * This is where the app decides what happens next: which characters are in the
- * run and in what order, which one is in hand, whether the stroke just written
- * was the one being waited for, whether the learner has to write it again, when
- * to offer a hint, and when the run is over. Nothing here draws anything, and
+ * This is where the app decides what happens next: which お題 are in the run and
+ * in what order, which one is in hand, what has been written on it, what the
+ * marking said, and when the run is over. Nothing here draws anything, and
  * nothing here knows about fingers or canvases — which is what makes it the one
  * place worth testing thoroughly (ADR 0004).
  *
- * In practice, a wrong stroke is refused and the same stroke is waited for
- * again, so a learner never builds the muscle memory of a wrong shape. In a
- * test, every stroke is taken as written and judged at the end, with no model
- * and no hint.
+ * Nothing is judged until it is sent (ADR 0009). A learner writes the whole お題
+ * with no interruption; 送信 marks every stroke at once, and the screen shows the
+ * wrong ones in red and walks the hint through the characters that went wrong.
  *
- * The hint runs one stroke ahead: once a learner is about halfway through the
- * stroke in hand, it already shows where the next one begins. Waiting until the
- * current stroke is finished arrives too late to be of any use.
+ * The hint also runs ahead while writing: once a learner is about halfway
+ * through the stroke in hand, it shows where the next one begins.
  */
 import type { Stroke } from '../data/stroke-data'
 import { length } from './polyline'
-import { DEFAULT_THRESHOLDS, matchStroke, type MistakeReason, type StrokeVerdict } from './stroke-matcher'
+import { DEFAULT_THRESHOLDS, matchStroke, type MistakeReason } from './stroke-matcher'
 import { asPoint, type TracedPoint } from './traced-point'
 
 /** How much of the stroke in hand has to be drawn before the hint moves on. */
@@ -27,84 +24,97 @@ const HINT_MOVES_ON_AT = 0.5
 
 export type SessionMode = 'practice' | 'test'
 
+/** What was wrong with one stroke: how it was drawn, or that it is not a stroke of this character. */
+export type StrokeProblem =
+  | MistakeReason
+  /** The model has this stroke but the learner never wrote it. */
+  | 'missing'
+  /** The learner wrote this stroke but the model has no such stroke. */
+  | 'extra'
+
 export type StrokeOutcome = {
-  /** Has this stroke been written acceptably yet? */
-  readonly done: boolean
-  /** Right the first time it was attempted — what the score counts. */
-  readonly firstTimeCorrect: boolean
-  readonly attempts: number
-  /** Why the most recent wrong attempt was wrong. Kept for the whole session. */
-  readonly lastMistake: MistakeReason | null
+  readonly correct: boolean
+  readonly problem: StrokeProblem | null
 }
 
-/** How one character of the run went, settled the first time it was written. */
+/** How one お題 went, settled the first time it was sent. */
 export type CharacterResult = {
   readonly character: string
-  /** Every one of its strokes was right at the first attempt. */
+  /** Every stroke was right at the first 送信. */
   readonly firstTimeCorrect: boolean
 }
 
 export type WritingSessionState = {
-  /** Choosing characters, writing them, or done with the lot. */
+  /** Choosing お題, writing them, or done with the lot. */
   readonly phase: 'choosing' | 'writing' | 'finished'
-  /** The characters of the run, in the order they were chosen. */
+  /** The お題 of the run, in the order they were chosen. */
   readonly chosen: readonly string[]
-  /** Which character of the run is in hand, counting from one. Zero when not writing. */
+  /** Which お題 of the run is in hand, counting from one. Zero when not writing. */
   readonly position: number
-  /** The character in hand, or null while still choosing. It stays in hand at the end. */
+  /** The お題 in hand, or null while still choosing. It stays in hand at the end. */
   readonly character: string | null
-  /** Every stroke of the character in hand is written; it can be left or written again. */
-  readonly characterFinished: boolean
-  /** Index of the stroke being waited for; equal to the stroke count once the character is done. */
-  readonly awaitingStroke: number
-  /** How each stroke of the character in hand has gone. */
-  readonly outcomes: readonly StrokeOutcome[]
-  /** The verdict on the stroke most recently written, if any. */
-  readonly lastVerdict: StrokeVerdict | null
+  /** お題 still to come after the one in hand. */
+  readonly remaining: number
+  /** How many strokes are on the paper for the お題 in hand. */
+  readonly writtenStrokes: number
+  /** Is there something to send, and has it not been sent yet? */
+  readonly canSubmit: boolean
+  /** Has the お題 in hand been sent and marked? */
+  readonly marked: boolean
   /**
-   * Which stroke the hint should point at, or null for no hint. From halfway
-   * through the stroke in hand it points at the one after it. Nothing is shown
-   * for the very first stroke until the learner has got it wrong once.
+   * One per stroke, once the お題 has been marked: the strokes the learner wrote,
+   * then any the model has and they never wrote. Empty before 送信, and while a
+   * test keeps its marking back.
+   */
+  readonly outcomes: readonly StrokeOutcome[]
+  /**
+   * Which stroke the hint should point at while writing, or null. From halfway
+   * through the stroke in hand it points at the one after it. The first stroke
+   * is never pointed at: that one the learner attempts on their own.
    */
   readonly navigationStroke: number | null
   /**
-   * Strokes of the character in hand written correctly at the first attempt,
-   * or null while a test keeps them back.
+   * Which characters of the お題 the hint should walk through after marking,
+   * because something in them was wrong. Empty when nothing was.
    */
+  readonly navigationCharacters: readonly number[]
+  /** Strokes of the お題 in hand written correctly at the first 送信, or null while held back. */
   readonly score: { readonly correct: number; readonly total: number } | null
-  /** Characters of the run still to come after the one in hand. */
-  readonly remaining: number
-  /** Characters of the run written correctly at the first attempt, out of them all. */
+  /** お題 written correctly at the first 送信, out of them all. */
   readonly runScore: { readonly correct: number; readonly total: number }
   /**
-   * How the characters written so far went, in the order they were written.
-   * A test holds them all back until the run is finished.
+   * How the お題 written so far went, in order. A test holds them all back until
+   * the run is finished.
    */
   readonly results: readonly CharacterResult[]
 }
 
 export type WritingSession = {
   state(): WritingSessionState
-  /** Adds a character to the run, or takes it out again if it is already in. */
+  /** Adds an お題 to the run, or takes it out again if it is already in. */
   chooseCharacter(character: string): WritingSessionState
   /**
    * Adds a whole kind of character at once — or, when every one of them is
    * already in the run, takes that kind back out.
    */
   chooseAll(characters: readonly string[]): WritingSessionState
-  /** Begins writing the chosen characters. Does nothing if none were chosen. */
+  /** Begins writing the chosen お題. Does nothing if none were chosen. */
   start(): WritingSessionState
   /**
    * The stroke being drawn right now, as far as it has got. Once it is about
    * half as long as the one it is tracing, the hint moves on to the next stroke.
    */
   traceStroke(points: readonly TracedPoint[]): WritingSessionState
-  /** Judges one finished stroke and moves the session on. */
-  writeStroke(points: readonly TracedPoint[]): WritingSessionState
-  /** Leaves the character in hand for the next one, once it has been written. */
+  /** Takes one finished stroke onto the paper. Nothing is judged here. */
+  addStroke(points: readonly TracedPoint[]): WritingSessionState
+  /** Marks everything written for the お題 in hand. */
+  submit(): WritingSessionState
+  /** Leaves the marked お題 for the next one. */
   nextCharacter(): WritingSessionState
-  /** Wipes the character in hand so it can be written again. Its result stands. */
+  /** Wipes the お題 in hand so it can be written again. Its result stands. */
   retryCharacter(): WritingSessionState
+  /** The strokes the learner has written for the お題 in hand. */
+  writing(): readonly (readonly TracedPoint[])[]
 }
 
 export type WritingSessionOptions = {
@@ -113,57 +123,56 @@ export type WritingSessionOptions = {
   readonly strokesOf: (character: string) => readonly Stroke[]
 }
 
-const freshOutcomes = (count: number): StrokeOutcome[] =>
-  Array.from({ length: count }, () => ({
-    done: false,
-    firstTimeCorrect: false,
-    attempts: 0,
-    lastMistake: null,
-  }))
-
 export function createWritingSession(options: WritingSessionOptions): WritingSession {
   const { mode, strokesOf } = options
 
   const chosen: string[] = []
   let phase: WritingSessionState['phase'] = 'choosing'
-  /** Index into the chosen characters of the one in hand. */
+  /** Index into the chosen お題 of the one in hand. */
   let at = 0
   let strokes: readonly Stroke[] = []
+  /** What the learner has put on the paper for the お題 in hand. */
+  let written: (readonly TracedPoint[])[] = []
+  /** The marking of those strokes, once 送信 has happened. */
   let outcomes: StrokeOutcome[] = []
-  let awaiting = 0
-  let lastVerdict: StrokeVerdict | null = null
-  /** One per character already written, settled at its first attempt. */
+  let marked = false
+  /** One per お題 already sent, settled at its first 送信. */
   const results: CharacterResult[] = []
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
 
-  const characterFinished = (): boolean => phase !== 'choosing' && awaiting >= strokes.length
-
   /** A test tells the learner nothing about how it went until the run is over. */
   const heldBack = (): boolean => mode === 'test' && phase !== 'finished'
 
+  const takeUpCharacter = (): void => {
+    strokes = strokesOf(chosen[at]!)
+    written = []
+    outcomes = []
+    marked = false
+    pastHalfway = false
+  }
+
   /**
    * One ahead of the stroke in hand: from the middle of stroke N the hint shows
-   * N+1, and the moment N is accepted it is already there. Nothing is shown
-   * during a test, nor once the character is written, nor when there is no next
-   * stroke to point at.
+   * N+1. Nothing is shown during a test, nor once the お題 has been sent, nor
+   * when there is no next stroke to point at. The first stroke is the learner's
+   * own to attempt.
    */
   const navigationStroke = (): number | null => {
-    if (mode === 'test' || phase !== 'writing' || characterFinished()) return null
-    const target = awaiting + (pastHalfway ? 1 : 0)
-    if (target >= strokes.length) return null
-    // The very first stroke is the learner's own to attempt. Only once they
-    // have got it wrong does the hint step in and show it.
-    if (target === 0 && outcomes[0]!.attempts === 0) return null
+    if (mode === 'test' || phase === 'choosing' || marked) return null
+    const target = written.length + (pastHalfway ? 1 : 0)
+    if (target === 0 || target >= strokes.length) return null
     return target
   }
 
-  const takeUpCharacter = (): void => {
-    strokes = strokesOf(chosen[at]!)
-    outcomes = freshOutcomes(strokes.length)
-    awaiting = 0
-    lastVerdict = null
-    pastHalfway = false
+  /**
+   * After marking, the hint walks the whole of any character that went wrong.
+   * Today an お題 is one character, so this is either empty or holds a single
+   * position; it is a list so that a word's cells can each answer for themselves.
+   */
+  const navigationCharacters = (): readonly number[] => {
+    if (!marked || heldBack()) return []
+    return outcomes.some((outcome) => !outcome.correct) ? [0] : []
   }
 
   const state = (): WritingSessionState => ({
@@ -171,20 +180,20 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     chosen: [...chosen],
     position: phase === 'choosing' ? 0 : at + 1,
     character: phase === 'choosing' ? null : chosen[at]!,
-    characterFinished: characterFinished(),
-    awaitingStroke: awaiting,
-    outcomes: outcomes.map((outcome) => ({ ...outcome })),
-    lastVerdict,
-    navigationStroke: navigationStroke(),
-    // A test says nothing until it is over: a result shown part way through
-    // would turn the rest of the run into practice.
-    score: heldBack()
-      ? null
-      : {
-          correct: outcomes.filter((outcome) => outcome.firstTimeCorrect).length,
-          total: strokes.length,
-        },
     remaining: phase === 'choosing' ? chosen.length : chosen.length - (at + 1),
+    writtenStrokes: written.length,
+    canSubmit: phase !== 'choosing' && !marked && written.length > 0,
+    marked,
+    outcomes: heldBack() ? [] : outcomes.map((outcome) => ({ ...outcome })),
+    navigationStroke: navigationStroke(),
+    navigationCharacters: navigationCharacters(),
+    score:
+      heldBack() || !marked
+        ? null
+        : {
+            correct: outcomes.filter((outcome) => outcome.correct).length,
+            total: Math.max(strokes.length, outcomes.length),
+          },
     runScore: {
       correct: heldBack() ? 0 : results.filter((result) => result.firstTimeCorrect).length,
       total: chosen.length,
@@ -194,6 +203,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
 
   return {
     state,
+    writing: () => written.map((stroke) => [...stroke]),
     chooseCharacter(character) {
       // Once the writing has begun the run is settled: a stray tap must not
       // lengthen or shorten what the learner is part way through.
@@ -223,65 +233,66 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       return state()
     },
     traceStroke(points) {
-      if (phase !== 'writing') return state()
-      const model = strokes[awaiting]
+      if (phase === 'choosing' || marked) return state()
+      const model = strokes[written.length]
       // A fresh stroke starts short, so this falls back to false on its own the
       // moment the learner lifts and begins the next one.
-      pastHalfway = model !== undefined
-        && length(points.map(asPoint)) >= length(model.median) * HINT_MOVES_ON_AT
+      pastHalfway =
+        model !== undefined &&
+        length(points.map(asPoint)) >= length(model.median) * HINT_MOVES_ON_AT
       return state()
     },
-    writeStroke(points) {
-      if (phase !== 'writing') return state()
-      const model = strokes[awaiting]
-      if (!model) return state()
-
-      const verdict = matchStroke(points.map(asPoint), model.median, DEFAULT_THRESHOLDS)
-      lastVerdict = verdict
-
-      const before = outcomes[awaiting]!
-      const attempts = before.attempts + 1
-      outcomes[awaiting] = {
-        done: verdict.correct,
-        firstTimeCorrect: verdict.correct && attempts === 1,
-        attempts,
-        lastMistake: verdict.correct ? before.lastMistake : verdict.reason,
-      }
-
-      // Practice refuses a wrong stroke and waits for the same one again;
-      // a test takes what it is given and moves on regardless.
-      if (verdict.correct || mode === 'test') awaiting += 1
-
-      if (characterFinished()) {
-        // How a character went is settled the first time it is written through:
-        // writing it again afterwards is practice, not a second chance at the
-        // tally (see 一発正解 in CONTEXT.md).
-        if (results.length === at) {
-          results.push({
-            character: chosen[at]!,
-            firstTimeCorrect: outcomes.every((outcome) => outcome.firstTimeCorrect),
-          })
-        }
-        // The run ends with its last character: there is nothing else to wait
-        // for. Written again after that, it ends the run again.
-        if (at + 1 === chosen.length) phase = 'finished'
-      }
-
+    addStroke(points) {
+      // Judging happens at 送信 and nowhere else, so this only takes the ink.
+      if (phase === 'choosing' || marked || points.length === 0) return state()
+      written = [...written, [...points]]
       pastHalfway = false
       return state()
     },
+    submit() {
+      if (phase === 'choosing' || marked || written.length === 0) return state()
+
+      // Written strokes answer for the model's strokes in the order they were
+      // written: writing them out of order is exactly the mistake this app is
+      // about. Anything beyond the model's count is a stroke too many, and a
+      // model stroke never written is a stroke missing; both count as wrong.
+      outcomes = Array.from({ length: Math.max(written.length, strokes.length) }, (_, index) => {
+        const model = strokes[index]
+        const stroke = written[index]
+        if (!model) return { correct: false, problem: 'extra' as const }
+        if (!stroke) return { correct: false, problem: 'missing' as const }
+        const verdict = matchStroke(stroke.map(asPoint), model.median, DEFAULT_THRESHOLDS)
+        return verdict.correct
+          ? { correct: true, problem: null }
+          : { correct: false, problem: verdict.reason }
+      })
+      marked = true
+      pastHalfway = false
+
+      // How an お題 went is settled the first time it is sent: writing it again
+      // afterwards is practice, not a second chance at the tally (一発正解).
+      if (results.length === at) {
+        results.push({
+          character: chosen[at]!,
+          firstTimeCorrect: outcomes.every((outcome) => outcome.correct),
+        })
+      }
+      // The run ends with its last お題: there is nothing else to wait for.
+      if (at + 1 === chosen.length) phase = 'finished'
+      return state()
+    },
     nextCharacter() {
-      // Moving on is the learner's to ask for: a character that vanished the
-      // instant its last stroke landed would leave nothing to look at.
-      if (phase !== 'writing' || !characterFinished() || at + 1 >= chosen.length) return state()
+      // Moving on is the learner's to ask for: an お題 that vanished the instant
+      // it was marked would leave nothing to look at.
+      if (phase !== 'writing' || !marked || at + 1 >= chosen.length) return state()
       at += 1
       takeUpCharacter()
       return state()
     },
     retryCharacter() {
-      if (!characterFinished()) return state()
-      // A finished run reopens on its last character. The tally was settled
-      // when it was first written, so nothing about it changes here.
+      if (!marked) return state()
+      // A finished run reopens on its last お題. The tally was settled when it
+      // was first sent, so nothing about it changes here.
       phase = 'writing'
       takeUpCharacter()
       return state()
