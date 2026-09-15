@@ -44,6 +44,11 @@ export type WritingSurface = {
    * along it over and over. Null puts the hint away.
    */
   setNavigation(stroke: Stroke | null): void
+  /**
+   * Walks the hint through every one of these strokes in turn, once, and stops.
+   * This is the answer to an お題 that went wrong; an empty list shows nothing.
+   */
+  showAnswer(strokes: readonly Stroke[]): void
   hasInk(): boolean
   destroy(): void
 }
@@ -66,8 +71,10 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   let inProgress: TracedPoint[] | null = null
   /** Goes false once the character is finished, so no more ink can be laid down. */
   let accepting = true
-  /** The stroke the hint is walking along, if the learner has stalled. */
+  /** The stroke the hint is walking along while the learner writes. */
   let navigation: Stroke | null = null
+  /** The strokes the hint walks through once, to answer an お題 that went wrong. */
+  let answer: readonly Stroke[] = []
   let navigationStartedAt = 0
   let navigationFrame: number | null = null
 
@@ -122,7 +129,28 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.strokeStyle = colour('--ink')
     if (inProgress) strokePolyline(inProgress)
 
-    if (navigation) drawNavigation()
+    if (navigation) drawTrip(navigation, loopedProgress())
+    if (answer.length > 0) drawAnswer()
+  }
+
+  /** How far along its stroke the looping hint is, right now. */
+  const loopedProgress = (): number => {
+    const elapsed = (performance.now() - navigationStartedAt) % (NAVIGATION_MS + NAVIGATION_REST_MS)
+    return Math.min(elapsed / NAVIGATION_MS, 1)
+  }
+
+  /**
+   * The answer walks the character from its first stroke to its last, one trip
+   * each, and then stays put: the learner has seen it and can look at the whole
+   * character beside their own attempt.
+   */
+  const drawAnswer = (): void => {
+    const perStroke = NAVIGATION_MS + NAVIGATION_REST_MS
+    const elapsed = performance.now() - navigationStartedAt
+    const at = Math.floor(elapsed / perStroke)
+    for (let n = 0; n < Math.min(at, answer.length); n++) drawTrip(answer[n]!, 1)
+    const walking = answer[at]
+    if (walking) drawTrip(walking, Math.min((elapsed - at * perStroke) / NAVIGATION_MS, 1))
   }
 
   /**
@@ -130,10 +158,8 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
    * with the part already covered drawn behind it. Direction is the thing a
    * still picture cannot teach, so the hint has to move.
    */
-  const drawNavigation = (): void => {
-    const median = navigation!.median
-    const elapsed = (performance.now() - navigationStartedAt) % (NAVIGATION_MS + NAVIGATION_REST_MS)
-    const progress = Math.min(elapsed / NAVIGATION_MS, 1)
+  const drawTrip = (stroke: Stroke, progress: number): void => {
+    const median = stroke.median
     const reached = progress * (median.length - 1)
     const index = Math.min(Math.floor(reached), median.length - 2)
     const from = median[index]!
@@ -167,8 +193,17 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   const animateNavigation = (): void => {
     navigationFrame = null
-    if (!navigation) return
+    if (!navigation && answer.length === 0) return
     draw()
+    // The answer runs out; the writing hint loops until it is put away.
+    const finished =
+      answer.length > 0 &&
+      performance.now() - navigationStartedAt >
+        answer.length * (NAVIGATION_MS + NAVIGATION_REST_MS)
+    if (finished && !navigation) {
+      draw()
+      return
+    }
     navigationFrame = requestAnimationFrame(animateNavigation)
   }
 
@@ -255,6 +290,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       if (navigation === stroke) return
       navigation = stroke
       if (stroke) {
+        answer = []
         navigationStartedAt = performance.now()
         if (navigationFrame === null) navigationFrame = requestAnimationFrame(animateNavigation)
       } else {
@@ -262,6 +298,14 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
         navigationFrame = null
         draw()
       }
+    },
+    showAnswer(strokes) {
+      navigation = null
+      answer = strokes
+      navigationStartedAt = performance.now()
+      if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
+      navigationFrame = strokes.length > 0 ? requestAnimationFrame(animateNavigation) : null
+      draw()
     },
     hasInk: () => written.length > 0 || inProgress !== null,
     destroy() {

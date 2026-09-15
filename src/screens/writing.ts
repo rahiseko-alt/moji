@@ -161,6 +161,9 @@ export function mountWriting(
     surface?.markWrong(
       state.outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
     )
+    // An お題 that went wrong is answered: the hint walks the whole character,
+    // from its first stroke, over what the learner wrote.
+    surface?.showAnswer(state.navigationCharacters.length > 0 ? model : [])
     render()
   })
 
