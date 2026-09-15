@@ -245,6 +245,16 @@ describe('sending an お題 written correctly', () => {
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
+  it('forgives a whole character written off to one side of the square', () => {
+    const { state } = send('practice', ...strokes.map((_, n) => shifted(n, 22, 16)))
+    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
+
+  it('forgives a whole character written high in the square', () => {
+    const { state } = send('practice', ...strokes.map((_, n) => shifted(n, 0, -20)))
+    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
+
   it('forgives a stroke that stops a fifth short of the end', () => {
     const { state } = send('practice', truncated(0, 0.8))
     expect(state.outcomes[0]!.correct).toBe(true)
@@ -257,9 +267,12 @@ describe('sending an お題 written correctly', () => {
  * Move a threshold and one of these two groups will tell you.
  */
 describe('a stroke that is close but not good enough', () => {
-  it('is wrong when it sits a sixth of the square out of place', () => {
-    const { state } = send('practice', shifted(0, 17, 17))
-    expect(state.outcomes[0]!.correct).toBe(false)
+  it('is wrong when it sits out of place inside the character', () => {
+    const { state } = send(
+      'practice',
+      ...strokes.map((_, n) => (n === 2 ? shifted(2, 17, 17) : perfect(n))),
+    )
+    expect(state.outcomes[2]!.correct).toBe(false)
   })
 
   it('is wrong when it leans noticeably', () => {
@@ -290,13 +303,24 @@ describe('a stroke that is plainly wrong', () => {
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'tooShort' })
   })
 
+  /*
+   * Both of these are about one stroke inside a character that is otherwise in
+   * place: on its own, a single stroke is the whole of what was written, and
+   * the marking lays that over the model wherever it was put (ADR 0010).
+   */
   it('is marked as out of place when it starts and ends well away', () => {
-    const { state } = send('practice', shifted(0, 40, 0))
+    const { state } = send(
+      'practice',
+      ...strokes.map((_, n) => (n === 0 ? shifted(0, 40, 0) : perfect(n))),
+    )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'misplaced' })
   })
 
   it('is marked as the wrong shape when it wanders off on the way', () => {
-    const { state } = send('practice', bulged(0, 35))
+    const { state } = send(
+      'practice',
+      ...strokes.map((_, n) => (n === 0 ? bulged(0, 35) : perfect(n))),
+    )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'shape' })
   })
 })
