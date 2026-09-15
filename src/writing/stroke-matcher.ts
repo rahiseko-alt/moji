@@ -59,14 +59,16 @@ export type MatchThresholds = {
  * How far an end may sit from the model's is measured against that stroke's own
  * length rather than against the square, so a short stroke is judged as closely
  * as a long one. Before that, い's second stroke could miss by more than half
- * its own length and still pass (ADR 0011).
+ * its own length and still pass (ADR 0011). The floor under it is what lets a
+ * finger land a little either side of the dotted guide: a whole character 12
+ * off centre passes, 14 and beyond does not (ADR 0013).
  *
  * The numbers are in the character's own 109-wide square.
  */
 export const DEFAULT_THRESHOLDS: MatchThresholds = {
   direction: 0.6,
   ends: 0.45,
-  endsFloor: 10,
+  endsFloor: 16,
   endsCeiling: 22,
   shape: 0.3,
   shapeFloor: 13,

@@ -270,13 +270,10 @@ describe('sending an お題 written correctly', () => {
     expect(state.outcomes[0]!.correct).toBe(true)
   })
 
-  it('forgives a whole character written off to one side of the square', () => {
-    const { state } = send(...strokes.map((_, n) => shifted(n, 22, 16)))
-    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
-  })
-
-  it('forgives a whole character written high in the square', () => {
-    const { state } = send(...strokes.map((_, n) => shifted(n, 0, -20)))
+  it('forgives a whole character written a little off centre', () => {
+    // The dotted guide says where the character goes, but a finger still lands
+    // a few units either side of it.
+    const { state } = send(...strokes.map((_, n) => shifted(n, 9, 8)))
     expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
   })
 
@@ -342,11 +339,10 @@ describe('a stroke that is close but not good enough', () => {
   })
 
   it('is wrong when a short stroke misses by more than its own length', () => {
-    // What a stroke may be out by is measured against its own length, not
-    // against the square: 学's first stroke is a short tick, so 16 across the
-    // square puts it somewhere else entirely.
+    // 学's first stroke is a short tick, and 20 across the square puts it
+    // somewhere else entirely — though the square itself is 109 wide.
     const { state } = sendCharacter('学', (n) =>
-      n === 0 ? perfectOf('学', 0).map(([x, y]) => [x + 16, y] as Point) : perfectOf('学', n),
+      n === 0 ? perfectOf('学', 0).map(([x, y]) => [x + 20, y] as Point) : perfectOf('学', n),
     )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'misplaced' })
   })
@@ -363,11 +359,6 @@ describe('a stroke that is plainly wrong', () => {
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'tooShort' })
   })
 
-  /*
-   * Both of these are about one stroke inside a character that is otherwise in
-   * place: on its own, a single stroke is the whole of what was written, and
-   * the marking lays that over the model wherever it was put (ADR 0010).
-   */
   it('is marked as out of place when it starts and ends well away', () => {
     const { state } = send(
       ...strokes.map((_, n) => (n === 0 ? shifted(0, 40, 0) : perfect(n))),
@@ -380,6 +371,35 @@ describe('a stroke that is plainly wrong', () => {
       ...strokes.map((_, n) => (n === 0 ? bulged(0, 35) : perfect(n))),
     )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'shape' })
+  })
+})
+
+/*
+ * The dotted guide and the model say where the character belongs, so the cell
+ * is what a character is marked against (ADR 0013). A finger lands a little
+ * either side of that; a character put somewhere else in the cell does not.
+ */
+describe('where in the 升目 the character was written', () => {
+  it('passes a character written 12 off centre', () => {
+    const { state } = send(...strokes.map((_, n) => shifted(n, 8.5, 8.5)))
+    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
+
+  it('fails a character written 20 off centre', () => {
+    const { state } = send(...strokes.map((_, n) => shifted(n, 14, 14)))
+    expect(state.outcomes.some((outcome) => !outcome.correct)).toBe(true)
+  })
+
+  it('marks a single stroke where the 升目 puts it, not where it was drawn', () => {
+    // Before, one stroke on its own was the whole of what was written, and the
+    // marking moved it over the model wherever it had been put.
+    const { state } = send(shifted(0, 30, 0))
+    expect(state.outcomes[0]!.correct).toBe(false)
+  })
+
+  it('still passes a single stroke written where it belongs', () => {
+    const { state } = send(perfect(0))
+    expect(state.outcomes[0]!.correct).toBe(true)
   })
 })
 

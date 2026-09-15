@@ -11,17 +11,15 @@
  * with no interruption; 送信 marks every stroke at once, and the screen shows the
  * wrong ones in red and walks the hint through the characters that went wrong.
  *
- * Marking looks at the お題 as a whole before it looks at any stroke: what was
- * written is laid over the model by its middle, so a character written to one
- * side of the square is still that character. Where each stroke sits *within*
- * the character still counts — that is the character's shape — but where the
- * learner put the character on the paper does not (ADR 0010).
+ * A stroke is marked where the 升目 puts it. The dotted guide and the model are
+ * always there to say where the character belongs, so writing it somewhere else
+ * in the square is a mistake like any other (ADR 0013).
  *
  * The hint also runs ahead while writing: once a learner is about halfway
  * through the stroke in hand, it shows where the next one begins.
  */
-import type { Point, Stroke } from '../data/stroke-data'
-import { boundingBox, length } from './polyline'
+import type { Stroke } from '../data/stroke-data'
+import { length } from './polyline'
 import { DEFAULT_THRESHOLDS, matchStroke, type MistakeReason } from './stroke-matcher'
 import { asPoint, type TracedPoint } from './traced-point'
 
@@ -163,24 +161,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
 
-  /**
-   * Lays what was written over the model by the middle of both: the learner may
-   * write high, low or to one side of the square, and it is the same character.
-   * Only the strokes that answer for a model stroke take part, so writing half
-   * a character does not drag the rest of it out of place.
-   */
-  const laidOverTheModel = (): readonly (readonly Point[])[] => {
-    const answering = written.slice(0, strokes.length)
-    if (answering.length === 0) return written.map((stroke) => stroke.map(asPoint))
-    const [wx0, wy0, wx1, wy1] = boundingBox(answering.flat().map(asPoint))
-    const [mx0, my0, mx1, my1] = boundingBox(
-      strokes.slice(0, answering.length).flatMap((stroke) => [...stroke.median]),
-    )
-    const dx = (mx0 + mx1) / 2 - (wx0 + wx1) / 2
-    const dy = (my0 + my1) / 2 - (wy0 + wy1) / 2
-    return written.map((stroke) => stroke.map((point) => [point.x + dx, point.y + dy] as Point))
-  }
-
   /** How a marking reads as a count of strokes, or nothing if there is no marking. */
   const countOf = (
     marking: readonly StrokeOutcome[] | undefined,
@@ -297,13 +277,12 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // written: writing them out of order is exactly the mistake this app is
       // about. Anything beyond the model's count is a stroke too many, and a
       // model stroke never written is a stroke missing; both count as wrong.
-      const laid = laidOverTheModel()
       outcomes = Array.from({ length: Math.max(written.length, strokes.length) }, (_, index) => {
         const model = strokes[index]
-        const stroke = laid[index]
+        const stroke = written[index]
         if (!model) return { correct: false, problem: 'extra' as const }
         if (!stroke) return { correct: false, problem: 'missing' as const }
-        const verdict = matchStroke(stroke, model.median, DEFAULT_THRESHOLDS)
+        const verdict = matchStroke(stroke.map(asPoint), model.median, DEFAULT_THRESHOLDS)
         return verdict.correct
           ? { correct: true, problem: null }
           : { correct: false, problem: verdict.reason }
