@@ -29,7 +29,7 @@ const perfect = (index: number): Point[] => perfectOf('日', index)
 /** A session that has been given お題 and told to begin. */
 const begin = (mode: SessionMode, ...characters: readonly string[]) => {
   const session = createWritingSession({ mode, strokesOf })
-  for (const character of characters) session.chooseCharacter(character)
+  for (const character of characters) session.chooseItem(character)
   session.start()
   return session
 }
@@ -105,33 +105,33 @@ describe('choosing what to write', () => {
     const state = choosing().state()
     expect(state.chosen).toEqual([])
     expect(state.phase).toBe('choosing')
-    expect(state.character).toBeNull()
+    expect(state.item).toBeNull()
   })
 
   it('keeps the お題 in the order they were chosen', () => {
     const session = choosing()
-    session.chooseCharacter('人')
-    session.chooseCharacter('日')
-    expect(session.chooseCharacter('一').chosen).toEqual(['人', '日', '一'])
+    session.chooseItem('人')
+    session.chooseItem('日')
+    expect(session.chooseItem('一').chosen).toEqual(['人', '日', '一'])
   })
 
   it('takes an お題 out when it is chosen a second time', () => {
     const session = choosing()
-    session.chooseCharacter('日')
-    expect(session.chooseCharacter('日').chosen).toEqual([])
+    session.chooseItem('日')
+    expect(session.chooseItem('日').chosen).toEqual([])
   })
 
   it('closes the gap when one in the middle is taken out', () => {
     const session = choosing()
-    for (const character of ['人', '日', '一']) session.chooseCharacter(character)
-    expect(session.chooseCharacter('日').chosen).toEqual(['人', '一'])
+    for (const character of ['人', '日', '一']) session.chooseItem(character)
+    expect(session.chooseItem('日').chosen).toEqual(['人', '一'])
   })
 
   it('holds お題 of every kind at once', () => {
     const session = choosing()
-    session.chooseCharacter('あ')
-    session.chooseCharacter('ア')
-    expect(session.chooseCharacter('日').chosen).toEqual(['あ', 'ア', '日'])
+    session.chooseItem('あ')
+    session.chooseItem('ア')
+    expect(session.chooseItem('日').chosen).toEqual(['あ', 'ア', '日'])
   })
 
   it('will not begin with nothing chosen', () => {
@@ -140,17 +140,17 @@ describe('choosing what to write', () => {
 
   it('begins with the first お題 that was chosen', () => {
     const session = choosing()
-    session.chooseCharacter('人')
-    session.chooseCharacter('日')
+    session.chooseItem('人')
+    session.chooseItem('日')
     const state = session.start()
     expect(state.phase).toBe('writing')
-    expect(state.character).toBe('人')
+    expect(state.item).toBe('人')
     expect(state.position).toBe(1)
   })
 
   it('takes no more お題 once the writing has begun', () => {
     const session = begin('practice', '日')
-    expect(session.chooseCharacter('一').chosen).toEqual(['日'])
+    expect(session.chooseItem('一').chosen).toEqual(['日'])
   })
 })
 
@@ -164,7 +164,7 @@ describe('choosing a whole kind at once', () => {
 
   it('leaves the ones already chosen where they are', () => {
     const session = choosing()
-    session.chooseCharacter('う')
+    session.chooseItem('う')
     expect(session.chooseAll(kana).chosen).toEqual(['う', 'あ', 'い'])
   })
 
@@ -176,7 +176,7 @@ describe('choosing a whole kind at once', () => {
 
   it('leaves お題 of another kind alone when it takes them out', () => {
     const session = choosing()
-    session.chooseCharacter('日')
+    session.chooseItem('日')
     session.chooseAll(kana)
     expect(session.chooseAll(kana).chosen).toEqual(['日'])
   })
@@ -196,7 +196,6 @@ describe('writing, before anything is sent', () => {
     session.addStroke(traced(reversed(0)))
     session.addStroke(traced(perfect(1), 1000))
     expect(session.state().writtenStrokes).toBe(2)
-    expect(session.writing()).toHaveLength(2)
   })
 
   it('cannot be sent with nothing written', () => {
@@ -327,7 +326,7 @@ describe('marking what was written against what the お題 needs', () => {
     const session = begin('practice', '日')
     session.addStroke(traced(reversed(0)))
     for (let n = 1; n < strokes.length; n++) session.addStroke(traced(perfect(n), n * 1000))
-    expect(session.submit().results[0]).toEqual({ character: '日', firstTimeCorrect: false })
+    expect(session.submit().results[0]).toEqual({ item: '日', firstTimeCorrect: false })
   })
 })
 
@@ -353,8 +352,8 @@ describe('writing one お題 after another', () => {
     const session = run()
     writeCharacter(session, '一')
     session.submit()
-    const state = session.nextCharacter()
-    expect(state.character).toBe('人')
+    const state = session.nextItem()
+    expect(state.item).toBe('人')
     expect(state.position).toBe(2)
     expect(state.marked).toBe(false)
     expect(state.writtenStrokes).toBe(0)
@@ -363,19 +362,39 @@ describe('writing one お題 after another', () => {
   it('will not move on until the お題 in hand has been sent', () => {
     const session = run()
     writeCharacter(session, '一')
-    expect(session.nextCharacter().character).toBe('一')
+    expect(session.nextItem().item).toBe('一')
   })
 
   it('is finished as soon as the last お題 has been sent', () => {
     const session = run()
     writeCharacter(session, '一')
     session.submit()
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '人')
     const state = session.submit()
     expect(state.phase).toBe('finished')
     // The last お題 stays in hand: it is still on the paper to look at.
-    expect(state.character).toBe('人')
+    expect(state.item).toBe('人')
+  })
+})
+
+describe('counting the first 送信 and no other', () => {
+  it('keeps the stroke count of the first attempt when the お題 is rewritten', () => {
+    const session = begin('practice', '日')
+    session.addStroke(traced(reversed(0)))
+    for (let n = 1; n < strokes.length; n++) session.addStroke(traced(perfect(n), n * 1000))
+    const first = session.submit().score
+    expect(first).toEqual({ correct: strokes.length - 1, total: strokes.length })
+    session.retryItem()
+    writeCharacter(session, '日')
+    expect(session.submit().score).toEqual(first)
+  })
+
+  it('hands the same count back with the attempt', () => {
+    const session = begin('practice', '日')
+    session.addStroke(traced(reversed(0)))
+    session.submit()
+    expect(session.attempt(1)?.score).toEqual({ correct: 0, total: strokes.length })
   })
 })
 
@@ -386,8 +405,8 @@ describe('writing an お題 again', () => {
     const session = run()
     writeCharacter(session, '日')
     session.submit()
-    const state = session.retryCharacter()
-    expect(state.character).toBe('日')
+    const state = session.retryItem()
+    expect(state.item).toBe('日')
     expect(state.writtenStrokes).toBe(0)
     expect(state.marked).toBe(false)
     expect(state.outcomes).toEqual([])
@@ -396,27 +415,27 @@ describe('writing an お題 again', () => {
   it('does nothing while the お題 in hand is unsent', () => {
     const session = run()
     session.addStroke(traced(perfect(0)))
-    expect(session.retryCharacter().writtenStrokes).toBe(1)
+    expect(session.retryItem().writtenStrokes).toBe(1)
   })
 
   it('counts the first 送信, however well it goes the second time', () => {
     const session = run()
     session.addStroke(traced(reversed(0)))
     session.submit()
-    session.retryCharacter()
+    session.retryItem()
     writeCharacter(session, '日')
     const state = session.submit()
-    expect(state.results[0]).toEqual({ character: '日', firstTimeCorrect: false })
+    expect(state.results[0]).toEqual({ item: '日', firstTimeCorrect: false })
   })
 
   it('finishes the run again when the last お題 is sent a second time', () => {
     const session = run()
     writeCharacter(session, '日')
     session.submit()
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '一')
     session.submit()
-    session.retryCharacter()
+    session.retryItem()
     writeCharacter(session, '一')
     const state = session.submit()
     expect(state.phase).toBe('finished')
@@ -429,12 +448,12 @@ describe('looking back at what was written', () => {
     const session = begin('practice', '日', '一')
     writeCharacter(session, '日')
     session.submit()
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '一')
     session.submit()
-    expect(session.attempt(1)?.character).toBe('日')
+    expect(session.attempt(1)?.item).toBe('日')
     expect(session.attempt(1)?.written).toHaveLength(strokes.length)
-    expect(session.attempt(2)?.character).toBe('一')
+    expect(session.attempt(2)?.item).toBe('一')
   })
 
   it('carries the marking with it', () => {
@@ -448,7 +467,7 @@ describe('looking back at what was written', () => {
     const session = begin('practice', '日')
     session.addStroke(traced(reversed(0)))
     session.submit()
-    session.retryCharacter()
+    session.retryItem()
     writeCharacter(session, '日')
     session.submit()
     expect(session.attempt(1)?.written).toHaveLength(strokes.length)
@@ -467,10 +486,10 @@ describe('looking back at what was written', () => {
     writeCharacter(session, '一')
     session.submit()
     expect(session.attempt(1)).toBeNull()
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '人')
     session.submit()
-    expect(session.attempt(1)?.character).toBe('一')
+    expect(session.attempt(1)?.item).toBe('一')
   })
 })
 
@@ -478,7 +497,7 @@ describe('counting a run', () => {
   it('records each お題 as it is sent', () => {
     const session = begin('practice', '日', '一')
     writeCharacter(session, '日')
-    expect(session.submit().results).toEqual([{ character: '日', firstTimeCorrect: true }])
+    expect(session.submit().results).toEqual([{ item: '日', firstTimeCorrect: true }])
   })
 
   it('counts an お題 as right only when every stroke was right first time', () => {
@@ -486,7 +505,7 @@ describe('counting a run', () => {
     session.addStroke(traced(reversed(0)))
     session.submit()
     expect(session.state().runScore).toEqual({ correct: 0, total: 2 })
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '一')
     expect(session.submit().runScore).toEqual({ correct: 1, total: 2 })
   })
@@ -510,13 +529,13 @@ describe('a test keeps its marking back', () => {
     const session = run()
     writeCharacter(session, '一')
     session.submit()
-    session.nextCharacter()
+    session.nextItem()
     writeCharacter(session, '人')
     const state = session.submit()
     expect(state.phase).toBe('finished')
     expect(state.results).toEqual([
-      { character: '一', firstTimeCorrect: true },
-      { character: '人', firstTimeCorrect: true },
+      { item: '一', firstTimeCorrect: true },
+      { item: '人', firstTimeCorrect: true },
     ])
   })
 })
@@ -590,6 +609,6 @@ describe('the hint after marking, which shows the answer', () => {
 
   it('goes away when the お題 is written again', () => {
     const { session } = send('practice', reversed(0))
-    expect(session.retryCharacter().navigationCharacters).toEqual([])
+    expect(session.retryItem().navigationCharacters).toEqual([])
   })
 })

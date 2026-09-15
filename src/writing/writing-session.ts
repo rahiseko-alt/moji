@@ -39,14 +39,17 @@ export type StrokeOutcome = {
 
 /** What the learner put on the paper for one お題, and what the marking said. */
 export type Attempt = {
-  readonly character: string
+  readonly item: string
   readonly written: readonly (readonly TracedPoint[])[]
+  /** The marking of what is on the paper now, which is what the red ink follows. */
   readonly outcomes: readonly StrokeOutcome[]
+  /** Strokes right at the first 送信: the count that stands however often it is rewritten. */
+  readonly score: { readonly correct: number; readonly total: number }
 }
 
 /** How one お題 went, settled the first time it was sent. */
-export type CharacterResult = {
-  readonly character: string
+export type ItemResult = {
+  readonly item: string
   /** Every stroke was right at the first 送信. */
   readonly firstTimeCorrect: boolean
 }
@@ -59,7 +62,7 @@ export type WritingSessionState = {
   /** Which お題 of the run is in hand, counting from one. Zero when not writing. */
   readonly position: number
   /** The お題 in hand, or null while still choosing. It stays in hand at the end. */
-  readonly character: string | null
+  readonly item: string | null
   /** お題 still to come after the one in hand. */
   readonly remaining: number
   /** How many strokes are on the paper for the お題 in hand. */
@@ -93,13 +96,13 @@ export type WritingSessionState = {
    * How the お題 written so far went, in order. A test holds them all back until
    * the run is finished.
    */
-  readonly results: readonly CharacterResult[]
+  readonly results: readonly ItemResult[]
 }
 
 export type WritingSession = {
   state(): WritingSessionState
   /** Adds an お題 to the run, or takes it out again if it is already in. */
-  chooseCharacter(character: string): WritingSessionState
+  chooseItem(item: string): WritingSessionState
   /**
    * Adds a whole kind of character at once — or, when every one of them is
    * already in the run, takes that kind back out.
@@ -117,11 +120,9 @@ export type WritingSession = {
   /** Marks everything written for the お題 in hand. */
   submit(): WritingSessionState
   /** Leaves the marked お題 for the next one. */
-  nextCharacter(): WritingSessionState
+  nextItem(): WritingSessionState
   /** Wipes the お題 in hand so it can be written again. Its result stands. */
-  retryCharacter(): WritingSessionState
-  /** The strokes the learner has written for the お題 in hand. */
-  writing(): readonly (readonly TracedPoint[])[]
+  retryItem(): WritingSessionState
   /**
    * What was written and marked for one お題 of the run, counting from one, so
    * a learner can look back at it. Null while a test holds its marking back.
@@ -149,19 +150,32 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   let outcomes: StrokeOutcome[] = []
   let marked = false
   /** One per お題 already sent, settled at its first 送信. */
-  const results: CharacterResult[] = []
+  const results: ItemResult[] = []
   /**
    * The last thing written for each お題, kept for the whole run so the learner
    * can look back at it. In memory only: nothing is stored (ADR 0005).
    */
   const attempts: Attempt[] = []
+  /**
+   * The first 送信's marking of each お題. Writing an お題 again is practice, not
+   * a second chance at the count (一発正解), so this is what the tally reads.
+   */
+  const firstMarking: StrokeOutcome[][] = []
   /** Is the stroke in hand far enough along for the hint to move on? */
   let pastHalfway = false
 
   /** A test tells the learner nothing about how it went until the run is over. */
   const heldBack = (): boolean => mode === 'test' && phase !== 'finished'
 
-  const takeUpCharacter = (): void => {
+  /** How a marking reads as a count of strokes, or nothing if there is no marking. */
+  const countOf = (
+    marking: readonly StrokeOutcome[] | undefined,
+  ): { correct: number; total: number } | null =>
+    marking
+      ? { correct: marking.filter((outcome) => outcome.correct).length, total: marking.length }
+      : null
+
+  const takeUpItem = (): void => {
     strokes = strokesOf(chosen[at]!)
     written = []
     outcomes = []
@@ -196,7 +210,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     phase,
     chosen: [...chosen],
     position: phase === 'choosing' ? 0 : at + 1,
-    character: phase === 'choosing' ? null : chosen[at]!,
+    item: phase === 'choosing' ? null : chosen[at]!,
     remaining: phase === 'choosing' ? chosen.length : chosen.length - (at + 1),
     writtenStrokes: written.length,
     canSubmit: phase !== 'choosing' && !marked && written.length > 0,
@@ -204,13 +218,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     outcomes: heldBack() ? [] : outcomes.map((outcome) => ({ ...outcome })),
     navigationStroke: navigationStroke(),
     navigationCharacters: navigationCharacters(),
-    score:
-      heldBack() || !marked
-        ? null
-        : {
-            correct: outcomes.filter((outcome) => outcome.correct).length,
-            total: Math.max(strokes.length, outcomes.length),
-          },
+    score: heldBack() ? null : countOf(firstMarking[at]),
     runScore: {
       correct: heldBack() ? 0 : results.filter((result) => result.firstTimeCorrect).length,
       total: chosen.length,
@@ -220,18 +228,17 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
 
   return {
     state,
-    writing: () => written.map((stroke) => [...stroke]),
     attempt(position) {
       const kept = attempts[position - 1]
       if (!kept || heldBack()) return null
       return kept
     },
-    chooseCharacter(character) {
+    chooseItem(item) {
       // Once the writing has begun the run is settled: a stray tap must not
       // lengthen or shorten what the learner is part way through.
       if (phase !== 'choosing') return state()
-      const already = chosen.indexOf(character)
-      if (already === -1) chosen.push(character)
+      const already = chosen.indexOf(item)
+      if (already === -1) chosen.push(item)
       else chosen.splice(already, 1)
       return state()
     },
@@ -251,7 +258,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       if (phase !== 'choosing' || chosen.length === 0) return state()
       phase = 'writing'
       at = 0
-      takeUpCharacter()
+      takeUpItem()
       return state()
     },
     traceStroke(points) {
@@ -290,40 +297,42 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       })
       marked = true
       pastHalfway = false
-      // Written again, an お題 keeps only its latest attempt: the tally was
-      // settled at the first 送信 and does not change.
-      attempts[at] = {
-        character: chosen[at]!,
-        written: written.map((stroke) => [...stroke]),
-        outcomes: outcomes.map((outcome) => ({ ...outcome })),
-      }
 
       // How an お題 went is settled the first time it is sent: writing it again
       // afterwards is practice, not a second chance at the tally (一発正解).
       if (results.length === at) {
+        firstMarking[at] = outcomes.map((outcome) => ({ ...outcome }))
         results.push({
-          character: chosen[at]!,
+          item: chosen[at]!,
           firstTimeCorrect: outcomes.every((outcome) => outcome.correct),
         })
+      }
+      // Written again, an お題 keeps only its latest attempt: the tally was
+      // settled at the first 送信 and does not change.
+      attempts[at] = {
+        item: chosen[at]!,
+        written: written.map((stroke) => [...stroke]),
+        outcomes: outcomes.map((outcome) => ({ ...outcome })),
+        score: countOf(firstMarking[at])!,
       }
       // The run ends with its last お題: there is nothing else to wait for.
       if (at + 1 === chosen.length) phase = 'finished'
       return state()
     },
-    nextCharacter() {
+    nextItem() {
       // Moving on is the learner's to ask for: an お題 that vanished the instant
       // it was marked would leave nothing to look at.
       if (phase !== 'writing' || !marked || at + 1 >= chosen.length) return state()
       at += 1
-      takeUpCharacter()
+      takeUpItem()
       return state()
     },
-    retryCharacter() {
+    retryItem() {
       if (!marked) return state()
       // A finished run reopens on its last お題. The tally was settled when it
       // was first sent, so nothing about it changes here.
       phase = 'writing'
-      takeUpCharacter()
+      takeUpItem()
       return state()
     },
   }

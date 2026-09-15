@@ -65,6 +65,14 @@ export function mountWriting(
   let model: readonly Stroke[] = []
   /** Which お題 of the finished run is being looked back at, counting from one. */
   let reviewing: number | null = null
+  /**
+   * The run has reached its end at least once, so the results exist and are
+   * worth a way back to — even after the learner reopens the last お題 with
+   * やり直す.
+   */
+  let resultsExist = false
+  /** Is the results card up? It is, from the moment the run ends, until something else asks. */
+  let showingResults = false
 
   /**
    * The session says which stroke the hint belongs on; this puts it there. It
@@ -81,7 +89,7 @@ export function mountWriting(
     const state = session.state()
     home.textContent = strings.home
     submit.textContent = strings.submit
-    list.textContent = strings.list
+    list.textContent = strings.results
     next.textContent = strings.next
     retry.textContent = strings.retry
     confirm.setAnswers(strings.yes, strings.no)
@@ -93,19 +101,16 @@ export function mountWriting(
     // The session holds a test's marking back until the run is over, so there
     // is simply nothing to show until then. While an お題 is being looked back
     // at, the count belongs to that one rather than to the one in hand.
+    // A test says nothing about an お題 at 送信, even the last one that ends the
+    // run: its count waits until the learner opens it from the results.
     const reviewed = reviewing === null ? null : session.attempt(reviewing)
-    const showing = reviewed
-      ? {
-          correct: reviewed.outcomes.filter((outcome) => outcome.correct).length,
-          total: reviewed.outcomes.length,
-        }
-      : state.score
+    const showing = reviewed ? reviewed.score : modeNow() === 'practice' ? state.score : null
     score.hidden = showing === null
     if (showing) score.textContent = strings.strokeScore(showing.correct, showing.total)
 
-    // The summary lies over the last お題, which stays on the paper below it.
-    // Looking back at one of them puts it away until 一覧 brings it back.
-    summary.hidden = state.phase !== 'finished' || reviewing !== null
+    // The results lie over the last お題, which stays on the paper below them.
+    // Looking back at one of them puts the card away until けっか brings it back.
+    summary.hidden = !showingResults
     summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
     summaryCharacters.replaceChildren(
       ...state.results.map((result, index) => {
@@ -117,7 +122,7 @@ export function mountWriting(
         open.dataset.correct = String(result.firstTimeCorrect)
         const character = document.createElement('span')
         character.lang = 'ja'
-        character.textContent = result.character
+        character.textContent = result.item
         const mark = document.createElement('span')
         mark.className = 'summary__mark'
         mark.textContent = result.firstTimeCorrect ? '○' : '×'
@@ -128,13 +133,29 @@ export function mountWriting(
       }),
     )
 
-    // Sending is the only way on, and only once something is on the paper.
-    submit.hidden = state.marked || reviewing !== null
+    // Sending is the only way on, and only once something is on the paper. The
+    // results card lets taps through, so the bar keeps working under it.
+    const away = reviewing !== null
+    submit.hidden = state.marked || away
     submit.disabled = !state.canSubmit
-    // At the end of the run there is nowhere to go on to: the summary is there.
-    next.hidden = !state.marked || state.remaining === 0 || reviewing !== null
-    retry.hidden = !state.marked || reviewing !== null
-    list.hidden = reviewing === null
+    // At the end of the run there is nowhere to go on to: the results are there.
+    next.hidden = !state.marked || state.remaining === 0 || away
+    retry.hidden = !state.marked || away
+    // Once the results exist they are always one tap away, including from an
+    // お題 reopened with やり直す after the run had already ended.
+    list.hidden = !resultsExist || showingResults
+  }
+
+  /**
+   * Colours the ink the marking called wrong, and walks the answer through the
+   * お題 when something in it was. Both the moment it is sent and every time it
+   * is looked back at, which is the same thing to the learner.
+   */
+  const showMarking = (outcomes: readonly { readonly correct: boolean }[]): void => {
+    surface?.markWrong(
+      outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
+    )
+    surface?.showAnswer(outcomes.some((outcome) => !outcome.correct) ? model : [])
   }
 
   /** Puts what was written for one お題 of the finished run back on the paper. */
@@ -142,8 +163,9 @@ export function mountWriting(
     const attempt = session.attempt(position)
     if (!data || !attempt) return
     reviewing = position
+    showingResults = false
     surface?.destroy()
-    model = strokesFor(data, attempt.character)
+    model = strokesFor(data, attempt.item)
     surface = createWritingSurface({
       model: modeNow() === 'test' ? [] : model,
       guide: modeNow() === 'practice',
@@ -154,24 +176,22 @@ export function mountWriting(
       onStrokeFinished: () => {},
     })
     cells.replaceChildren(surface.element)
-    surface.markWrong(
-      attempt.outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
-    )
-    // The same answer the learner saw when they sent it.
-    surface.showAnswer(attempt.outcomes.some((outcome) => !outcome.correct) ? model : [])
+    // The same marking and the same answer the learner saw when they sent it.
+    showMarking(attempt.outcomes)
     render()
   }
 
   /** Puts a fresh cell up for the お題 the run is now on. */
-  const showCharacter = (): void => {
+  const showItem = (): void => {
     reviewing = null
+    showingResults = false
     surface?.destroy()
     surface = null
     const state = session.state()
     const mode = modeNow()
 
-    if (data && state.character && !state.marked) {
-      model = strokesFor(data, state.character)
+    if (data && state.item && !state.marked) {
+      model = strokesFor(data, state.item)
       surface = createWritingSurface({
         // A test shows no model and no dotted guide: the whole point is
         // writing it from memory, on a bare square.
@@ -197,7 +217,7 @@ export function mountWriting(
 
   void loadStrokeData().then((loaded) => {
     data = loaded
-    showCharacter()
+    showItem()
   })
 
   submit.addEventListener('click', () => {
@@ -206,28 +226,30 @@ export function mountWriting(
     // The ink stays where it is; the marking only colours it.
     surface?.stopAcceptingStrokes()
     surface?.setNavigation(null)
-    surface?.markWrong(
-      state.outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
-    )
-    // An お題 that went wrong is answered: the hint walks the whole character,
-    // from its first stroke, over what the learner wrote.
-    surface?.showAnswer(state.navigationCharacters.length > 0 ? model : [])
+    // A test says nothing at 送信, not even on the last お題 that ends the run:
+    // its marking waits in the results, where the learner can ask for it.
+    if (modeNow() === 'practice') showMarking(state.outcomes)
+    if (state.phase === 'finished') {
+      resultsExist = true
+      showingResults = true
+    }
     render()
   })
 
   list.addEventListener('click', () => {
-    // Back to the results; the last お題 goes back under the card.
-    showCharacter()
+    // Back to the results card, over whatever square is on the paper.
+    showingResults = true
+    render()
   })
 
   next.addEventListener('click', () => {
-    session.nextCharacter()
-    showCharacter()
+    session.nextItem()
+    showItem()
   })
 
   retry.addEventListener('click', () => {
-    session.retryCharacter()
-    showCharacter()
+    session.retryItem()
+    showItem()
   })
 
   // Home goes back to the cover from here. Leaving part-way throws away the

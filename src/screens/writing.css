@@ -177,6 +177,8 @@
   color: var(--ink);
 }
 
+/* The list item is only there for the reading order: the card inside it is the
+   thing that is laid out, and the thing a learner taps. */
 .summary__characters li {
   display: contents;
 }

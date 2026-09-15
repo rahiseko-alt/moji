@@ -180,7 +180,7 @@ export function mountChooser(
         number.setAttribute('aria-hidden', 'true')
         button.append(number, character)
         button.addEventListener('click', () => {
-          session.chooseCharacter(character)
+          session.chooseItem(character)
           showChosen()
         })
         buttons.set(character, { button, number })
