@@ -39,9 +39,10 @@ export type Strings = {
   /** e.g. "3 / 10" — how far through the run the learner is. */
   readonly progress: (position: number, total: number) => string
   /**
-   * e.g. "10字中8字正解" — the whole run, counting お題. It counts 一発正解 only,
-   * but the learner is never told that in those words: what the tally means is
-   * shown by the ○ and × beside each お題, not explained in a label.
+   * e.g. "正解 8/10" — the whole run, counting お題. It counts 一発正解 only, but
+   * the learner is never told that in those words: what the tally means is shown
+   * by the ○ and × beside each お題, not explained in a label. The お題 are listed
+   * right under it, so the count needs no unit of its own.
    */
   readonly runScore: (correct: number, total: number) => string
   readonly hiragana: string
@@ -68,7 +69,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: '次へ',
     retry: 'やり直す',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${total}字中${correct}字正解`,
+    runScore: (correct, total) => `正解 ${correct}/${total}`,
     hiragana: 'ひらがな',
     katakana: 'カタカナ',
     kanji: '漢字',
@@ -91,7 +92,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'Next',
     retry: 'Again',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${correct} of ${total} characters correct`,
+    runScore: (correct, total) => `Correct ${correct}/${total}`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -114,7 +115,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'Tiếp theo',
     retry: 'Viết lại',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `Đúng ${correct}/${total} chữ`,
+    runScore: (correct, total) => `Đúng ${correct}/${total}`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -137,7 +138,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'अर्को',
     retry: 'फेरि',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${total} मध्ये ${correct} अक्षर सही`,
+    runScore: (correct, total) => `सही ${correct}/${total}`,
     hiragana: 'हिरागाना',
     katakana: 'काताकाना',
     kanji: 'कान्जी',
