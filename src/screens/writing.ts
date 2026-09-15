@@ -36,13 +36,11 @@ export function mountWriting(
         <button type="button" class="writing__next" hidden></button>
       </div>
     </div>
-    <div class="writing__cells"></div>
     <div class="summary" hidden>
-      <div class="summary__card">
-        <p class="summary__total"></p>
-        <ol class="summary__characters"></ol>
-      </div>
-    </div>`
+      <p class="summary__total"></p>
+      <ol class="summary__characters"></ol>
+    </div>
+    <div class="writing__cells"></div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
   const progress = requireElement<HTMLParagraphElement>(screen, '.writing__progress')
@@ -103,8 +101,10 @@ export function mountWriting(
     score.hidden = showing === null
     if (showing) score.textContent = strings.strokeScore(showing.correct, showing.total)
 
-    // The results lie over the last お題, which stays on the paper below them.
-    // Looking back at one of them puts the card away until けっか brings it back.
+    // The results sit above the paper rather than over it: the answer walks
+    // through the last お題 as they appear, and a card in the way would hide the
+    // one thing the learner most needs to see. Looking back at one of them puts
+    // the strip away until けっか brings it back.
     summary.hidden = !showingResults
     // One お題 on its own needs no total: the ○ or × beside it is the whole of
     // what there is to say, and counting to one helps nobody.

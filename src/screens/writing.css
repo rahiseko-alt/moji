@@ -1,6 +1,6 @@
 .writing {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   block-size: 100%;
   inline-size: 100%;
   background: var(--paper);
@@ -142,31 +142,24 @@
 }
 
 /*
- * The whole run, once it is written. It lies over the last character rather
- * than replacing it, so the learner still sees what they just wrote — and it
- * lets taps through, so ホーム and やり直す stay within reach underneath.
+ * The whole run, once it is written. It sits between the bar and the paper
+ * rather than over it: the answer walks through the last お題 as the results
+ * appear, and anything covering the square would hide the one thing the learner
+ * most needs to see. The square gives up the height it takes.
  */
 .summary {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: grid;
-  place-content: center;
-  padding: 2rem;
-  background: var(--scrim);
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem 1rem;
+  /* A grid item is as wide as its content unless told otherwise, and a long run
+     would push the whole screen sideways. */
+  min-inline-size: 0;
+  padding: 0.2rem 0.7rem 0.45rem;
 }
 
 .summary[hidden] {
   display: none;
-}
-
-.summary__card {
-  pointer-events: auto;
-  padding: 1.2rem 1.6rem;
-  border: 1px solid var(--hairline);
-  background: var(--paper);
-  box-shadow: 0 0.5rem 2rem var(--shadow);
 }
 
 .summary__total[hidden] {
@@ -174,10 +167,10 @@
 }
 
 .summary__total {
-  margin: 0 0 0.9rem;
+  margin: 0;
   font-family: var(--serif);
-  font-size: 1.1rem;
-  text-align: center;
+  font-size: 0.95rem;
+  white-space: nowrap;
   color: var(--ink);
 }
 
@@ -187,25 +180,27 @@
   display: contents;
 }
 
+/* Many お題 run off the side rather than pushing the square out of the way. */
 .summary__characters {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 0.7rem;
-  max-inline-size: 80vw;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  min-inline-size: 0;
+  flex: 0 1 auto;
   margin: 0;
-  padding: 0;
+  padding: 0.15rem 0;
+  overflow-x: auto;
   list-style: none;
 }
 
 /* One card per お題, marked as it was written the first time. Tapping it puts
    what was written back on the paper. */
 .summary__character {
-  display: grid;
-  justify-items: center;
-  gap: 0.1rem;
-  min-inline-size: 2.2rem;
-  padding: 0.3rem 0.4rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  flex: none;
+  padding: 0.15rem 0.45rem;
   border: 1px solid var(--hairline);
   background: var(--paper);
   font-family: var(--serif);
