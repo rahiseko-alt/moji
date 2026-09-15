@@ -88,8 +88,7 @@ const rotated = (index: number, degrees: number): Point[] => {
 }
 
 /** The stroke's two ends joined by a ruler: the shape of a rushed learner. */
-const straightened = (index: number): Point[] => {
-  const points = perfect(index)
+const ruled = (points: readonly Point[]): Point[] => {
   const from = points[0]!
   const to = points[points.length - 1]!
   return points.map((_, n) => {
@@ -97,6 +96,33 @@ const straightened = (index: number): Point[] => {
     return [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]
   })
 }
+
+const straightened = (index: number): Point[] => ruled(perfect(index))
+
+/**
+ * Part way towards the ruler: 0 leaves the curve alone, 1 flattens it away.
+ * A learner's curve is always a little shallower than the model's, so the two
+ * ends of this are the two answers the marking has to tell apart.
+ */
+const flattened = (points: readonly Point[], towards: number): Point[] => {
+  const line = ruled(points)
+  return points.map(([x, y], n) => [
+    x + (line[n]![0] - x) * towards,
+    y + (line[n]![1] - y) * towards,
+  ])
+}
+
+/** Writes a character other than 日, one stroke at a time, and sends it. */
+const sendCharacter = (character: string, strokeOf: (index: number) => Point[]) => {
+  const session = begin('practice', character)
+  for (let n = 0; n < strokesOf(character).length; n++) {
+    session.addStroke(traced(strokeOf(n), n * 1000))
+  }
+  return { session, state: session.submit() }
+}
+
+/** い: a long hook down and up, then a short curve. The hook is what makes it い. */
+const hiraganaI = (index: number): Point[] => perfectOf('い', index)
 
 describe('choosing what to write', () => {
   const choosing = () => createWritingSession({ mode: 'practice', strokesOf })
@@ -259,6 +285,14 @@ describe('sending an お題 written correctly', () => {
     const { state } = send('practice', truncated(0, 0.8))
     expect(state.outcomes[0]!.correct).toBe(true)
   })
+
+  it('forgives a curve drawn a little shallower than the model', () => {
+    // Nobody traces a hook exactly. Losing some of its depth is still the hook.
+    const { state } = sendCharacter('い', (n) =>
+      n === 0 ? flattened(hiraganaI(0), 0.4) : hiraganaI(n),
+    )
+    expect(state.outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
 })
 
 /*
@@ -289,6 +323,34 @@ describe('a stroke that is close but not good enough', () => {
     // The second stroke of 日 turns a corner; a ruled line is not that stroke.
     const { state } = send('practice', perfect(0), straightened(1))
     expect(state.outcomes[1]!.correct).toBe(false)
+  })
+
+  /*
+   * い is two strokes that both run down and to the right, so a learner drawing
+   * two plain lines lands both ends in the right places and travels the right
+   * way. The hook of the first stroke is the only thing that makes it い, and
+   * the marking has to be about that rather than about the ends (ADR 0011).
+   */
+  it('is wrong when い is drawn as two plain lines', () => {
+    const { state } = sendCharacter('い', (n) => ruled(hiraganaI(n)))
+    expect(state.outcomes[0]).toEqual({ correct: false, problem: 'shape' })
+  })
+
+  it('is wrong when most of a curve has been flattened away', () => {
+    const { state } = sendCharacter('い', (n) =>
+      n === 0 ? flattened(hiraganaI(0), 0.7) : hiraganaI(n),
+    )
+    expect(state.outcomes[0]!.correct).toBe(false)
+  })
+
+  it('is wrong when a short stroke misses by more than its own length', () => {
+    // What a stroke may be out by is measured against its own length, not
+    // against the square: 学's first stroke is a short tick, so 16 across the
+    // square puts it somewhere else entirely.
+    const { state } = sendCharacter('学', (n) =>
+      n === 0 ? perfectOf('学', 0).map(([x, y]) => [x + 16, y] as Point) : perfectOf('学', n),
+    )
+    expect(state.outcomes[0]).toEqual({ correct: false, problem: 'misplaced' })
   })
 })
 

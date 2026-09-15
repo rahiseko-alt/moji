@@ -87,3 +87,43 @@ export function directionAgreement(a: readonly Point[], b: readonly Point[]): nu
   if (magnitudes === 0) return 1
   return (va[0] * vb[0] + va[1] * vb[1]) / magnitudes
 }
+
+/** Points either side of each one are averaged in, to flatten hand wobble. */
+const SMOOTHING = 2
+
+/**
+ * How far the path swings off the straight line between its own two ends, taken
+ * at evenly spaced points along it and signed by which side it swings to.
+ *
+ * Hand wobble is a fast flicker and cancels out under the smoothing here; the
+ * bend that makes a hook a hook is slow and survives it. That is what lets the
+ * two be told apart.
+ */
+export function bow(points: readonly Point[], count: number): readonly number[] {
+  const even = resample(points, count)
+  if (even.length === 0) return []
+  const smoothed = even.map((_, at) => {
+    let x = 0
+    let y = 0
+    let taken = 0
+    for (let n = Math.max(0, at - SMOOTHING); n <= Math.min(even.length - 1, at + SMOOTHING); n++) {
+      x += even[n]![0]
+      y += even[n]![1]
+      taken++
+    }
+    return [x / taken, y / taken] as Point
+  })
+  const from = smoothed[0]!
+  const to = smoothed[smoothed.length - 1]!
+  const alongX = to[0] - from[0]
+  const alongY = to[1] - from[1]
+  const span = Math.hypot(alongX, alongY)
+  if (span === 0) return smoothed.map(() => 0)
+  return smoothed.map(([x, y]) => ((x - from[0]) * alongY - (y - from[1]) * alongX) / span)
+}
+
+/** How far either side of its own straight line a path swings, on average. */
+export function bend(bows: readonly number[]): number {
+  if (bows.length === 0) return 0
+  return Math.sqrt(bows.reduce((total, at) => total + at * at, 0) / bows.length)
+}
