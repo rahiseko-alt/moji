@@ -106,6 +106,9 @@ export function mountWriting(
     // The results lie over the last お題, which stays on the paper below them.
     // Looking back at one of them puts the card away until けっか brings it back.
     summary.hidden = !showingResults
+    // One お題 on its own needs no total: the ○ or × beside it is the whole of
+    // what there is to say, and counting to one helps nobody.
+    summaryTotal.hidden = state.chosen.length < 2
     summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
     summaryCharacters.replaceChildren(
       ...state.results.map((result, index) => {

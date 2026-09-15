@@ -38,7 +38,11 @@ export type Strings = {
   readonly retry: string
   /** e.g. "3 / 10" — how far through the run the learner is. */
   readonly progress: (position: number, total: number) => string
-  /** e.g. "10字中8字、一発正解" — the whole run, counting characters. */
+  /**
+   * e.g. "10字中8字正解" — the whole run, counting お題. It counts 一発正解 only,
+   * but the learner is never told that in those words: what the tally means is
+   * shown by the ○ and × beside each お題, not explained in a label.
+   */
   readonly runScore: (correct: number, total: number) => string
   readonly hiragana: string
   readonly katakana: string
@@ -64,7 +68,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: '次へ',
     retry: 'やり直す',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${total}字中${correct}字、一発正解`,
+    runScore: (correct, total) => `${total}字中${correct}字正解`,
     hiragana: 'ひらがな',
     katakana: 'カタカナ',
     kanji: '漢字',
@@ -87,7 +91,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'Next',
     retry: 'Again',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${correct} of ${total} characters right first time`,
+    runScore: (correct, total) => `${correct} of ${total} characters correct`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -110,7 +114,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'Tiếp theo',
     retry: 'Viết lại',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `Đúng ngay lần đầu ${correct}/${total} chữ`,
+    runScore: (correct, total) => `Đúng ${correct}/${total} chữ`,
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
@@ -133,7 +137,7 @@ export const STRINGS: Record<Language, Strings> = {
     next: 'अर्को',
     retry: 'फेरि',
     progress: (position, total) => `${position} / ${total}`,
-    runScore: (correct, total) => `${total} मध्ये ${correct} अक्षर पहिलो पटकमै सही`,
+    runScore: (correct, total) => `${total} मध्ये ${correct} अक्षर सही`,
     hiragana: 'हिरागाना',
     katakana: 'काताकाना',
     kanji: 'कान्जी',
