@@ -34,8 +34,7 @@
   gap: 3cqh;
 }
 
-.cover__languages,
-.cover__modes {
+.cover__languages {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -59,22 +58,16 @@
   color: var(--paper);
 }
 
-/* Both modes read as outlines until one is chosen, so that choosing is what
-   fills a button in. */
-.cover__mode {
+/* The one way on. It reads as the seal does: filled vermilion on paper. */
+.cover__start {
   min-inline-size: 17cqw;
   padding: 1.2cqh 2.6cqw;
   border: 1.5px solid var(--vermilion);
   border-radius: 2px;
-  background: var(--paper-tint);
+  background: var(--vermilion);
   font-family: var(--serif);
   font-size: 3.3cqw;
   line-height: 1.2;
-  letter-spacing: 0.08em;
-  color: var(--vermilion);
-}
-
-.cover__mode[aria-pressed='true'] {
-  background: var(--vermilion);
+  letter-spacing: 0.14em;
   color: var(--on-vermilion);
 }

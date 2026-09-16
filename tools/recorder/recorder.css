@@ -1,0 +1,79 @@
+/* The tool's own chrome. Deliberately plain: nothing here ships to a learner. */
+.rec {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  block-size: 100dvh;
+  inline-size: 100%;
+}
+
+.rec__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.rec__count {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.rec__instruction {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.rec__again {
+  margin-inline-start: auto;
+  padding: 0.35rem 1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-size: 0.8rem;
+}
+
+.rec__cell {
+  display: grid;
+  place-items: center;
+  min-block-size: 0;
+  padding: 0 0.7rem 0.7rem;
+}
+
+.rec__done {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 2rem;
+  background: var(--paper);
+  text-align: center;
+}
+
+.rec__done[hidden] {
+  display: none;
+}
+
+.rec__message {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+/* The writing surface brings its own canvas but not its frame: the app keeps
+   that in the writing screen's stylesheet, and the square has to be the same
+   size here or the strokes would not be the same strokes. */
+.cell {
+  block-size: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--hairline-strong);
+  background: var(--paper-plain);
+}
+
+.cell canvas {
+  display: block;
+  touch-action: none;
+}

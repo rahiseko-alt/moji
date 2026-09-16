@@ -39,6 +39,42 @@
   color: var(--ink);
 }
 
+.chooser__actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Every character of the kind on show, in one tap — and out again in the next. */
+.chooser__all {
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+/* The way on. Dressed as the one action of the screen, and dimmed until there
+   is something to start with. */
+.chooser__start {
+  padding: 0.3rem 1.1rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 999px;
+  background: var(--vermilion);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--on-vermilion);
+}
+
+.chooser__start:disabled {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+  color: var(--ink-soft);
+}
+
 .chooser__groups {
   display: flex;
   justify-content: center;
@@ -77,12 +113,15 @@
 .chooser__grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), 1fr);
-  gap: 0.2cqh;
+  /* A wider gap between columns than between rows, so the kana table reads as
+     ten separate rows of the syllabary rather than one block of characters. */
+  gap: 0.2cqh 1.4cqh;
   inline-size: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
   font-size: calc(min(100cqw / var(--columns), 100cqh / var(--rows)) * 0.52);
 }
 
 .chooser__character {
+  position: relative;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -94,6 +133,28 @@
   font-size: 1em;
   line-height: 1;
   color: var(--ink);
+}
+
+.chooser__character[aria-pressed='true'] {
+  border-color: var(--vermilion);
+  background: var(--paper-tint);
+}
+
+/* Where the character stands in the run. Out of the flow, so the character
+   itself stays centred in its square. */
+.chooser__number {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0.08em;
+  font-family: var(--sans);
+  font-size: 0.34em;
+  line-height: 1.2;
+  color: var(--vermilion);
+}
+
+/* A syllable the table does not have. It holds its place and nothing else. */
+.chooser__gap {
+  aspect-ratio: 1;
 }
 
 .chooser__character:hover,
