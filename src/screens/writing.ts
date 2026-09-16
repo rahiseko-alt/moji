@@ -151,14 +151,12 @@ export function mountWriting(
   }
 
   /**
-   * Colours the ink the marking called wrong, and walks the answer through the
-   * お題 when something in it was. Both the moment it is sent and every time it
-   * is looked back at, which is the same thing to the learner.
+   * Walks the answer through the お題 when something in it was wrong. Both the
+   * moment it is sent and every time it is looked back at, which is the same
+   * thing to the learner. The learner's own ink is never recoloured: the paper
+   * keeps their hand, and the hint shows what it should have been.
    */
   const showMarking = (outcomes: readonly { readonly correct: boolean }[]): void => {
-    surface?.markWrong(
-      outcomes.flatMap((outcome, index) => (outcome.correct ? [] : [index])),
-    )
     surface?.showAnswer(outcomes.some((outcome) => !outcome.correct) ? model : [])
   }
 

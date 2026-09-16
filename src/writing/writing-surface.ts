@@ -4,8 +4,9 @@
  * It draws three things — the dotted guide, the faint model character, and the
  * ink the learner lays down — and reports each finished stroke as a list of
  * points. It holds no opinion about whether a stroke was right; the writing
- * session says so at 送信 (ADR 0009), and the ink then turns red where it was
- * wrong. Nothing is ever taken off the paper.
+ * session says so at 送信 (ADR 0009), and the answer is then walked through the
+ * お題 by the hint. The ink stays the learner's own black either way, and
+ * nothing is ever taken off the paper.
  */
 import type { Point, Stroke } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
@@ -39,8 +40,6 @@ const NAVIGATION_REST_MS = 250
 
 export type WritingSurface = {
   readonly element: HTMLElement
-  /** Turns the given strokes red: the marking said they were wrong. */
-  markWrong(strokes: readonly number[]): void
   /** Stops taking ink, for once the character is finished and there is nothing left to judge. */
   stopAcceptingStrokes(): void
   /**
@@ -70,8 +69,6 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   /** Everything the learner has written, right or wrong. Nothing is removed. */
   const written: TracedPoint[][] = (options.ink ?? []).map((stroke) => [...stroke])
-  /** Which of them the marking called wrong. */
-  const wrong = new Set<number>()
   let inProgress: TracedPoint[] | null = null
   /** Goes false once the お題 is sent, so no more ink can be laid down. */
   let accepting = options.readOnly !== true
@@ -127,12 +124,12 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.lineWidth = MODEL_WIDTH
     for (const stroke of options.model) context.stroke(new Path2D(stroke.d))
 
+    // One colour for everything the learner wrote, right or wrong: what was
+    // wrong is shown by the hint walking the answer, not by recolouring their
+    // own hand.
     context.lineWidth = INK_WIDTH
-    for (const [index, stroke] of written.entries()) {
-      context.strokeStyle = colour(wrong.has(index) ? '--wrong' : '--ink')
-      strokePolyline(stroke)
-    }
     context.strokeStyle = colour('--ink')
+    for (const stroke of written) strokePolyline(stroke)
     if (inProgress) strokePolyline(inProgress)
 
     if (navigation) drawTrip(navigation, loopedProgress())
@@ -284,11 +281,6 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   return {
     element,
-    markWrong(strokes) {
-      wrong.clear()
-      for (const index of strokes) wrong.add(index)
-      draw()
-    },
     stopAcceptingStrokes() {
       accepting = false
     },
