@@ -2,6 +2,9 @@
 .rec {
   display: grid;
   grid-template-rows: auto 1fr;
+  /* Without this the column is as wide as its widest child, and a square as
+     tall as an upright phone would drag the whole page sideways. */
+  grid-template-columns: minmax(0, 1fr);
   block-size: 100dvh;
   inline-size: 100%;
 }
@@ -9,13 +12,15 @@
 .rec__bar {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
   padding: 0.5rem 0.9rem;
 }
 
 .rec__count {
   margin: 0;
   font-size: 0.85rem;
+  white-space: nowrap;
   color: var(--ink-soft);
 }
 
@@ -27,6 +32,8 @@
 
 .rec__again {
   margin-inline-start: auto;
+  flex: none;
+  white-space: nowrap;
   padding: 0.35rem 1rem;
   border: 1px solid var(--hairline);
   border-radius: 999px;
@@ -38,6 +45,7 @@
   display: grid;
   place-items: center;
   min-block-size: 0;
+  min-inline-size: 0;
   padding: 0 0.7rem 0.7rem;
 }
 
@@ -62,10 +70,17 @@
 }
 
 /* The writing surface brings its own canvas but not its frame: the app keeps
-   that in the writing screen's stylesheet, and the square has to be the same
-   size here or the strokes would not be the same strokes. */
+   that in the writing screen's stylesheet.
+
+   The app is written on a phone held sideways, so there the square is always
+   bounded by the height. Here it is not: a phone held upright is taller than it
+   is wide, and a square as tall as the screen would be twice as wide as it. So
+   the square is bounded by whichever side is shorter. Its size in pixels does
+   not matter to what is recorded — every point is reported in the character's
+   own 109-wide square either way. */
 .cell {
-  block-size: 100%;
+  /* Whichever side of the screen is shorter decides how big the square is. */
+  block-size: min(100%, 100vw - 1.4rem);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
