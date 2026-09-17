@@ -18,8 +18,6 @@ type Dial = {
   readonly key: keyof MatchThresholds
   readonly name: string
   readonly step: number
-  /** What a bigger number does: 'looser' or 'stricter'. */
-  readonly bigger: 'ゆるい' | 'きびしい'
 }
 
 /*
@@ -27,15 +25,15 @@ type Dial = {
  * that the first row that goes red is the first number worth moving.
  */
 const DIALS: readonly Dial[] = [
-  { key: 'length', name: '長さ お手本の何割書けばよいか', step: 0.05, bigger: 'きびしい' },
-  { key: 'direction', name: '向き お手本と同じ向きか（1が同じ）', step: 0.05, bigger: 'きびしい' },
-  { key: 'ends', name: '端のずれ 画の長さの何割まで', step: 0.05, bigger: 'ゆるい' },
-  { key: 'endsFloor', name: '端のずれ 下限', step: 1, bigger: 'ゆるい' },
-  { key: 'endsCeiling', name: '端のずれ 上限', step: 1, bigger: 'ゆるい' },
-  { key: 'shape', name: 'はみ出し 画の長さの何割まで', step: 0.05, bigger: 'ゆるい' },
-  { key: 'shapeFloor', name: 'はみ出し 下限', step: 1, bigger: 'ゆるい' },
-  { key: 'curve', name: '曲がり お手本の何割残せばよいか', step: 0.05, bigger: 'きびしい' },
-  { key: 'bend', name: '曲がりを見はじめる境目', step: 0.01, bigger: 'きびしい' },
+  { key: 'length', name: '長さ お手本の何割書けばよいか', step: 0.05 },
+  { key: 'direction', name: '向き お手本と同じ向きか（1が同じ）', step: 0.05 },
+  { key: 'ends', name: '端のずれ 画の長さの何割まで', step: 0.05 },
+  { key: 'endsFloor', name: '端のずれ 下限', step: 1 },
+  { key: 'endsCeiling', name: '端のずれ 上限', step: 1 },
+  { key: 'shape', name: 'はみ出し 画の長さの何割まで', step: 0.05 },
+  { key: 'shapeFloor', name: 'はみ出し 下限', step: 1 },
+  { key: 'curve', name: '曲がり お手本の何割残せばよいか', step: 0.05 },
+  { key: 'bend', name: '曲がりを見はじめる境目', step: 0.01 },
 ]
 
 /** One measured quantity of one stroke, and whether it cleared its threshold. */
