@@ -12,6 +12,7 @@ import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
 import { loadStrokeData, strokesFor, type Stroke, type StrokeData } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
+import type { StrokeMeasurement } from '../writing/stroke-matcher'
 import type { WritingSession, WritingSessionState } from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
@@ -21,6 +22,8 @@ export function mountWriting(
   choices: ChoicesStore,
   session: WritingSession,
   onHome: () => void,
+  /** The tuning build's panel wants the numbers behind the last 送信. */
+  onMarked: (measurements: readonly StrokeMeasurement[]) => void = () => {},
 ): Screen {
   const screen = document.createElement('div')
   screen.className = 'writing'
@@ -231,6 +234,7 @@ export function mountWriting(
       showingResults = true
     }
     showMarking(state.outcomes)
+    onMarked(state.measurements)
     render()
   })
 

@@ -96,52 +96,89 @@ function curveKept(written: readonly number[], model: readonly number[]): number
   return alone === 0 ? 1 : together / alone
 }
 
-export function matchStroke(
+/**
+ * What one stroke measured against its model, alongside what each threshold
+ * allowed it. The verdict is these five comparisons and nothing else, so this
+ * is also what to show someone asking why a stroke was called wrong, or
+ * choosing where to move a number.
+ */
+export type StrokeMeasurement = {
+  /** What the stroke did: the same five quantities the verdict is made of. */
+  readonly direction: number
+  readonly ends: number
+  readonly wander: number
+  readonly length: number
+  /** Null when the model stroke is too straight to have a bend worth keeping. */
+  readonly curve: number | null
+  /** What the thresholds allowed it, in the same units. */
+  readonly allowed: {
+    readonly direction: number
+    readonly ends: number
+    readonly wander: number
+    readonly length: number
+    readonly curve: number
+  }
+}
+
+export function measureStroke(
   written: readonly Point[],
   model: readonly Point[],
   thresholds: MatchThresholds = DEFAULT_THRESHOLDS,
-): StrokeVerdict {
+): StrokeMeasurement {
   const modelLength = length(model)
-  if (length(written) < modelLength * thresholds.length) {
-    return { correct: false, reason: 'tooShort' }
-  }
-
   const a = resample(written, COMPARISON_POINTS)
   const b = resample(model, COMPARISON_POINTS)
-
-  if (directionAgreement(a, b) < thresholds.direction) {
-    return { correct: false, reason: 'backwards' }
-  }
-
   const startGap = Math.hypot(a[0]![0] - b[0]![0], a[0]![1] - b[0]![1])
   const endGap = Math.hypot(
     a[a.length - 1]![0] - b[b.length - 1]![0],
     a[a.length - 1]![1] - b[b.length - 1]![1],
   )
-  const allowedGap = Math.max(
-    thresholds.endsFloor,
-    Math.min(thresholds.endsCeiling, modelLength * thresholds.ends),
-  )
-  if (Math.max(startGap, endGap) > allowedGap) {
-    return { correct: false, reason: 'misplaced' }
+  // A stroke the model draws straight has no bend to keep, and nothing is asked
+  // of it on that count.
+  const modelBow = bow(model, COMPARISON_POINTS)
+  const bends = bend(modelBow) >= modelLength * thresholds.bend
+  return {
+    direction: directionAgreement(a, b),
+    ends: Math.max(startGap, endGap),
+    wander: frechetDistance(a, b),
+    length: modelLength === 0 ? 1 : length(written) / modelLength,
+    curve: bends ? curveKept(bow(written, COMPARISON_POINTS), modelBow) : null,
+    allowed: {
+      direction: thresholds.direction,
+      ends: Math.max(
+        thresholds.endsFloor,
+        Math.min(thresholds.endsCeiling, modelLength * thresholds.ends),
+      ),
+      wander: Math.max(modelLength * thresholds.shape, thresholds.shapeFloor),
+      length: thresholds.length,
+      curve: thresholds.curve,
+    },
   }
+}
 
-  const allowedWander = Math.max(modelLength * thresholds.shape, thresholds.shapeFloor)
-  if (frechetDistance(a, b) > allowedWander) {
-    return { correct: false, reason: 'shape' }
-  }
-
+/** The verdict is nothing but these five comparisons, in this order. */
+export function verdictOf(measured: StrokeMeasurement): StrokeVerdict {
+  // In this order, so that the reason a learner is given is the plainest one
+  // that applies: barely drawn beats backwards, backwards beats out of place.
+  if (measured.length < measured.allowed.length) return { correct: false, reason: 'tooShort' }
+  if (measured.direction < measured.allowed.direction) return { correct: false, reason: 'backwards' }
+  if (measured.ends > measured.allowed.ends) return { correct: false, reason: 'misplaced' }
+  if (measured.wander > measured.allowed.wander) return { correct: false, reason: 'shape' }
   // Two ends in the right places, the right way round, and no great detour in
   // between still leaves how the stroke bends unaccounted for. い is two lines
   // that run the same way, and only the hook of the first tells them apart, so
-  // a ruler passes everything above. A stroke the model draws straight has no
-  // bend to keep, and nothing is asked of it here.
-  const modelBow = bow(model, COMPARISON_POINTS)
-  if (bend(modelBow) >= modelLength * thresholds.bend) {
-    if (curveKept(bow(written, COMPARISON_POINTS), modelBow) < thresholds.curve) {
-      return { correct: false, reason: 'shape' }
-    }
+  // a ruler passes everything above.
+  if (measured.curve !== null && measured.curve < measured.allowed.curve) {
+    return { correct: false, reason: 'shape' }
   }
 
   return { correct: true }
+}
+
+export function matchStroke(
+  written: readonly Point[],
+  model: readonly Point[],
+  thresholds: MatchThresholds = DEFAULT_THRESHOLDS,
+): StrokeVerdict {
+  return verdictOf(measureStroke(written, model, thresholds))
 }

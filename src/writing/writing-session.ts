@@ -20,7 +20,14 @@
  */
 import type { Stroke } from '../data/stroke-data'
 import { length } from './polyline'
-import { DEFAULT_THRESHOLDS, matchStroke, type MistakeReason } from './stroke-matcher'
+import {
+  DEFAULT_THRESHOLDS,
+  measureStroke,
+  verdictOf,
+  type MatchThresholds,
+  type MistakeReason,
+  type StrokeMeasurement,
+} from './stroke-matcher'
 import { asPoint, type TracedPoint } from './traced-point'
 
 /** How much of the stroke in hand has to be drawn before the hint moves on. */
@@ -85,6 +92,12 @@ export type WritingSessionState = {
    */
   readonly navigationStroke: number | null
   /**
+   * What each written stroke measured against its model at the last 送信, for
+   * the tuning build's panel. Empty before 送信, and for a stroke the model has
+   * no counterpart for.
+   */
+  readonly measurements: readonly StrokeMeasurement[]
+  /**
    * Which characters of the お題 the hint should walk through after marking,
    * because something in them was wrong. Empty when nothing was.
    */
@@ -131,10 +144,16 @@ export type WritingSession = {
 export type WritingSessionOptions = {
   /** The model strokes of any character that might be chosen. */
   readonly strokesOf: (character: string) => readonly Stroke[]
+  /**
+   * The numbers the marking judges by. Asked for afresh at every 送信, so they
+   * can be moved while the app is running — which is how they get chosen at
+   * all, since nobody can tell from the numbers alone whether they are right.
+   */
+  readonly thresholds?: () => MatchThresholds
 }
 
 export function createWritingSession(options: WritingSessionOptions): WritingSession {
-  const { strokesOf } = options
+  const { strokesOf, thresholds = () => DEFAULT_THRESHOLDS } = options
 
   const chosen: string[] = []
   let phase: WritingSessionState['phase'] = 'choosing'
@@ -145,6 +164,8 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   let written: (readonly TracedPoint[])[] = []
   /** The marking of those strokes, once 送信 has happened. */
   let outcomes: StrokeOutcome[] = []
+  /** What those strokes measured, kept so the tuning panel can show the numbers. */
+  let measurements: StrokeMeasurement[] = []
   let marked = false
   /** One per お題 already sent, settled at its first 送信. */
   const results: ItemResult[] = []
@@ -173,6 +194,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     strokes = strokesOf(chosen[at]!)
     written = []
     outcomes = []
+    measurements = []
     marked = false
     pastHalfway = false
   }
@@ -211,6 +233,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     marked,
     outcomes: outcomes.map((outcome) => ({ ...outcome })),
     navigationStroke: navigationStroke(),
+    measurements: [...measurements],
     navigationCharacters: navigationCharacters(),
     score: countOf(firstMarking[at]),
     runScore: {
@@ -277,12 +300,16 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // written: writing them out of order is exactly the mistake this app is
       // about. Anything beyond the model's count is a stroke too many, and a
       // model stroke never written is a stroke missing; both count as wrong.
+      const judgingBy = thresholds()
+      measurements = []
       outcomes = Array.from({ length: Math.max(written.length, strokes.length) }, (_, index) => {
         const model = strokes[index]
         const stroke = written[index]
         if (!model) return { correct: false, problem: 'extra' as const }
         if (!stroke) return { correct: false, problem: 'missing' as const }
-        const verdict = matchStroke(stroke.map(asPoint), model.median, DEFAULT_THRESHOLDS)
+        const measured = measureStroke(stroke.map(asPoint), model.median, judgingBy)
+        measurements.push(measured)
+        const verdict = verdictOf(measured)
         return verdict.correct
           ? { correct: true, problem: null }
           : { correct: false, problem: verdict.reason }

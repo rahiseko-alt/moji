@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Point, Stroke, StrokeData } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
+import { DEFAULT_THRESHOLDS } from './stroke-matcher'
 import { createWritingSession, type WritingSession } from './writing-session'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
@@ -372,6 +373,50 @@ describe('a stroke that is plainly wrong', () => {
  * is what a character is marked against (ADR 0013). A finger lands a little
  * either side of that; a character put somewhere else in the cell does not.
  */
+describe('the numbers the marking judges by', () => {
+  it('uses the ones it is given rather than the shipped ones', () => {
+    // 日's first stroke written 30 to the right is out of place by any normal
+    // reckoning; told to allow 40, the marking lets it pass.
+    const written = () => strokes.map((_, n) => shifted(n, 30, 0))
+    const strict = createWritingSession({ strokesOf })
+    strict.chooseItem('日')
+    strict.start()
+    for (const [n, stroke] of written().entries()) strict.addStroke(traced(stroke, n * 1000))
+    expect(strict.submit().outcomes.some((outcome) => !outcome.correct)).toBe(true)
+
+    const loose = createWritingSession({
+      strokesOf,
+      thresholds: () => ({ ...DEFAULT_THRESHOLDS, endsFloor: 40, endsCeiling: 40, shapeFloor: 40 }),
+    })
+    loose.chooseItem('日')
+    loose.start()
+    for (const [n, stroke] of written().entries()) loose.addStroke(traced(stroke, n * 1000))
+    expect(loose.submit().outcomes.every((outcome) => outcome.correct)).toBe(true)
+  })
+
+  it('reads them afresh for every 送信, so a change part way through counts', () => {
+    let allowed = 40
+    const session = createWritingSession({
+      strokesOf,
+      thresholds: () => ({
+        ...DEFAULT_THRESHOLDS,
+        endsFloor: allowed,
+        endsCeiling: allowed,
+        shapeFloor: allowed,
+      }),
+    })
+    session.chooseItem('日')
+    session.chooseItem('一')
+    session.start()
+    for (let n = 0; n < strokes.length; n++) session.addStroke(traced(shifted(n, 30, 0), n * 1000))
+    expect(session.submit().outcomes.every((outcome) => outcome.correct)).toBe(true)
+    allowed = 16
+    session.nextItem()
+    session.addStroke(traced(perfectOf('一', 0).map(([x, y]) => [x + 30, y] as Point)))
+    expect(session.submit().outcomes.some((outcome) => !outcome.correct)).toBe(true)
+  })
+})
+
 describe('where in the 升目 the character was written', () => {
   it('passes a character written 12 off centre', () => {
     // A finger lands either side of the dotted guide. Every one of the shipped
