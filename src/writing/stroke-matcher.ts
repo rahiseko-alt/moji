@@ -49,33 +49,27 @@ export type MatchThresholds = {
 }
 
 /*
- * Chosen by measuring how real ways of writing actually score, not by feel.
- * A finger on a phone is not a pen on paper: a shaky line, a stroke a little
- * off centre, one that stops a fifth short, and a curve drawn shallower than
- * the model's are all still that stroke, and all land inside these. A stroke
- * written from the wrong end, barely drawn at all, half length, plainly in the
- * wrong place, or ruled straight where the model hooks lands outside.
+ * Five settings, from strict to forgiving, and the app runs on one of them.
+ * Nine separate numbers turned out to be nobody's idea of a dial: what a person
+ * can say is "this is too strict", so that is what there is to move.
  *
- * How far an end may sit from the model's is measured against that stroke's own
- * length rather than against the square, so a short stroke is judged as closely
- * as a long one. Before that, い's second stroke could miss by more than half
- * its own length and still pass (ADR 0011). The floor under it is what lets a
- * finger land a little either side of the dotted guide: every one of the 172
- * characters passes 12 off centre, and from 13 they start to fail (ADR 0013).
- *
- * The numbers are in the character's own 109-wide square.
+ * Measured against the strokes a real finger drew on a real phone, kept in
+ * assets/traces, and against ways of not writing the character at all. Level 3
+ * is where honest handwriting starts passing; below it, a normally written い
+ * or う is failed. The numbers are in the character's own 109-wide square.
  */
-export const DEFAULT_THRESHOLDS: MatchThresholds = {
-  direction: 0.6,
-  ends: 0.45,
-  endsFloor: 16,
-  endsCeiling: 22,
-  shape: 0.3,
-  shapeFloor: 13,
-  length: 0.6,
-  curve: 0.4,
-  bend: 0.06,
-}
+export const STRICTNESS_LEVELS: readonly MatchThresholds[] = [
+  { direction: 0.7, ends: 0.35, endsFloor: 12, endsCeiling: 18, shape: 0.25, shapeFloor: 10, length: 0.7, curve: 0.5, bend: 0.05 },
+  { direction: 0.65, ends: 0.4, endsFloor: 16, endsCeiling: 22, shape: 0.3, shapeFloor: 13, length: 0.6, curve: 0.4, bend: 0.06 },
+  { direction: 0.6, ends: 0.5, endsFloor: 20, endsCeiling: 28, shape: 0.35, shapeFloor: 16, length: 0.5, curve: 0.3, bend: 0.07 },
+  { direction: 0.55, ends: 0.6, endsFloor: 25, endsCeiling: 34, shape: 0.42, shapeFloor: 20, length: 0.4, curve: 0.2, bend: 0.08 },
+  { direction: 0.45, ends: 0.75, endsFloor: 32, endsCeiling: 42, shape: 0.5, shapeFloor: 26, length: 0.3, curve: 0.1, bend: 0.1 },
+]
+
+/** Counting from one, as the tuning panel shows it. */
+export const DEFAULT_STRICTNESS = 3
+
+export const DEFAULT_THRESHOLDS: MatchThresholds = STRICTNESS_LEVELS[DEFAULT_STRICTNESS - 1]!
 
 /** Enough to describe a stroke's shape without being fussy about wobble. */
 const COMPARISON_POINTS = 16

@@ -3,11 +3,11 @@
 /* The app gives up the width the panel takes, rather than having it lie over
    the screen: buttons under a panel cannot be pressed. */
 .tuning-on {
-  --tuning-width: min(19rem, 46vw);
+  --tuning-width: min(12rem, 34vw);
 }
 
 .tuning-on.tuning-folded {
-  --tuning-width: 3.6rem;
+  --tuning-width: 3.4rem;
 }
 
 .tuning-on #app {
@@ -21,24 +21,17 @@
   z-index: 80;
   inline-size: var(--tuning-width);
   overflow-y: auto;
-  padding: 0.5rem 0.6rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.5rem 0.55rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
   border-inline-start: 1px solid var(--hairline);
   background: var(--paper);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.35;
   color: var(--ink);
 }
 
-.tuning__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-block-end: 0.4rem;
-}
-
 .tuning__fold {
-  padding: 0.2rem 0.7rem;
+  inline-size: 100%;
+  padding: 0.2rem 0.4rem;
   border: 1px solid var(--hairline);
   border-radius: 999px;
   background: var(--paper-tint);
@@ -46,86 +39,61 @@
   color: var(--ink);
 }
 
-/* Folded, only the tab that opens it again is left. */
-.tuning[data-folded='true'] .tuning__reset,
-.tuning[data-folded='true'] .tuning__dials,
-.tuning[data-folded='true'] .tuning__readings {
+.tuning[data-folded='true'] .tuning__body {
   display: none;
 }
 
-.tuning__reset {
-  padding: 0.2rem 0.7rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-tint);
-  font-size: 0.7rem;
-  color: var(--ink);
+.tuning__title {
+  margin: 0.5rem 0 0.25rem;
+  font-family: var(--serif);
 }
 
-.tuning__dials {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tuning__dial {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  align-items: center;
+.tuning__levels {
+  display: flex;
   gap: 0.25rem;
-  padding-block: 0.12rem;
 }
 
-.tuning__dial button {
-  inline-size: 1.7rem;
-  padding: 0.1rem 0;
+.tuning__level {
+  flex: 1;
+  padding: 0.35rem 0;
   border: 1px solid var(--hairline);
   border-radius: 3px;
   background: var(--paper-tint);
-  font-size: 0.85rem;
-  color: var(--ink);
-}
-
-.tuning__name {
-  min-inline-size: 0;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
 }
 
-.tuning__value {
-  min-inline-size: 2.6rem;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
+.tuning__level[aria-pressed='true'] {
+  border-color: var(--vermilion);
+  background: var(--vermilion);
+  color: var(--on-vermilion);
 }
 
-/* A number that has been moved off the shipped one, so it is clear what is
-   being tried and what is still the default. */
-.tuning__value[data-moved='true'] {
+/* The setting the app is built with, so it is clear what is being tried. */
+.tuning__level[data-shipped='true'] {
   font-weight: 700;
-  color: var(--vermilion);
+}
+
+.tuning__ends {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.15rem 0 0;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
 }
 
 .tuning__readings {
-  margin-block-start: 0.5rem;
+  margin-block-start: 0.6rem;
   border-block-start: 1px solid var(--hairline);
   padding-block-start: 0.4rem;
 }
 
-.tuning__stroke {
-  margin-block-end: 0.35rem;
-}
-
-.tuning__strokeName {
-  margin: 0;
-  font-weight: 700;
-}
-
 .tuning__reading {
   margin: 0;
-  font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
 }
 
-/* The measurement that stopped the stroke: the first number worth moving. */
+/* What stopped the stroke: the reason the setting is worth moving, or not. */
 .tuning__reading[data-passed='false'] {
   font-weight: 700;
   color: var(--vermilion);

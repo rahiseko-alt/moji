@@ -332,11 +332,11 @@ describe('a stroke that is close but not good enough', () => {
     expect(state.outcomes[0]!.correct).toBe(false)
   })
 
-  it('is wrong when a short stroke misses by more than its own length', () => {
-    // 学's first stroke is a short tick, and 20 across the square puts it
-    // somewhere else entirely — though the square itself is 109 wide.
+  it('is wrong when a short stroke is put somewhere else in the character', () => {
+    // 学's first stroke is a short tick barely 13 long, so 24 across the square
+    // puts it nowhere near where it belongs — though the square is 109 wide.
     const { state } = sendCharacter('学', (n) =>
-      n === 0 ? perfectOf('学', 0).map(([x, y]) => [x + 20, y] as Point) : perfectOf('学', n),
+      n === 0 ? perfectOf('学', 0).map(([x, y]) => [x + 24, y] as Point) : perfectOf('学', n),
     )
     expect(state.outcomes[0]).toEqual({ correct: false, problem: 'misplaced' })
   })
