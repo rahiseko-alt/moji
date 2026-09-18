@@ -1,0 +1,234 @@
+{
+  "sources": [
+    {
+      "title": "国立国語研究所『日本語教育のための基本語彙調査』（報告78, 1984）",
+      "license": "CC BY 4.0",
+      "url": "https://mmsrv.ninjal.ac.jp/bvjsl84/"
+    },
+    {
+      "title": "文化庁「生活上の行為の分類一覧」（令和3年度改定）",
+      "license": "文部科学省ウェブサイト利用規約（CC BY 4.0 互換）",
+      "url": "https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/94276701_01.pdf"
+    }
+  ],
+  "scenes": {
+    "convenience-store": {
+      "name": {
+        "ja": "コンビニ",
+        "en": "Convenience store",
+        "vi": "Cửa hàng tiện lợi",
+        "ne": "सुविधा पसल"
+      }
+    },
+    "station": {
+      "name": {
+        "ja": "駅",
+        "en": "Station",
+        "vi": "Nhà ga",
+        "ne": "स्टेसन"
+      }
+    },
+    "hospital": {
+      "name": {
+        "ja": "病院",
+        "en": "Hospital",
+        "vi": "Bệnh viện",
+        "ne": "अस्पताल"
+      }
+    },
+    "part-time-work": {
+      "name": {
+        "ja": "アルバイト",
+        "en": "Part-time work",
+        "vi": "Làm thêm",
+        "ne": "पार्ट टाइम काम"
+      }
+    },
+    "school": {
+      "name": {
+        "ja": "学校",
+        "en": "School",
+        "vi": "Trường học",
+        "ne": "विद्यालय"
+      }
+    },
+    "city-office": {
+      "name": {
+        "ja": "役所",
+        "en": "City office",
+        "vi": "Ủy ban",
+        "ne": "नगरपालिका"
+      }
+    },
+    "home": {
+      "name": {
+        "ja": "住まい",
+        "en": "Home",
+        "vi": "Nhà ở",
+        "ne": "घर"
+      }
+    },
+    "disaster": {
+      "name": {
+        "ja": "災害",
+        "en": "Disaster",
+        "vi": "Thiên tai",
+        "ne": "विपद्"
+      }
+    },
+    "bank-and-post": {
+      "name": {
+        "ja": "銀行や郵便局",
+        "en": "Bank and post office",
+        "vi": "Ngân hàng và bưu điện",
+        "ne": "बैंक र हुलाक"
+      }
+    },
+    "rubbish": {
+      "name": {
+        "ja": "ごみ",
+        "en": "Rubbish",
+        "vi": "Rác",
+        "ne": "फोहोर"
+      }
+    },
+    "phone-and-internet": {
+      "name": {
+        "ja": "スマホやネット",
+        "en": "Phone and internet",
+        "vi": "Điện thoại và mạng",
+        "ne": "मोबाइल र इन्टरनेट"
+      }
+    },
+    "neighbourhood": {
+      "name": {
+        "ja": "地域の交流",
+        "en": "Neighbourhood",
+        "vi": "Khu phố",
+        "ne": "छिमेक"
+      }
+    }
+  },
+  "words": [
+    {
+      "written": "みせ",
+      "reading": "みせ",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "みせ",
+        "en": "shop",
+        "vi": "cửa hàng",
+        "ne": "पसल"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "お金",
+      "reading": "おかね",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "おかね",
+        "en": "money",
+        "vi": "tiền",
+        "ne": "पैसा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "百円",
+      "reading": "ひゃくえん",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "100円",
+        "en": "100 yen",
+        "vi": "100 yên",
+        "ne": "१०० येन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "千円",
+      "reading": "せんえん",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "1000円",
+        "en": "1000 yen",
+        "vi": "1000 yên",
+        "ne": "१००० येन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "入口",
+      "reading": "いりぐち",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "入るところ",
+        "en": "entrance",
+        "vi": "lối vào",
+        "ne": "प्रवेश द्वार"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "出口",
+      "reading": "でぐち",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "出るところ",
+        "en": "exit",
+        "vi": "lối ra",
+        "ne": "निकास द्वार"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "水",
+      "reading": "みず",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "みず",
+        "en": "water",
+        "vi": "nước",
+        "ne": "पानी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "本",
+      "reading": "ほん",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "ほん",
+        "en": "book",
+        "vi": "sách",
+        "ne": "किताब"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "さいふ",
+      "reading": "さいふ",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "おかねを入れるもの",
+        "en": "wallet",
+        "vi": "ví tiền",
+        "ne": "पर्स"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "ふくろ",
+      "reading": "ふくろ",
+      "scene": "convenience-store",
+      "meaning": {
+        "ja": "ものを入れるもの",
+        "en": "bag",
+        "vi": "túi",
+        "ne": "झोला"
+      },
+      "draftTranslation": true
+    }
+  ]
+}
