@@ -1,140 +1,288 @@
 /**
  * The screen a learner writes on.
  *
- * At this stage it shows one cell with a model character to trace and captures
- * what is written. Judging the strokes (#6), the navigation hint (#7) and
- * whole words across several cells (#10) all build on top of this.
+ * It shows one cell at a time: the character the run is up to. Writing it fills
+ * the cell, and 次へ puts a fresh one up for the next character. The session
+ * decides all of that (#17); this screen only draws what it is told and hands
+ * back what the finger did.
  */
 import type { ChoicesStore } from '../app/choices'
+import { createConfirm } from '../app/confirm'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
-import { loadStrokeData, strokesFor, type Stroke } from '../data/stroke-data'
+import { loadStrokeData, strokesFor, type Stroke, type StrokeData } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
-import { createWritingSession, type WritingSession } from '../writing/writing-session'
+import type { StrokeMeasurement } from '../writing/stroke-matcher'
+import type { WritingSession, WritingSessionState } from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
 
 export function mountWriting(
   parent: HTMLElement,
   choices: ChoicesStore,
-  character: string,
+  session: WritingSession,
   onHome: () => void,
+  /** The tuning build's panel wants the numbers behind the last 送信. */
+  onMarked: (measurements: readonly StrokeMeasurement[]) => void = () => {},
 ): Screen {
   const screen = document.createElement('div')
   screen.className = 'writing'
   screen.innerHTML = `
     <div class="writing__bar">
       <button type="button" class="writing__home"></button>
+      <p class="writing__progress" hidden></p>
       <p class="writing__score" hidden></p>
+      <div class="writing__actions">
+        <button type="button" class="writing__list" hidden></button>
+        <button type="button" class="writing__submit"></button>
+        <button type="button" class="writing__retry" hidden></button>
+        <button type="button" class="writing__next" hidden></button>
+      </div>
+    </div>
+    <div class="summary" hidden>
+      <p class="summary__total"></p>
+      <ol class="summary__characters"></ol>
     </div>
     <div class="writing__cells"></div>`
 
   const home = requireElement<HTMLButtonElement>(screen, '.writing__home')
+  const progress = requireElement<HTMLParagraphElement>(screen, '.writing__progress')
   const score = requireElement<HTMLParagraphElement>(screen, '.writing__score')
+  const list = requireElement<HTMLButtonElement>(screen, '.writing__list')
+  const submit = requireElement<HTMLButtonElement>(screen, '.writing__submit')
+  const retry = requireElement<HTMLButtonElement>(screen, '.writing__retry')
+  const next = requireElement<HTMLButtonElement>(screen, '.writing__next')
   const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
+  const summary = requireElement<HTMLDivElement>(screen, '.summary')
+  const summaryTotal = requireElement<HTMLParagraphElement>(summary, '.summary__total')
+  const summaryCharacters = requireElement<HTMLOListElement>(summary, '.summary__characters')
 
-  const confirm = document.createElement('div')
-  confirm.className = 'confirm'
-  confirm.hidden = true
-  confirm.setAttribute('role', 'alertdialog')
-  confirm.innerHTML = `
-    <div class="confirm__card">
-      <p class="confirm__question"></p>
-      <div class="confirm__answers">
-        <button type="button" data-answer="no"></button>
-        <button type="button" data-answer="yes"></button>
-      </div>
-    </div>`
-  const question = requireElement<HTMLParagraphElement>(confirm, '.confirm__question')
-  const yes = requireElement<HTMLButtonElement>(confirm, '[data-answer="yes"]')
-  const no = requireElement<HTMLButtonElement>(confirm, '[data-answer="no"]')
+  const confirm = createConfirm()
 
+  let data: StrokeData | null = null
   let surface: WritingSurface | null = null
-  let session: WritingSession | null = null
   let model: readonly Stroke[] = []
-  let clock: number | null = null
-
-  const showScore = (): void => {
-    if (!session) return
-    const { phase, score: tally } = session.state()
-    score.hidden = phase !== 'finished'
-    score.textContent = STRINGS[choices.get().language].strokeScore(tally.correct, tally.total)
-  }
+  /** Which お題 of the finished run is being looked back at, counting from one. */
+  let reviewing: number | null = null
+  /**
+   * The run has reached its end at least once, so the results exist and are
+   * worth a way back to — even after the learner reopens the last お題 with
+   * やり直す.
+   */
+  let resultsExist = false
+  /** Is the results card up? It is, from the moment the run ends, until something else asks. */
+  let showingResults = false
 
   /**
-   * The session decides when a learner has stalled, so it needs to be told the
-   * time. The traced points carry event timestamps, which share an origin with
-   * performance.now(), so hesitation is measured from the end of the last stroke.
+   * The session says which stroke the hint belongs on; this puts it there. It
+   * has to be called after anything that moves the session on, since the hint
+   * runs ahead of the writing rather than on a clock of its own.
    */
-  const followTheClock = (): void => {
-    clock = requestAnimationFrame(followTheClock)
-    if (!session || !surface) return
-    const { showNavigation, awaitingStroke } = session.tick(performance.now())
-    surface.setNavigation(showNavigation ? (model[awaitingStroke] ?? null) : null)
+  const showHint = (state: WritingSessionState): void => {
+    const stroke = state.navigationStroke
+    surface?.setNavigation(stroke === null ? null : (model[stroke] ?? null))
   }
-
-  const start = (strokes: readonly Stroke[], square: number): void => {
-    const mode = choices.get().mode ?? 'practice'
-    model = strokes
-    session = createWritingSession({ strokes, mode })
-    surface = createWritingSurface({
-      // A test shows no model: the whole point is writing it from memory.
-      model: mode === 'test' ? [] : strokes,
-      square,
-      onStrokeFinished(points) {
-        const state = session!.writeStroke(points)
-        // In practice a wrong stroke is shown back in red and taken away, so the
-        // learner never leaves a wrong shape sitting on the paper. A test takes
-        // what it is given and says nothing until the end.
-        if (mode === 'practice' && state.lastVerdict?.correct === false) {
-          surface!.rejectLastStroke()
-        }
-        // Nothing is left to judge, so further ink would sit there unanswered.
-        if (state.phase === 'finished') surface!.stopAcceptingStrokes()
-        showScore()
-      },
-    })
-    cells.replaceChildren(surface.element)
-    if (clock === null) clock = requestAnimationFrame(followTheClock)
-  }
-
-  void loadStrokeData().then((data) => {
-    start(strokesFor(data, character), data.viewBox)
-  })
 
   const render = (): void => {
     const strings = STRINGS[choices.get().language]
+    const state = session.state()
     home.textContent = strings.home
-    question.textContent = strings.quitQuestion
-    yes.textContent = strings.yes
-    no.textContent = strings.no
-    showScore()
+    submit.textContent = strings.submit
+    list.textContent = strings.results
+    next.textContent = strings.next
+    retry.textContent = strings.retry
+    confirm.setAnswers(strings.yes, strings.no)
+
+    // One character on its own needs no counting: the learner can see it.
+    progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
+    progress.textContent = strings.progress(state.position, state.chosen.length)
+
+    // While an お題 is being looked back at, the verdict belongs to that one
+    // rather than to the one in hand. An お題 is 一発正解 or it is not: every
+    // stroke right at the first 送信, or not, and which strokes went wrong is
+    // already on the paper in red.
+    const reviewed = reviewing === null ? null : session.attempt(reviewing)
+    const showing = reviewed ? reviewed.score : state.score
+    score.hidden = showing === null
+    if (showing) {
+      const allRight = showing.correct === showing.total
+      score.textContent = allRight ? strings.correct : strings.incorrect
+      score.dataset.correct = String(allRight)
+    }
+
+    // The results sit above the paper rather than over it: the answer walks
+    // through the last お題 as they appear, and a card in the way would hide the
+    // one thing the learner most needs to see. Looking back at one of them puts
+    // the strip away until けっか brings it back.
+    summary.hidden = !showingResults
+    // One お題 on its own needs no total: the ○ or × beside it is the whole of
+    // what there is to say, and counting to one helps nobody.
+    summaryTotal.hidden = state.chosen.length < 2
+    summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
+    summaryCharacters.replaceChildren(
+      ...state.results.map((result, index) => {
+        const item = document.createElement('li')
+        // Each one opens what was written for it, so a learner can see why.
+        const open = document.createElement('button')
+        open.type = 'button'
+        open.className = 'summary__character'
+        open.dataset.correct = String(result.firstTimeCorrect)
+        const character = document.createElement('span')
+        character.lang = 'ja'
+        character.textContent = result.item
+        const mark = document.createElement('span')
+        mark.className = 'summary__mark'
+        mark.textContent = result.firstTimeCorrect ? '○' : '×'
+        open.append(character, mark)
+        open.addEventListener('click', () => showAttempt(index + 1))
+        item.append(open)
+        return item
+      }),
+    )
+
+    // Sending is the only way on, and only once something is on the paper. The
+    // results card lets taps through, so the bar keeps working under it.
+    const away = reviewing !== null
+    submit.hidden = state.marked || away
+    submit.disabled = !state.canSubmit
+    // At the end of the run there is nowhere to go on to: the results are there.
+    next.hidden = !state.marked || state.remaining === 0 || away
+    retry.hidden = !state.marked || away
+    // Once the results exist they are always one tap away, including from an
+    // お題 reopened with やり直す after the run had already ended.
+    list.hidden = !resultsExist || showingResults
   }
 
-  // Home goes back to the cover from here. Leaving part-way throws away what has
-  // been written, so ask — but only then. Once the character is finished there is
-  // nothing left to lose, and asking every time would make the button tiresome.
-  home.addEventListener('click', () => {
-    const unfinished = session?.state().phase !== 'finished'
-    if (unfinished && surface?.hasInk()) confirm.hidden = false
-    else onHome()
+  /**
+   * Walks the answer through the お題 when something in it was wrong. Both the
+   * moment it is sent and every time it is looked back at, which is the same
+   * thing to the learner. The learner's own ink is never recoloured: the paper
+   * keeps their hand, and the hint shows what it should have been.
+   */
+  const showMarking = (outcomes: readonly { readonly correct: boolean }[]): void => {
+    surface?.showAnswer(outcomes.some((outcome) => !outcome.correct) ? model : [])
+  }
+
+  /** Puts what was written for one お題 of the finished run back on the paper. */
+  const showAttempt = (position: number): void => {
+    const attempt = session.attempt(position)
+    if (!data || !attempt) return
+    reviewing = position
+    showingResults = false
+    surface?.destroy()
+    model = strokesFor(data, attempt.item)
+    surface = createWritingSurface({
+      model,
+      square: data.viewBox,
+      ink: attempt.written,
+      readOnly: true,
+      onStrokeTraced: () => {},
+      onStrokeFinished: () => {},
+    })
+    cells.replaceChildren(surface.element)
+    // The same marking and the same answer the learner saw when they sent it.
+    showMarking(attempt.outcomes)
+    render()
+  }
+
+  /** Puts a fresh cell up for the お題 the run is now on. */
+  const showItem = (): void => {
+    reviewing = null
+    showingResults = false
+    surface?.destroy()
+    surface = null
+    const state = session.state()
+
+    if (data && state.item && !state.marked) {
+      model = strokesFor(data, state.item)
+      surface = createWritingSurface({
+        model,
+        square: data.viewBox,
+        onStrokeTraced(points) {
+          showHint(session.traceStroke(points))
+        },
+        onStrokeFinished(points) {
+          // Nothing is judged here: the stroke goes on the paper and stays
+          // there until the learner sends the お題 (ADR 0009).
+          showHint(session.addStroke(points))
+          render()
+        },
+      })
+      cells.replaceChildren(surface.element)
+      // The hint is on before the first stroke: a learner who does not know
+      // where the character starts should not have to guess to find out.
+      showHint(state)
+    } else {
+      cells.replaceChildren()
+    }
+    render()
+  }
+
+  void loadStrokeData().then((loaded) => {
+    data = loaded
+    showItem()
   })
-  yes.addEventListener('click', onHome)
-  no.addEventListener('click', () => {
-    confirm.hidden = true
+
+  submit.addEventListener('click', () => {
+    const state = session.submit()
+    if (!state.marked) return
+    // The ink stays where it is; the marking only colours it.
+    surface?.stopAcceptingStrokes()
+    surface?.setNavigation(null)
+    if (state.phase === 'finished') {
+      resultsExist = true
+      showingResults = true
+    }
+    showMarking(state.outcomes)
+    onMarked(state.measurements)
+    render()
+  })
+
+  list.addEventListener('click', () => {
+    // Back to the results card, over whatever square is on the paper.
+    showingResults = true
+    render()
+  })
+
+  next.addEventListener('click', () => {
+    session.nextItem()
+    showItem()
+  })
+
+  retry.addEventListener('click', () => {
+    session.retryItem()
+    showItem()
+  })
+
+  // Home goes back to the cover from here. Leaving part-way throws away the
+  // whole run, so ask — and say how much of it is still to come. Once the run
+  // is finished there is nothing left to lose and the button just works.
+  home.addEventListener('click', () => {
+    const strings = STRINGS[choices.get().language]
+    const state = session.state()
+    // Nothing written yet and nothing written before: there is nothing to lose,
+    // and a question there would only be in the way. Once the run is over, the
+    // same is true — the tally has already been shown.
+    const written = (surface?.hasInk() ?? false) || state.position > 1
+    if (state.phase === 'finished' || !written) {
+      onHome()
+      return
+    }
+    confirm.ask(
+      state.remaining > 0 ? strings.quitRunQuestion(state.remaining) : strings.quitQuestion,
+      onHome,
+    )
   })
 
   const unsubscribe = choices.subscribe(render)
   render()
   parent.append(screen)
-  document.body.append(confirm)
 
   return {
     destroy() {
       unsubscribe()
-      if (clock !== null) cancelAnimationFrame(clock)
       surface?.destroy()
-      confirm.remove()
+      confirm.destroy()
       screen.remove()
     },
   }
