@@ -54,7 +54,7 @@ export type MatchThresholds = {
  * can say is "this is too strict", so that is what there is to move.
  *
  * Measured against the strokes a real finger drew on a real phone, kept in
- * assets/traces, and against ways of not writing the character at all. Level 3
+ * the recorder tool, and against ways of not writing the character at all. Level 3
  * is where honest handwriting starts passing; below it, a normally written い
  * or う is failed. The numbers are in the character's own 109-wide square.
  */
@@ -69,7 +69,12 @@ export const STRICTNESS_LEVELS: readonly MatchThresholds[] = [
 /** Counting from one, as the tuning panel shows it. */
 export const DEFAULT_STRICTNESS = 3
 
-export const DEFAULT_THRESHOLDS: MatchThresholds = STRICTNESS_LEVELS[DEFAULT_STRICTNESS - 1]!
+/** The numbers of one setting, counting from one as the panel shows it. */
+export function thresholdsFor(strictness: number): MatchThresholds {
+  return STRICTNESS_LEVELS[strictness - 1] ?? STRICTNESS_LEVELS[DEFAULT_STRICTNESS - 1]!
+}
+
+export const DEFAULT_THRESHOLDS: MatchThresholds = thresholdsFor(DEFAULT_STRICTNESS)
 
 /** Enough to describe a stroke's shape without being fussy about wobble. */
 const COMPARISON_POINTS = 16

@@ -9,7 +9,7 @@
  */
 import type { ChoicesStore } from './choices'
 import { mountTuning } from '../screens/tuning'
-import { DEFAULT_STRICTNESS, STRICTNESS_LEVELS } from '../writing/stroke-matcher'
+import { DEFAULT_STRICTNESS, thresholdsFor } from '../writing/stroke-matcher'
 import type { Screen } from './screen'
 import { loadStrokeData, strokeDataIfLoaded, strokesFor } from '../data/stroke-data'
 import { mountChooser } from '../screens/chooser'
@@ -51,7 +51,7 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
 
   const toChooser = (): void => {
     const session = createWritingSession({
-      thresholds: () => STRICTNESS_LEVELS[strictness - 1]!,
+      thresholds: () => thresholdsFor(strictness),
       // The chooser keeps はじめる out of reach until the data has landed, so a
       // run never begins on the empty stand-in below.
       strokesOf: (character) => {

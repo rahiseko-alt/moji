@@ -16,8 +16,13 @@ const strokes = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as 
 const entries = words.words
 const scenes = words.scenes
 
-/** Every kana that is not a plain syllable: what the app has no strokes for. */
-const PLAIN_KANA = /^[ぁ-ゖ]+$/
+/**
+ * Kana, voiced marks and small kana included: a reading is read, never written,
+ * so it is not held to the 46 the app has strokes for. A word written in
+ * katakana reads as itself, so katakana counts. What it must not be is kanji or
+ * romaji.
+ */
+const KANA = /^[\u3041-\u3096\u30A1-\u30FA\u30FC]+$/
 
 describe('the scenes a word can belong to', () => {
   it('has the twelve the school chose', () => {
@@ -63,9 +68,9 @@ describe('every word', () => {
     }
   })
 
-  it('has a reading in plain hiragana', () => {
+  it('has a reading written in kana', () => {
     for (const word of entries) {
-      expect(word.reading, word.written).toMatch(PLAIN_KANA)
+      expect(word.reading, word.written).toMatch(KANA)
     }
   })
 

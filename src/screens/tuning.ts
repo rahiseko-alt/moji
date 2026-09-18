@@ -13,19 +13,21 @@
  */
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
-import { DEFAULT_STRICTNESS, STRICTNESS_LEVELS, type StrokeMeasurement } from '../writing/stroke-matcher'
+import {
+  DEFAULT_STRICTNESS,
+  STRICTNESS_LEVELS,
+  verdictOf,
+  type MistakeReason,
+  type StrokeMeasurement,
+} from '../writing/stroke-matcher'
 import './tuning.css'
 
-/** What stopped a stroke, in the order the marking asks. Empty when nothing did. */
-const stoppedBy = (measured: StrokeMeasurement): readonly string[] => {
-  const { allowed } = measured
-  const problems: string[] = []
-  if (measured.length < allowed.length) problems.push('短い')
-  if (measured.direction < allowed.direction) problems.push('向き')
-  if (measured.ends > allowed.ends) problems.push('位置')
-  if (measured.wander > allowed.wander) problems.push('形')
-  if (measured.curve !== null && measured.curve < allowed.curve) problems.push('曲がり')
-  return problems
+/** The four reasons a stroke can be wrong, as CONTEXT.md names them. */
+const REASONS: Readonly<Record<MistakeReason, string>> = {
+  backwards: '逆向き',
+  misplaced: '位置ずれ',
+  shape: '形違い',
+  tooShort: '短すぎ',
 }
 
 export type TuningPanel = Screen & {
@@ -91,11 +93,13 @@ export function mountTuning(
     show(measurements) {
       readings.replaceChildren(
         ...measurements.map((measured, index) => {
-          const problems = stoppedBy(measured)
+          // The same call the marking makes, so the panel can never name a
+          // reason the app would not give.
+          const verdict = verdictOf(measured)
           const line = document.createElement('p')
           line.className = 'tuning__reading'
-          line.dataset.passed = String(problems.length === 0)
-          line.textContent = `${index + 1}画目 ${problems.length === 0 ? '○' : problems.join('・')}`
+          line.dataset.passed = String(verdict.correct)
+          line.textContent = `${index + 1}画目 ${verdict.correct ? '○' : REASONS[verdict.reason]}`
           return line
         }),
       )

@@ -1,5 +1,5 @@
 /**
- * The words a learner is asked to write, and the scenes they belong to.
+ * The 単語 a learner is asked to write, and the 場面 they belong to.
  *
  * Kept apart from the stroke data on purpose. The strokes come from KanjiVG
  * under a share-alike licence; these words are chosen from the National
@@ -8,6 +8,7 @@
  * condition is read as covering the other.
  */
 import type { Language } from '../app/choices'
+import { fetchData } from './fetch-json'
 
 /** One line of text per language the interface speaks. */
 export type PerLanguage = Readonly<Record<Language, string>>
@@ -19,7 +20,10 @@ export type Scene = {
 export type Word = {
   /** How it is written, which is what the learner writes. 1 to 4 characters. */
   readonly written: string
-  /** How it is read, in plain hiragana. Shown, never written. */
+  /**
+   * How it is read, in kana. Shown, never written, so it is not held to the 46
+   * the app has strokes for; a word written in katakana reads as itself.
+   */
   readonly reading: string
   /** Which scene it belongs to, as a key of `scenes`. */
   readonly scene: string
@@ -53,14 +57,6 @@ export type WordData = {
 let pending: Promise<WordData> | null = null
 
 export function loadWordData(): Promise<WordData> {
-  pending ??= fetch(`${import.meta.env.BASE_URL}data/words.json`).then(async (response) => {
-    if (!response.ok) throw new Error(`Could not load word data: ${response.status}`)
-    return (await response.json()) as WordData
-  })
+  pending ??= fetchData<WordData>('words.json')
   return pending
-}
-
-/** The words of one scene, in the order the data lists them. */
-export function wordsOfScene(data: WordData, scene: string): readonly Word[] {
-  return data.words.filter((word) => word.scene === scene)
 }

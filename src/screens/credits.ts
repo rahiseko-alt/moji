@@ -69,10 +69,10 @@ export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Sc
     // KanjiVG's licence asks for a link to its own site, not only to the code.
     entry('筆順 / Stroke order', [strokes.attribution], [KANJIVG_SITE, strokes.source])
     entry('漢字80字', [kanji.title, kanji.note], [kanji.url])
-    for (const source of words.sources) entry('語 / Words', [source.title, source.license], [source.url])
+    for (const source of words.sources) entry('単語 / Words', [source.title, source.license], [source.url])
     // The two languages with no freely usable dictionary behind them. Said here
     // rather than beside each word, where it would only unsettle the learner.
-    entry('語の意味 / Meanings', [TRANSLATIONS_IN_REVIEW], [])
+    entry('単語の意味 / Meanings', [TRANSLATIONS_IN_REVIEW], [])
   })
 
   const render = (): void => {
