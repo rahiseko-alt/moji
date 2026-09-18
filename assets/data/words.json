@@ -229,6 +229,726 @@
         "ne": "झोला"
       },
       "draftTranslation": true
+    },
+    {
+      "written": "車",
+      "reading": "くるま",
+      "scene": "station",
+      "meaning": {
+        "ja": "くるま",
+        "en": "car",
+        "vi": "xe ô tô",
+        "ne": "कार"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "右",
+      "reading": "みぎ",
+      "scene": "station",
+      "meaning": {
+        "ja": "みぎ",
+        "en": "right",
+        "vi": "bên phải",
+        "ne": "दायाँ"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "左",
+      "reading": "ひだり",
+      "scene": "station",
+      "meaning": {
+        "ja": "ひだり",
+        "en": "left",
+        "vi": "bên trái",
+        "ne": "बायाँ"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "上",
+      "reading": "うえ",
+      "scene": "station",
+      "meaning": {
+        "ja": "うえ",
+        "en": "above",
+        "vi": "phía trên",
+        "ne": "माथि"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "下",
+      "reading": "した",
+      "scene": "station",
+      "meaning": {
+        "ja": "した",
+        "en": "below",
+        "vi": "phía dưới",
+        "ne": "तल"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "中",
+      "reading": "なか",
+      "scene": "station",
+      "meaning": {
+        "ja": "なか",
+        "en": "inside",
+        "vi": "bên trong",
+        "ne": "भित्र"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "町",
+      "reading": "まち",
+      "scene": "station",
+      "meaning": {
+        "ja": "まち",
+        "en": "town",
+        "vi": "thị trấn",
+        "ne": "सहर"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "出る",
+      "reading": "でる",
+      "scene": "station",
+      "meaning": {
+        "ja": "そとへ行く",
+        "en": "to go out",
+        "vi": "đi ra",
+        "ne": "बाहिर जानु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "入る",
+      "reading": "はいる",
+      "scene": "station",
+      "meaning": {
+        "ja": "なかへ行く",
+        "en": "to go in",
+        "vi": "đi vào",
+        "ne": "भित्र जानु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "見る",
+      "reading": "みる",
+      "scene": "station",
+      "meaning": {
+        "ja": "目で見る",
+        "en": "to look",
+        "vi": "nhìn",
+        "ne": "हेर्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "目",
+      "reading": "め",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "め",
+        "en": "eye",
+        "vi": "mắt",
+        "ne": "आँखा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "耳",
+      "reading": "みみ",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "みみ",
+        "en": "ear",
+        "vi": "tai",
+        "ne": "कान"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "口",
+      "reading": "くち",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "くち",
+        "en": "mouth",
+        "vi": "miệng",
+        "ne": "मुख"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "手",
+      "reading": "て",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "て",
+        "en": "hand",
+        "vi": "tay",
+        "ne": "हात"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "足",
+      "reading": "あし",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "あし",
+        "en": "leg",
+        "vi": "chân",
+        "ne": "खुट्टा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "力",
+      "reading": "ちから",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "ちから",
+        "en": "strength",
+        "vi": "sức lực",
+        "ne": "बल"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "あたま",
+      "reading": "あたま",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "あたま",
+        "en": "head",
+        "vi": "đầu",
+        "ne": "टाउको"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "くすり",
+      "reading": "くすり",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "びょうきのときにのむもの",
+        "en": "medicine",
+        "vi": "thuốc",
+        "ne": "औषधि"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "いたい",
+      "reading": "いたい",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "いたいです",
+        "en": "it hurts",
+        "vi": "đau",
+        "ne": "दुख्छ"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "休む",
+      "reading": "やすむ",
+      "scene": "hospital",
+      "meaning": {
+        "ja": "やすみます",
+        "en": "to rest",
+        "vi": "nghỉ",
+        "ne": "आराम गर्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "はたらく",
+      "reading": "はたらく",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "しごとをする",
+        "en": "to work",
+        "vi": "làm việc",
+        "ne": "काम गर्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "男",
+      "reading": "おとこ",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "おとこ",
+        "en": "man",
+        "vi": "nam",
+        "ne": "पुरुष"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "女",
+      "reading": "おんな",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "おんな",
+        "en": "woman",
+        "vi": "nữ",
+        "ne": "महिला"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "人",
+      "reading": "ひと",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "ひと",
+        "en": "person",
+        "vi": "người",
+        "ne": "मान्छे"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "早い",
+      "reading": "はやい",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "じかんがはやい",
+        "en": "early",
+        "vi": "sớm",
+        "ne": "चाँडो"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "休み",
+      "reading": "やすみ",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "しごとがない日",
+        "en": "day off",
+        "vi": "ngày nghỉ",
+        "ne": "बिदा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "出す",
+      "reading": "だす",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "そとへだす",
+        "en": "to put out",
+        "vi": "đưa ra",
+        "ne": "निकाल्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "入れる",
+      "reading": "いれる",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "なかへいれる",
+        "en": "to put in",
+        "vi": "cho vào",
+        "ne": "राख्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "上手",
+      "reading": "じょうず",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "うまい",
+        "en": "good at",
+        "vi": "giỏi",
+        "ne": "सिपालु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "下手",
+      "reading": "へた",
+      "scene": "part-time-work",
+      "meaning": {
+        "ja": "うまくない",
+        "en": "bad at",
+        "vi": "kém",
+        "ne": "कमजोर"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "学校",
+      "reading": "がっこう",
+      "scene": "school",
+      "meaning": {
+        "ja": "がっこう",
+        "en": "school",
+        "vi": "trường học",
+        "ne": "विद्यालय"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "先生",
+      "reading": "せんせい",
+      "scene": "school",
+      "meaning": {
+        "ja": "おしえる人",
+        "en": "teacher",
+        "vi": "giáo viên",
+        "ne": "शिक्षक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "学生",
+      "reading": "がくせい",
+      "scene": "school",
+      "meaning": {
+        "ja": "べんきょうする人",
+        "en": "student",
+        "vi": "học sinh",
+        "ne": "विद्यार्थी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "字",
+      "reading": "じ",
+      "scene": "school",
+      "meaning": {
+        "ja": "かくもじ",
+        "en": "character",
+        "vi": "chữ",
+        "ne": "अक्षर"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "花",
+      "reading": "はな",
+      "scene": "school",
+      "meaning": {
+        "ja": "はな",
+        "en": "flower",
+        "vi": "hoa",
+        "ne": "फूल"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "日本",
+      "reading": "にほん",
+      "scene": "school",
+      "meaning": {
+        "ja": "にほん",
+        "en": "Japan",
+        "vi": "Nhật Bản",
+        "ne": "जापान"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "正しい",
+      "reading": "ただしい",
+      "scene": "school",
+      "meaning": {
+        "ja": "まちがいがない",
+        "en": "correct",
+        "vi": "đúng",
+        "ne": "सही"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "立つ",
+      "reading": "たつ",
+      "scene": "school",
+      "meaning": {
+        "ja": "たちます",
+        "en": "to stand",
+        "vi": "đứng",
+        "ne": "उभिनु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "小さい",
+      "reading": "ちいさい",
+      "scene": "school",
+      "meaning": {
+        "ja": "おおきくない",
+        "en": "small",
+        "vi": "nhỏ",
+        "ne": "सानो"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "大きい",
+      "reading": "おおきい",
+      "scene": "school",
+      "meaning": {
+        "ja": "ちいさくない",
+        "en": "big",
+        "vi": "to",
+        "ne": "ठूलो"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "名",
+      "reading": "な",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "なまえ",
+        "en": "name",
+        "vi": "tên",
+        "ne": "नाम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "年",
+      "reading": "とし",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "とし",
+        "en": "year",
+        "vi": "năm",
+        "ne": "वर्ष"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "月",
+      "reading": "つき",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "つき",
+        "en": "month",
+        "vi": "tháng",
+        "ne": "महिना"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "日",
+      "reading": "ひ",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "ひ",
+        "en": "day",
+        "vi": "ngày",
+        "ne": "दिन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "くに",
+      "reading": "くに",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "うまれたところ",
+        "en": "country",
+        "vi": "quốc gia",
+        "ne": "देश"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "大人",
+      "reading": "おとな",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "こどもではない人",
+        "en": "adult",
+        "vi": "người lớn",
+        "ne": "वयस्क"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "子",
+      "reading": "こ",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "こども",
+        "en": "child",
+        "vi": "trẻ em",
+        "ne": "बालबालिका"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "円",
+      "reading": "えん",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "日本のおかね",
+        "en": "yen",
+        "vi": "yên",
+        "ne": "येन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "かく",
+      "reading": "かく",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "じをかく",
+        "en": "to write",
+        "vi": "viết",
+        "ne": "लेख्नु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "まつ",
+      "reading": "まつ",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "じゅんばんをまつ",
+        "en": "to wait",
+        "vi": "chờ",
+        "ne": "पर्खनु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "火",
+      "reading": "ひ",
+      "scene": "home",
+      "meaning": {
+        "ja": "ひ",
+        "en": "fire",
+        "vi": "lửa",
+        "ne": "आगो"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "土",
+      "reading": "つち",
+      "scene": "home",
+      "meaning": {
+        "ja": "つち",
+        "en": "soil",
+        "vi": "đất",
+        "ne": "माटो"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "木",
+      "reading": "き",
+      "scene": "home",
+      "meaning": {
+        "ja": "き",
+        "en": "tree",
+        "vi": "cây",
+        "ne": "रूख"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "石",
+      "reading": "いし",
+      "scene": "home",
+      "meaning": {
+        "ja": "いし",
+        "en": "stone",
+        "vi": "đá",
+        "ne": "ढुङ्गा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "犬",
+      "reading": "いぬ",
+      "scene": "home",
+      "meaning": {
+        "ja": "いぬ",
+        "en": "dog",
+        "vi": "chó",
+        "ne": "कुकुर"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "虫",
+      "reading": "むし",
+      "scene": "home",
+      "meaning": {
+        "ja": "むし",
+        "en": "insect",
+        "vi": "côn trùng",
+        "ne": "किरा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "へや",
+      "reading": "へや",
+      "scene": "home",
+      "meaning": {
+        "ja": "すむところ",
+        "en": "room",
+        "vi": "phòng",
+        "ne": "कोठा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "いす",
+      "reading": "いす",
+      "scene": "home",
+      "meaning": {
+        "ja": "すわるもの",
+        "en": "chair",
+        "vi": "ghế",
+        "ne": "कुर्सी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "音",
+      "reading": "おと",
+      "scene": "home",
+      "meaning": {
+        "ja": "きこえるもの",
+        "en": "sound",
+        "vi": "âm thanh",
+        "ne": "आवाज"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "うち",
+      "reading": "うち",
+      "scene": "home",
+      "meaning": {
+        "ja": "すんでいるところ",
+        "en": "home",
+        "vi": "nhà",
+        "ne": "घर"
+      },
+      "draftTranslation": true
     }
   ]
 }
