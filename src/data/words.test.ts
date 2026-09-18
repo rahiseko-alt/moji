@@ -24,12 +24,29 @@ describe('the scenes a word can belong to', () => {
     expect(Object.keys(scenes)).toHaveLength(12)
   })
 
+  it('has ten words in each', () => {
+    for (const id of Object.keys(scenes)) {
+      expect(entries.filter((word) => word.scene === id), id).toHaveLength(10)
+    }
+  })
+
   it('names every scene in all four languages', () => {
     for (const [id, scene] of Object.entries(scenes)) {
       for (const language of LANGUAGES) {
         expect(scene.name[language], `${id} in ${language}`).toBeTruthy()
       }
     }
+  })
+})
+
+describe('the list as a whole', () => {
+  it('has the hundred and twenty words the school asked for', () => {
+    expect(entries).toHaveLength(120)
+  })
+
+  it('says how it was made, including what could not be backed up', () => {
+    expect(words.notes.length).toBeGreaterThan(0)
+    for (const note of words.notes) expect(note).toBeTruthy()
   })
 })
 

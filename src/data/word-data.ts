@@ -40,6 +40,12 @@ export type WordSource = {
 
 export type WordData = {
   readonly sources: readonly WordSource[]
+  /**
+   * What a reader of the list should know about how it was made: which words
+   * are compounds rather than entries in the basic vocabulary, and which scene
+   * has no backing at all. Not shown to a learner.
+   */
+  readonly notes: readonly string[]
   readonly scenes: Readonly<Record<string, Scene>>
   readonly words: readonly Word[]
 }
