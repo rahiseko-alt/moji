@@ -33,9 +33,9 @@ describe('the scenes a word can belong to', () => {
     expect(Object.keys(scenes)).toHaveLength(12)
   })
 
-  it('has ten words in each', () => {
+  it('has a hundred words in each', () => {
     for (const id of Object.keys(scenes)) {
-      expect(entries.filter((word) => word.scene === id), id).toHaveLength(10)
+      expect(entries.filter((word) => word.scene === id), id).toHaveLength(100)
     }
   })
 
@@ -49,8 +49,8 @@ describe('the scenes a word can belong to', () => {
 })
 
 describe('the list as a whole', () => {
-  it('has the hundred and twenty words the school asked for', () => {
-    expect(entries).toHaveLength(120)
+  it('has the twelve hundred words the school asked for', () => {
+    expect(entries).toHaveLength(1200)
   })
 
   it('says how it was made, including what could not be backed up', () => {
