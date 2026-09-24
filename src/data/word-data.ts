@@ -21,8 +21,8 @@ export type Word = {
   /** How it is written, which is what the learner writes. 1 to 4 characters. */
   readonly written: string
   /**
-   * How it is read, in kana. Shown, never written, so it is not held to the 46
-   * the app has strokes for; a word written in katakana reads as itself.
+   * How it is read, in kana. Shown, never written, so nothing is asked of it
+   * beyond being kana; a word written in katakana reads as itself.
    */
   readonly reading: string
   /** Which scene it belongs to, as a key of `scenes`. */

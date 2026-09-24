@@ -17,10 +17,9 @@ const entries = words.words
 const scenes = words.scenes
 
 /**
- * Kana, voiced marks and small kana included: a reading is read, never written,
- * so it is not held to the 46 the app has strokes for. A word written in
- * katakana reads as itself, so katakana counts. What it must not be is kanji or
- * romaji.
+ * A reading is read, never written, so nothing is asked of it beyond being
+ * kana. A word written in katakana reads as itself, so katakana counts. What it
+ * must not be is kanji or romaji.
  */
 const KANA = /^[\u3041-\u3096\u30A1-\u30FA\u30FC]+$/
 
