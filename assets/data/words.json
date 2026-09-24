@@ -12,10 +12,10 @@
     }
   ],
   "notes": [
-    "単語は12場面×100。国立国語研究所『日本語教育のための基本語彙調査』の見出し語が約半分（603語）で、残りは場面ごとに、外国人が看板・書類・お知らせ・画面で出会って読めずに困る語から選んだ。",
-    "「困る」ことの裏付けと語の確認に使った公的資料（語の一覧を写したものではない）: 文化庁「生活Can do」 https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/94276701_01.pdf 、文化庁「『生活者としての外国人』に対する日本語教育の標準的なカリキュラム案」 https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/nihongo_curriculum/pdf/curriculum_ver09.pdf 、出入国在留管理庁・文化庁「在留支援のためのやさしい日本語ガイドライン」 https://www.moj.go.jp/isa/content/930006072.pdf 、出入国在留管理庁「生活・就労ガイドブック」 https://www.moj.go.jp/isa/support/portal/guidebook_all.html 、出入国在留管理庁「在留外国人に対する基礎調査」 https://www.moj.go.jp/isa/content/001462411.pdf",
-    "1年生の80字の外の漢字は、常用漢字表（平成22年内閣告示第2号）の中からだけ使う。常用漢字でない字を含む語（咳など）は、かなで書く。",
-    "「コンビニ」「スマホ」「メール」など、1984年の基本語彙調査に無い新しい語は、学校の判断で入れたもの。スマホやネットの語には確かな公的出典がほとんど無い。",
+    "単語は12場面×100。国立国語研究所『日本語教育のための基本語彙調査』の見出し語が約半分（582語）。残りは場面ごとに、外国人が看板・書類・お知らせ・画面で出会って読めずに困る語から選んだ。下の公的資料が場面ごとに名前を挙げている語（255語）は、すべて入れてある。",
+    "「困る」ことの裏付けと語の確認に使った公的資料（語の一覧を写したものではない）: 文化庁「生活Can do」 https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/94276701_01.pdf 、文化庁「標準的なカリキュラム案」 https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/nihongo_curriculum/pdf/curriculum_ver09.pdf と「教材例集」 https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/nihongo_curriculum/pdf/curriculum_kyouzai.pdf 、出入国在留管理庁・文化庁「在留支援のためのやさしい日本語ガイドライン」 https://www.moj.go.jp/isa/content/930006072.pdf 、出入国在留管理庁「生活・就労ガイドブック」 https://www.moj.go.jp/isa/support/portal/guidebook_all.html 、同「在留外国人に対する基礎調査」 https://www.moj.go.jp/isa/content/001462411.pdf 、気象庁 多言語辞書 https://www.data.jma.go.jp/developer/multilingual.html 、厚生労働省 外国人向け多言語説明資料 https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/kokusai/setsumei-ml.html 、国土交通省 部屋探しのガイドブック https://www.mlit.go.jp/common/001317843.pdf 、総務省 デジタル活用支援 講習会教材 https://www.soumu.go.jp/main_sosiki/joho_tsusin/b_free/b_free03b.html",
+    "1年生の80字の外の漢字は、常用漢字表（平成22年内閣告示第2号）の中からだけ使う。常用漢字でない字を含む語（咳・惣菜など）は、かなで書くか入れない。",
+    "「コンビニ」「時給」「シフト」「出席」「遅刻」など、上の資料で確かめられなかった語は、学校の判断で入れたもの。",
     "ベトナム語・ネパール語の意味は下訳。母語話者の確認が未了。"
   ],
   "scenes": {
@@ -730,14 +730,14 @@
       "draftTranslation": true
     },
     {
-      "written": "辛い",
-      "reading": "からい",
+      "written": "税率",
+      "reading": "ぜいりつ",
       "scene": "convenience-store",
       "meaning": {
-        "ja": "とうがらしのように口が熱くなる味",
-        "en": "spicy",
-        "vi": "cay",
-        "ne": "पिरो"
+        "ja": "税金のわりあい",
+        "en": "tax rate",
+        "vi": "thuế suất",
+        "ne": "कर दर"
       },
       "draftTranslation": true
     },
@@ -778,26 +778,26 @@
       "draftTranslation": true
     },
     {
-      "written": "温かい",
-      "reading": "あたたかい",
+      "written": "割引券",
+      "reading": "わりびきけん",
       "scene": "convenience-store",
       "meaning": {
-        "ja": "ちょうどよく熱いこと",
-        "en": "warm, hot (food)",
-        "vi": "ấm, nóng",
-        "ne": "तातो"
+        "ja": "安く買える券",
+        "en": "discount coupon",
+        "vi": "phiếu giảm giá",
+        "ne": "छुट कुपन"
       },
       "draftTranslation": true
     },
     {
-      "written": "冷たい",
-      "reading": "つめたい",
+      "written": "冷凍食品",
+      "reading": "れいとうしょくひん",
       "scene": "convenience-store",
       "meaning": {
-        "ja": "さわると冷えていること",
-        "en": "cold",
-        "vi": "lạnh",
-        "ne": "चिसो"
+        "ja": "こおらせた食べ物",
+        "en": "frozen food",
+        "vi": "thực phẩm đông lạnh",
+        "ne": "जमाइएको खाना"
       },
       "draftTranslation": true
     },
@@ -1270,14 +1270,14 @@
       "draftTranslation": true
     },
     {
-      "written": "雑誌",
-      "reading": "ざっし",
+      "written": "豆腐",
+      "reading": "とうふ",
       "scene": "convenience-store",
       "meaning": {
-        "ja": "毎週や毎月出る本",
-        "en": "magazine",
-        "vi": "tạp chí",
-        "ne": "पत्रिका"
+        "ja": "大豆で作った白い食べ物",
+        "en": "tofu",
+        "vi": "đậu phụ",
+        "ne": "टोफु"
       },
       "draftTranslation": true
     },
@@ -1294,14 +1294,14 @@
       "draftTranslation": true
     },
     {
-      "written": "買い物",
-      "reading": "かいもの",
+      "written": "調味料",
+      "reading": "ちょうみりょう",
       "scene": "convenience-store",
       "meaning": {
-        "ja": "店で物を買うこと",
-        "en": "shopping",
-        "vi": "mua sắm",
-        "ne": "किनमेल"
+        "ja": "味をつけるもの",
+        "en": "seasoning",
+        "vi": "gia vị",
+        "ne": "मसला"
       },
       "draftTranslation": true
     },
@@ -1402,14 +1402,14 @@
       "draftTranslation": true
     },
     {
-      "written": "急ぐ",
-      "reading": "いそぐ",
+      "written": "精算所",
+      "reading": "せいさんじょ",
       "scene": "station",
       "meaning": {
-        "ja": "早くしようとする",
-        "en": "to hurry",
-        "vi": "vội",
-        "ne": "हतार गर्नु"
+        "ja": "足りない運賃をはらうところ",
+        "en": "fare adjustment office",
+        "vi": "quầy điều chỉnh vé",
+        "ne": "भाडा मिलान कक्ष"
       },
       "draftTranslation": true
     },
@@ -2614,14 +2614,14 @@
       "draftTranslation": true
     },
     {
-      "written": "手",
-      "reading": "て",
+      "written": "発熱",
+      "reading": "はつねつ",
       "scene": "hospital",
       "meaning": {
-        "ja": "物を持つところ",
-        "en": "hand",
-        "vi": "tay",
-        "ne": "हात"
+        "ja": "熱が出ること",
+        "en": "fever",
+        "vi": "sốt",
+        "ne": "ज्वरो आउनु"
       },
       "draftTranslation": true
     },
@@ -3766,14 +3766,14 @@
       "draftTranslation": true
     },
     {
-      "written": "客",
-      "reading": "きゃく",
+      "written": "賃金",
+      "reading": "ちんぎん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "ものを買いにくる人",
-        "en": "customer",
-        "vi": "khách",
-        "ne": "ग्राहक"
+        "ja": "はたらいてもらうお金",
+        "en": "wages",
+        "vi": "tiền lương",
+        "ne": "ज्याला"
       },
       "draftTranslation": true
     },
@@ -4282,14 +4282,14 @@
       "draftTranslation": true
     },
     {
-      "written": "時間外",
-      "reading": "じかんがい",
+      "written": "客",
+      "reading": "きゃく",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "きまった時間のそと",
-        "en": "outside hours, overtime",
-        "vi": "ngoài giờ",
-        "ne": "समयभन्दा बाहिर"
+        "ja": "ものを買いにくる人",
+        "en": "customer",
+        "vi": "khách",
+        "ne": "ग्राहक"
       },
       "draftTranslation": true
     },
@@ -4438,26 +4438,26 @@
       "draftTranslation": true
     },
     {
-      "written": "同僚",
-      "reading": "どうりょう",
+      "written": "契約期間",
+      "reading": "けいやくきかん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "同じところではたらく人",
-        "en": "co-worker",
-        "vi": "đồng nghiệp",
-        "ne": "सहकर्मी"
+        "ja": "約束が続く期間",
+        "en": "contract period",
+        "vi": "thời hạn hợp đồng",
+        "ne": "सम्झौता अवधि"
       },
       "draftTranslation": true
     },
     {
-      "written": "先輩",
-      "reading": "せんぱい",
+      "written": "最低賃金",
+      "reading": "さいていちんぎん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "自分より前からいる人",
-        "en": "senior colleague",
-        "vi": "tiền bối, đàn anh",
-        "ne": "सिनियर"
+        "ja": "法律で決まった一番低い賃金",
+        "en": "minimum wage",
+        "vi": "lương tối thiểu",
+        "ne": "न्यूनतम ज्याला"
       },
       "draftTranslation": true
     },
@@ -4510,14 +4510,14 @@
       "draftTranslation": true
     },
     {
-      "written": "交代",
-      "reading": "こうたい",
+      "written": "労働条件",
+      "reading": "ろうどうじょうけん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "ほかの人とかわること",
-        "en": "taking turns, shift change",
-        "vi": "thay ca, đổi người",
-        "ne": "पालो फेर्नु"
+        "ja": "給料や時間などのはたらくきまり",
+        "en": "working conditions",
+        "vi": "điều kiện lao động",
+        "ne": "कामका सर्तहरू"
       },
       "draftTranslation": true
     },
@@ -4546,26 +4546,26 @@
       "draftTranslation": true
     },
     {
-      "written": "希望",
-      "reading": "きぼう",
+      "written": "労災保険",
+      "reading": "ろうさいほけん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "こうしたいというねがい",
-        "en": "wish, preference",
-        "vi": "nguyện vọng",
-        "ne": "इच्छा"
+        "ja": "仕事でけがをしたときの保険",
+        "en": "workers' accident insurance",
+        "vi": "bảo hiểm tai nạn lao động",
+        "ne": "कामदार दुर्घटना बीमा"
       },
       "draftTranslation": true
     },
     {
-      "written": "経験",
-      "reading": "けいけん",
+      "written": "解雇",
+      "reading": "かいこ",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "じっさいにしたこと",
-        "en": "experience",
-        "vi": "kinh nghiệm",
-        "ne": "अनुभव"
+        "ja": "会社がやめさせること",
+        "en": "dismissal",
+        "vi": "sa thải",
+        "ne": "बर्खास्ती"
       },
       "draftTranslation": true
     },
@@ -4618,14 +4618,14 @@
       "draftTranslation": true
     },
     {
-      "written": "皿洗い",
-      "reading": "さらあらい",
+      "written": "同僚",
+      "reading": "どうりょう",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "つかった皿をあらう仕事",
-        "en": "dishwashing",
-        "vi": "rửa bát",
-        "ne": "भाँडा माझ्ने"
+        "ja": "同じところではたらく人",
+        "en": "co-worker",
+        "vi": "đồng nghiệp",
+        "ne": "सहकर्मी"
       },
       "draftTranslation": true
     },
@@ -4774,14 +4774,14 @@
       "draftTranslation": true
     },
     {
-      "written": "手洗い",
-      "reading": "てあらい",
+      "written": "先輩",
+      "reading": "せんぱい",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "手をあらうこと",
-        "en": "hand washing",
-        "vi": "rửa tay",
-        "ne": "हात धुनु"
+        "ja": "自分より前からいる人",
+        "en": "senior colleague",
+        "vi": "tiền bối, đàn anh",
+        "ne": "सिनियर"
       },
       "draftTranslation": true
     },
@@ -4858,14 +4858,14 @@
       "draftTranslation": true
     },
     {
-      "written": "関係者",
-      "reading": "かんけいしゃ",
+      "written": "経験",
+      "reading": "けいけん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "そのことにかかわる人",
-        "en": "staff, persons concerned",
-        "vi": "người liên quan",
-        "ne": "सम्बन्धित व्यक्ति"
+        "ja": "じっさいにしたこと",
+        "en": "experience",
+        "vi": "kinh nghiệm",
+        "ne": "अनुभव"
       },
       "draftTranslation": true
     },
@@ -6130,14 +6130,14 @@
       "draftTranslation": true
     },
     {
-      "written": "名前",
-      "reading": "なまえ",
+      "written": "免除",
+      "reading": "めんじょ",
       "scene": "city-office",
       "meaning": {
-        "ja": "その人やものをよぶことば",
-        "en": "name",
-        "vi": "tên",
-        "ne": "नाम"
+        "ja": "しなくてよいことになること",
+        "en": "exemption",
+        "vi": "miễn",
+        "ne": "छुट"
       },
       "draftTranslation": true
     },
@@ -6166,14 +6166,14 @@
       "draftTranslation": true
     },
     {
-      "written": "書く",
-      "reading": "かく",
+      "written": "再交付",
+      "reading": "さいこうふ",
       "scene": "city-office",
       "meaning": {
-        "ja": "ペンなどで字をしるす",
-        "en": "to write",
-        "vi": "viết",
-        "ne": "लेख्नु"
+        "ja": "もう一度出してもらうこと",
+        "en": "reissue",
+        "vi": "cấp lại",
+        "ne": "पुनः जारी"
       },
       "draftTranslation": true
     },
@@ -6190,14 +6190,14 @@
       "draftTranslation": true
     },
     {
-      "written": "大人",
-      "reading": "おとな",
+      "written": "返納",
+      "reading": "へんのう",
       "scene": "city-office",
       "meaning": {
-        "ja": "子どもではない人",
-        "en": "adult",
-        "vi": "người lớn",
-        "ne": "वयस्क"
+        "ja": "役所に返すこと",
+        "en": "return (of a document)",
+        "vi": "trả lại",
+        "ne": "फिर्ता बुझाउनु"
       },
       "draftTranslation": true
     },
@@ -6694,14 +6694,14 @@
       "draftTranslation": true
     },
     {
-      "written": "課税",
-      "reading": "かぜい",
+      "written": "未納",
+      "reading": "みのう",
       "scene": "city-office",
       "meaning": {
-        "ja": "税金をかけること",
-        "en": "taxation",
-        "vi": "đánh thuế",
-        "ne": "कर लगाउनु"
+        "ja": "まだはらっていないこと",
+        "en": "unpaid",
+        "vi": "chưa nộp",
+        "ne": "बाँकी भुक्तानी"
       },
       "draftTranslation": true
     },
@@ -6946,26 +6946,26 @@
       "draftTranslation": true
     },
     {
-      "written": "支所",
-      "reading": "ししょ",
+      "written": "書く",
+      "reading": "かく",
       "scene": "city-office",
       "meaning": {
-        "ja": "役所の小さな事務所",
-        "en": "branch office",
-        "vi": "chi nhánh",
-        "ne": "शाखा कार्यालय"
+        "ja": "ペンなどで字をしるす",
+        "en": "to write",
+        "vi": "viết",
+        "ne": "लेख्नु"
       },
       "draftTranslation": true
     },
     {
-      "written": "出張所",
-      "reading": "しゅっちょうじょ",
+      "written": "大人",
+      "reading": "おとな",
       "scene": "city-office",
       "meaning": {
-        "ja": "役所の出先の事務所",
-        "en": "sub-branch office",
-        "vi": "văn phòng đại diện",
-        "ne": "सम्पर्क कार्यालय"
+        "ja": "子どもではない人",
+        "en": "adult",
+        "vi": "người lớn",
+        "ne": "वयस्क"
       },
       "draftTranslation": true
     },
@@ -7054,26 +7054,26 @@
       "draftTranslation": true
     },
     {
-      "written": "年齢",
-      "reading": "ねんれい",
+      "written": "印鑑登録",
+      "reading": "いんかんとうろく",
       "scene": "city-office",
       "meaning": {
-        "ja": "生まれてからの年の数",
-        "en": "age",
-        "vi": "tuổi",
-        "ne": "उमेर"
+        "ja": "はんこを役所に届けること",
+        "en": "seal registration",
+        "vi": "đăng ký con dấu",
+        "ne": "छाप दर्ता"
       },
       "draftTranslation": true
     },
     {
-      "written": "職業",
-      "reading": "しょくぎょう",
+      "written": "戸籍",
+      "reading": "こせき",
       "scene": "city-office",
       "meaning": {
-        "ja": "している仕事のしゅるい",
-        "en": "occupation",
-        "vi": "nghề nghiệp",
-        "ne": "पेशा"
+        "ja": "家族の記録",
+        "en": "family register",
+        "vi": "hộ tịch",
+        "ne": "परिवार दर्ता"
       },
       "draftTranslation": true
     },
@@ -7102,14 +7102,14 @@
       "draftTranslation": true
     },
     {
-      "written": "該当",
-      "reading": "がいとう",
+      "written": "在留期限",
+      "reading": "ざいりゅうきげん",
       "scene": "city-office",
       "meaning": {
-        "ja": "あてはまること",
-        "en": "applicable",
-        "vi": "thuộc diện, phù hợp",
-        "ne": "लागू हुने"
+        "ja": "日本にいてよい最後の日",
+        "en": "end of period of stay",
+        "vi": "hạn lưu trú",
+        "ne": "बसाइको अन्तिम मिति"
       },
       "draftTranslation": true
     },
@@ -7282,6 +7282,30 @@
       "draftTranslation": true
     },
     {
+      "written": "名前",
+      "reading": "なまえ",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "その人やものをよぶことば",
+        "en": "name",
+        "vi": "tên",
+        "ne": "नाम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "転出届",
+      "reading": "てんしゅつとどけ",
+      "scene": "city-office",
+      "meaning": {
+        "ja": "ほかのまちへ引っ越すときに出す書類",
+        "en": "moving-out notification",
+        "vi": "giấy báo chuyển đi",
+        "ne": "बसाइँसराइ प्रस्थान सूचना"
+      },
+      "draftTranslation": true
+    },
+    {
       "written": "男性",
       "reading": "だんせい",
       "scene": "city-office",
@@ -7290,30 +7314,6 @@
         "en": "male",
         "vi": "nam",
         "ne": "पुरुष"
-      },
-      "draftTranslation": true
-    },
-    {
-      "written": "女性",
-      "reading": "じょせい",
-      "scene": "city-office",
-      "meaning": {
-        "ja": "女の人",
-        "en": "female",
-        "vi": "nữ",
-        "ne": "महिला"
-      },
-      "draftTranslation": true
-    },
-    {
-      "written": "記載",
-      "reading": "きさい",
-      "scene": "city-office",
-      "meaning": {
-        "ja": "書類に書いてあること",
-        "en": "entry, statement",
-        "vi": "ghi, ghi chép",
-        "ne": "उल्लेख"
       },
       "draftTranslation": true
     },
@@ -8122,14 +8122,14 @@
       "draftTranslation": true
     },
     {
-      "written": "枕",
-      "reading": "まくら",
+      "written": "原状回復",
+      "reading": "げんじょうかいふく",
       "scene": "home",
       "meaning": {
-        "ja": "寝るとき頭をのせるもの",
-        "en": "pillow",
-        "vi": "gối",
-        "ne": "सिरानी"
+        "ja": "部屋を借りたときの形にもどすこと",
+        "en": "restoring to original condition",
+        "vi": "khôi phục nguyên trạng",
+        "ne": "पहिलेकै अवस्थामा फर्काउनु"
       },
       "draftTranslation": true
     },
@@ -8158,26 +8158,26 @@
       "draftTranslation": true
     },
     {
-      "written": "棚",
-      "reading": "たな",
+      "written": "火災保険",
+      "reading": "かさいほけん",
       "scene": "home",
       "meaning": {
-        "ja": "物をのせる板",
-        "en": "shelf",
-        "vi": "kệ",
-        "ne": "र्‍याक"
+        "ja": "火事のときの保険",
+        "en": "fire insurance",
+        "vi": "bảo hiểm hỏa hoạn",
+        "ne": "आगलागी बीमा"
       },
       "draftTranslation": true
     },
     {
-      "written": "鏡",
-      "reading": "かがみ",
+      "written": "同居者",
+      "reading": "どうきょしゃ",
       "scene": "home",
       "meaning": {
-        "ja": "自分の顔がうつるもの",
-        "en": "mirror",
-        "vi": "gương",
-        "ne": "ऐना"
+        "ja": "いっしょに住む人",
+        "en": "cohabitant",
+        "vi": "người sống cùng",
+        "ne": "सँगै बस्ने व्यक्ति"
       },
       "draftTranslation": true
     },
@@ -8242,14 +8242,14 @@
       "draftTranslation": true
     },
     {
-      "written": "片付ける",
-      "reading": "かたづける",
+      "written": "請求書",
+      "reading": "せいきゅうしょ",
       "scene": "home",
       "meaning": {
-        "ja": "物を元の所にもどしてきれいにする",
-        "en": "to tidy up",
-        "vi": "dọn gọn",
-        "ne": "मिलाउनु"
+        "ja": "お金をはらうように求める紙",
+        "en": "bill",
+        "vi": "hóa đơn",
+        "ne": "बिल"
       },
       "draftTranslation": true
     },
@@ -8278,14 +8278,14 @@
       "draftTranslation": true
     },
     {
-      "written": "干す",
-      "reading": "ほす",
+      "written": "検針票",
+      "reading": "けんしんひょう",
       "scene": "home",
       "meaning": {
-        "ja": "日や風に当ててかわかす",
-        "en": "to hang out to dry",
-        "vi": "phơi",
-        "ne": "सुकाउनु"
+        "ja": "電気やガスを使った量を知らせる紙",
+        "en": "meter reading slip",
+        "vi": "phiếu ghi chỉ số",
+        "ne": "मिटर रिडिङ पर्ची"
       },
       "draftTranslation": true
     },
@@ -8470,14 +8470,14 @@
       "draftTranslation": true
     },
     {
-      "written": "屋根",
-      "reading": "やね",
+      "written": "基本料金",
+      "reading": "きほんりょうきん",
       "scene": "home",
       "meaning": {
-        "ja": "建物の上をおおう部分",
-        "en": "roof",
-        "vi": "mái nhà",
-        "ne": "छानो"
+        "ja": "使わなくてもはらうお金",
+        "en": "basic charge",
+        "vi": "phí cơ bản",
+        "ne": "आधारभूत शुल्क"
       },
       "draftTranslation": true
     },
@@ -8626,14 +8626,14 @@
       "draftTranslation": true
     },
     {
-      "written": "天気",
-      "reading": "てんき",
+      "written": "津波警報",
+      "reading": "つなみけいほう",
       "scene": "disaster",
       "meaning": {
-        "ja": "晴れ・雨・雪など、空のようす",
-        "en": "weather",
-        "vi": "thời tiết",
-        "ne": "मौसम"
+        "ja": "津波が来るという知らせ",
+        "en": "tsunami warning",
+        "vi": "cảnh báo sóng thần",
+        "ne": "सुनामी चेतावनी"
       },
       "draftTranslation": true
     },
@@ -9442,14 +9442,14 @@
       "draftTranslation": true
     },
     {
-      "written": "倒れる",
-      "reading": "たおれる",
+      "written": "氾濫",
+      "reading": "はんらん",
       "scene": "disaster",
       "meaning": {
-        "ja": "立っていた物が横になる",
-        "en": "to fall over",
-        "vi": "đổ, ngã",
-        "ne": "ढल्नु"
+        "ja": "川の水があふれること",
+        "en": "river flooding",
+        "vi": "tràn bờ",
+        "ne": "नदी उर्लनु"
       },
       "draftTranslation": true
     },
@@ -9598,14 +9598,14 @@
       "draftTranslation": true
     },
     {
-      "written": "伝言",
-      "reading": "でんごん",
+      "written": "懐中電灯",
+      "reading": "かいちゅうでんとう",
       "scene": "disaster",
       "meaning": {
-        "ja": "人にたのんでつたえることば",
-        "en": "message",
-        "vi": "lời nhắn",
-        "ne": "सन्देश"
+        "ja": "手で持つあかり",
+        "en": "flashlight",
+        "vi": "đèn pin",
+        "ne": "टर्च"
       },
       "draftTranslation": true
     },
@@ -10246,26 +10246,26 @@
       "draftTranslation": true
     },
     {
-      "written": "預ける",
-      "reading": "あずける",
+      "written": "連絡票",
+      "reading": "れんらくひょう",
       "scene": "bank-and-post",
       "meaning": {
-        "ja": "お金や物を人にたのんで持っていてもらう",
-        "en": "to deposit",
-        "vi": "gửi",
-        "ne": "जम्मा गर्नु"
+        "ja": "知らせるための紙",
+        "en": "notice slip",
+        "vi": "phiếu liên lạc",
+        "ne": "सूचना पर्ची"
       },
       "draftTranslation": true
     },
     {
-      "written": "貯める",
-      "reading": "ためる",
+      "written": "封書",
+      "reading": "ふうしょ",
       "scene": "bank-and-post",
       "meaning": {
-        "ja": "お金を少しずつとっておく",
-        "en": "to save (money)",
-        "vi": "để dành",
-        "ne": "बचत गर्नु"
+        "ja": "封筒に入れた手紙",
+        "en": "sealed letter",
+        "vi": "thư dán kín",
+        "ne": "खामबन्दी पत्र"
       },
       "draftTranslation": true
     },
@@ -11686,26 +11686,26 @@
       "draftTranslation": true
     },
     {
-      "written": "汚い",
-      "reading": "きたない",
+      "written": "資源物",
+      "reading": "しげんぶつ",
       "scene": "rubbish",
       "meaning": {
-        "ja": "きれいではない",
-        "en": "dirty",
-        "vi": "bẩn",
-        "ne": "फोहोरी"
+        "ja": "もう一度使えるごみ",
+        "en": "recyclables",
+        "vi": "đồ tái chế",
+        "ne": "पुनः प्रयोग योग्य फोहोर"
       },
       "draftTranslation": true
     },
     {
-      "written": "臭い",
-      "reading": "くさい",
+      "written": "家電ごみ",
+      "reading": "かでんごみ",
       "scene": "rubbish",
       "meaning": {
-        "ja": "いやなにおいがする",
-        "en": "smelly",
-        "vi": "hôi",
-        "ne": "गनाउने"
+        "ja": "古い電気製品のごみ",
+        "en": "appliance waste",
+        "vi": "rác đồ điện",
+        "ne": "बिजुली सामानको फोहोर"
       },
       "draftTranslation": true
     },
@@ -11842,14 +11842,14 @@
       "draftTranslation": true
     },
     {
-      "written": "割れる",
-      "reading": "われる",
+      "written": "蛍光管",
+      "reading": "けいこうかん",
       "scene": "rubbish",
       "meaning": {
-        "ja": "こわれていくつかになる",
-        "en": "to break",
-        "vi": "vỡ",
-        "ne": "फुट्नु"
+        "ja": "細長い電灯",
+        "en": "fluorescent tube",
+        "vi": "ống đèn huỳnh quang",
+        "ne": "फ्लोरोसेन्ट ट्युब"
       },
       "draftTranslation": true
     },
@@ -13282,26 +13282,26 @@
       "draftTranslation": true
     },
     {
-      "written": "自撮り",
-      "reading": "じどり",
+      "written": "履歴",
+      "reading": "りれき",
       "scene": "phone-and-internet",
       "meaning": {
-        "ja": "自分で自分をとる写真",
-        "en": "selfie",
-        "vi": "chụp ảnh tự sướng",
-        "ne": "सेल्फी"
+        "ja": "前にしたことの記録",
+        "en": "history (log)",
+        "vi": "lịch sử",
+        "ne": "इतिहास"
       },
       "draftTranslation": true
     },
     {
-      "written": "絵文字",
-      "reading": "えもじ",
+      "written": "ボタン",
+      "reading": "ボタン",
       "scene": "phone-and-internet",
       "meaning": {
-        "ja": "メッセージに入れる小さな絵",
-        "en": "emoji",
-        "vi": "biểu tượng cảm xúc",
-        "ne": "इमोजी"
+        "ja": "おして動かすところ",
+        "en": "button",
+        "vi": "nút",
+        "ne": "बटन"
       },
       "draftTranslation": true
     },
@@ -13822,14 +13822,14 @@
       "draftTranslation": true
     },
     {
-      "written": "仲良く",
-      "reading": "なかよく",
+      "written": "開催",
+      "reading": "かいさい",
       "scene": "neighbourhood",
       "meaning": {
-        "ja": "なかがいいようす",
-        "en": "on good terms",
-        "vi": "hòa thuận",
-        "ne": "मिलेर"
+        "ja": "会やもよおしを開くこと",
+        "en": "holding an event",
+        "vi": "tổ chức",
+        "ne": "आयोजना"
       },
       "draftTranslation": true
     },
@@ -14002,14 +14002,14 @@
       "draftTranslation": true
     },
     {
-      "written": "散歩",
-      "reading": "さんぽ",
+      "written": "小雨決行",
+      "reading": "こさめけっこう",
       "scene": "neighbourhood",
       "meaning": {
-        "ja": "ぶらぶら歩く",
-        "en": "walk",
-        "vi": "đi dạo",
-        "ne": "घुमफिर"
+        "ja": "少しの雨ならやる",
+        "en": "held in light rain",
+        "vi": "vẫn tổ chức khi mưa nhỏ",
+        "ne": "हल्का पानीमा पनि हुन्छ"
       },
       "draftTranslation": true
     },
@@ -14314,14 +14314,14 @@
       "draftTranslation": true
     },
     {
-      "written": "気軽に",
-      "reading": "きがるに",
+      "written": "町会",
+      "reading": "ちょうかい",
       "scene": "neighbourhood",
       "meaning": {
-        "ja": "気をつかわないで",
-        "en": "casually",
-        "vi": "thoải mái",
-        "ne": "सजिलै"
+        "ja": "まちの人の集まり",
+        "en": "neighbourhood association",
+        "vi": "hội khu phố",
+        "ne": "टोल सुधार समिति"
       },
       "draftTranslation": true
     },
@@ -14482,14 +14482,14 @@
       "draftTranslation": true
     },
     {
-      "written": "物音",
-      "reading": "ものおと",
+      "written": "雨天順延",
+      "reading": "うてんじゅんえん",
       "scene": "neighbourhood",
       "meaning": {
-        "ja": "何かがうごいてする音",
-        "en": "sound, noise",
-        "vi": "tiếng động",
-        "ne": "आवाज"
+        "ja": "雨なら次の日にする",
+        "en": "postponed if it rains",
+        "vi": "hoãn nếu trời mưa",
+        "ne": "पानी परे सारिन्छ"
       },
       "draftTranslation": true
     },
