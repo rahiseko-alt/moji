@@ -32,8 +32,17 @@ body,
   block-size: 100%;
 }
 
+/*
+ * The page runs edge to edge (viewport-fit=cover), so on a phone held sideways
+ * the camera cut-out sits over one end of the screen. Nothing may be drawn
+ * under it: the first 升目 of a four-character 単語 lands exactly there and
+ * cannot be written in. The app keeps to the part of the screen the phone
+ * says is clear, left and right. (Top and bottom are already kept clear by a
+ * host that pads the page, and a phone held sideways has no cut-out there.)
+ */
 #app {
   inline-size: 100%;
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
 button {
