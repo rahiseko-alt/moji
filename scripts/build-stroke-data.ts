@@ -11,13 +11,19 @@
  * in its own file, apart from the application code, and carries the same
  * licence.
  *
+ * Which characters: the ones the app teaches in its tables, and every other
+ * character a 単語 in assets/data/words.json is written with — so the word list
+ * has to be in place first, and adding a 単語 with a new kanji means running
+ * this again.
+ *
  * Usage: npm run build:data -- [path-to-kanjivg-checkout]
  * The result is committed, so a build never needs the network.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ALL_CHARACTERS } from '../src/data/characters'
+import { charactersFor } from '../src/data/characters'
+import type { WordData } from '../src/data/word-data'
 import type { Point } from '../src/data/stroke-data'
 import { resample } from '../src/writing/polyline'
 
@@ -145,6 +151,10 @@ const ord = (character: string): string => {
   return code.toString(16).padStart(5, '0')
 }
 
+const WORDS = join(ROOT, 'assets', 'data', 'words.json')
+const words = JSON.parse(readFileSync(WORDS, 'utf8')) as WordData
+const characters = charactersFor(words.words)
+
 const data = {
   attribution:
     'Stroke data from KanjiVG (http://kanjivg.tagaini.net), Copyright (C) Ulrich Apel, ' +
@@ -155,12 +165,10 @@ const data = {
   /** Every coordinate lives in a square of this size, as KanjiVG defines it. */
   viewBox: 109,
   pointsPerStroke: POINTS_PER_STROKE,
-  characters: Object.fromEntries(
-    ALL_CHARACTERS.map((character) => [character, strokesFor(character)]),
-  ),
+  characters: Object.fromEntries(characters.map((character) => [character, strokesFor(character)])),
 }
 
 mkdirSync(dirname(OUT), { recursive: true })
 writeFileSync(OUT, JSON.stringify(data))
 const strokeCount = Object.values(data.characters).reduce((sum, strokes) => sum + strokes.length, 0)
-console.log(`${ALL_CHARACTERS.length} characters, ${strokeCount} strokes -> ${OUT}`)
+console.log(`${characters.length} characters, ${strokeCount} strokes -> ${OUT}`)

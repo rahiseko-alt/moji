@@ -257,19 +257,28 @@ export function mountChooser(
   }
 
   /**
-   * Sizes the grid for what is about to go in it. Tiles are the 場面 and 単語 of
-   * ことば, which take only the room their words need and sit together in the
-   * middle; the squares of the kana and kanji tables fill the space instead.
+   * Sizes the grid for what is about to go in it. The squares of the kana and
+   * kanji tables fill the space; the 場面 and 単語 of ことば are tiles, which
+   * take only the room their words need. The 単語 of a 場面 are too many to
+   * fit on one screen, so their grid is as many tiles wide as the screen allows
+   * and scrolls down.
    */
-  const setGrid = ({ columns, rows }: { columns: number; rows: number }, asTiles: boolean): void => {
-    grid.className = asTiles ? 'chooser__grid chooser__grid--tiles' : 'chooser__grid'
+  const setGrid = (
+    { columns, rows }: { columns: number; rows: number },
+    kind: 'table' | 'scenes' | 'words',
+  ): void => {
+    grid.className = {
+      table: 'chooser__grid',
+      scenes: 'chooser__grid chooser__grid--tiles',
+      words: 'chooser__grid chooser__grid--tiles chooser__grid--words',
+    }[kind]
     grid.style.setProperty('--columns', String(columns))
     grid.style.setProperty('--rows', String(rows))
   }
 
   const drawCharacters = (kind: CharacterGroup): void => {
     const { columns, rows, cells } = layoutOf(kind, strokeDataIfLoaded())
-    setGrid({ columns, rows }, false)
+    setGrid({ columns, rows }, 'table')
     grid.replaceChildren(
       ...cells.map((character) => {
         if (character === null) {
@@ -351,7 +360,7 @@ export function mountChooser(
     const showing = sceneOnShow()
     if (showing === null) {
       const scenes = Object.entries(words.scenes)
-      setGrid(tiles(scenes.length, SCENE_COLUMNS), true)
+      setGrid(tiles(scenes.length, SCENE_COLUMNS), 'scenes')
       grid.replaceChildren(...scenes.map(([id, each]) => sceneButton(id, each, language)))
       return
     }
@@ -359,7 +368,7 @@ export function mountChooser(
     sceneName.textContent = showing.scene.name[language]
     sceneName.lang = language
     sceneBar.hidden = false
-    setGrid(tiles(showing.words.length, WORD_COLUMNS), true)
+    setGrid(tiles(showing.words.length, WORD_COLUMNS), 'words')
     grid.replaceChildren(...showing.words.map(wordButton))
   }
 

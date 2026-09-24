@@ -134,6 +134,9 @@
   place-items: center;
   min-block-size: 0;
   padding: 0 0.7rem 0.7rem;
+  /* Only the 単語 of a 場面 are ever taller than this; everything else fits. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /*
@@ -211,6 +214,25 @@
   inline-size: auto;
   max-inline-size: 100cqw;
   block-size: auto;
+}
+
+/*
+ * A 場面 holds a hundred 単語, and no screen shows a hundred tiles a finger can
+ * hit. So this one grid is the exception to seeing everything at once: as many
+ * tiles across as the width takes, every tile the size a four-character 単語
+ * needs, and the rest further down, to scroll to. It starts at the top rather
+ * than the middle, since the middle of something taller than the screen is off
+ * it.
+ */
+.chooser__grid--words {
+  --word-tile: max(44px, calc(4.95 * 1.3rem + 2px));
+  grid-template-columns: repeat(auto-fill, var(--word-tile));
+  grid-template-rows: none;
+  grid-auto-rows: auto;
+  justify-content: center;
+  align-self: start;
+  inline-size: 100cqw;
+  padding-block-end: 0.4rem;
 }
 
 .chooser__scene-tile,

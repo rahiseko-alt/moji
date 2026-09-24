@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   ALL_CHARACTERS,
+  charactersFor,
   HIRAGANA,
   KANJI_GRADE1,
   KATAKANA,
@@ -19,8 +20,10 @@ import {
   SMALL_KATAKANA,
 } from './characters'
 import type { StrokeData } from './stroke-data'
+import type { WordData } from './word-data'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
+const words = JSON.parse(readFileSync('assets/data/words.json', 'utf8')) as WordData
 const entries = Object.entries(data.characters)
 
 /*
@@ -76,8 +79,10 @@ describe('the characters the app teaches', () => {
     expect(LONG_VOWEL).toEqual(['ー'])
   })
 
-  it('carries stroke data for every one of them, and nothing spare', () => {
-    expect(Object.keys(data.characters).sort()).toEqual([...ALL_CHARACTERS].sort())
+  it('carries stroke data for every one of them, and every one a 単語 needs, and nothing spare', () => {
+    const needed = charactersFor(words.words)
+    expect(Object.keys(data.characters).sort()).toEqual([...needed].sort())
+    for (const character of ALL_CHARACTERS) expect(needed).toContain(character)
   })
 })
 

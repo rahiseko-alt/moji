@@ -42,7 +42,19 @@ export const KATAKANA: readonly string[] = [
 ]
 export const KANJI_GRADE1: readonly string[] = [...characters.kanjiGrade1]
 
-/** Every character the app has stroke data for. */
+/** Every character the app teaches in its tables: the kana, and the first-year kanji. */
 export const ALL_CHARACTERS: readonly string[] = [...HIRAGANA, ...KATAKANA, ...KANJI_GRADE1]
+
+/**
+ * Every character the stroke data has to carry: the ones the tables teach, then,
+ * in the order the word list first uses them, any other a 単語 is written with.
+ * Kanji beyond the first year come in only this way — to be written inside the
+ * 単語 that needs them, not chosen on their own from the 漢字 table (ADR 0017).
+ */
+export function charactersFor(words: readonly { readonly written: string }[]): readonly string[] {
+  const needed = new Set(ALL_CHARACTERS)
+  for (const word of words) for (const character of word.written) needed.add(character)
+  return [...needed]
+}
 
 export const CHARACTER_SOURCES = characters.sources
