@@ -25,7 +25,7 @@
      of the paper through, so it reads as lying on the page rather than cut out
      of it. Just a little: what is written on it has to stay crisp. */
   --card: rgb(255 255 255 / 0.5);
-  --card-chosen: rgb(181 48 28 / 0.88); /* --vermilion, seen through */
+  --chosen: rgb(181 48 28 / 0.16); /* --vermilion as a wash: something picked */
   --on-vermilion: #fff;
 
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif;

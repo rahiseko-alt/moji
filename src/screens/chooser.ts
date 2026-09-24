@@ -192,7 +192,6 @@ export function mountChooser(
     </div>
     <div class="chooser__scene" hidden>
       <button type="button" class="chooser__back"></button>
-      <h2 class="chooser__scene-name"></h2>
     </div>
     <div class="chooser__list"><div class="chooser__grid"></div></div>`
 
@@ -202,7 +201,6 @@ export function mountChooser(
   const start = requireElement<HTMLButtonElement>(screen, '.chooser__start')
   const sceneBar = requireElement<HTMLDivElement>(screen, '.chooser__scene')
   const back = requireElement<HTMLButtonElement>(screen, '.chooser__back')
-  const sceneName = requireElement<HTMLHeadingElement>(screen, '.chooser__scene-name')
   const grid = requireElement<HTMLDivElement>(screen, '.chooser__grid')
 
   const confirm = createConfirm()
@@ -363,6 +361,8 @@ export function mountChooser(
     reading.className = 'chooser__reading'
     reading.lang = 'ja'
     reading.textContent = word.reading === word.written ? '' : word.reading
+    // The stylesheet sets a long reading smaller so it stays on one line.
+    reading.style.setProperty('--reading-length', String([...word.reading].length))
     const written = document.createElement('span')
     written.className = 'chooser__written'
     written.lang = 'ja'
@@ -395,8 +395,6 @@ export function mountChooser(
       return
     }
     back.textContent = strings.back
-    sceneName.textContent = showing.scene?.name[language] ?? strings.everyScene
-    sceneName.lang = language
     sceneBar.hidden = false
     setGrid(tiles(showing.words.length, WORD_COLUMNS), 'words')
     grid.replaceChildren(...showing.words.map(wordButton))

@@ -102,10 +102,11 @@
   color: var(--paper);
 }
 
-/* Which 場面 is open, and the way back out of it. It sits under the bar rather
-   than in it, so the group row never shifts under a learner's thumb. Its row
-   is named, and so is the grid's below: with no 場面 open this bar is not laid
-   out at all, and the grid would otherwise slide up into its place. */
+/* The way back out of an open 場面 — nothing else: the 単語 below say which
+   場面 it is. It sits under the bar rather than in it, so the group row never
+   shifts under a learner's thumb. Its row is named, and so is the grid's below:
+   with no 場面 open this bar is not laid out at all, and the grid would
+   otherwise slide up into its place. */
 .chooser__scene {
   grid-row: 2;
   display: flex;
@@ -118,14 +119,6 @@
   display: none;
 }
 
-
-.chooser__scene-name {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--ink);
-}
 
 .chooser__list {
   grid-row: 3;
@@ -173,9 +166,12 @@
   color: var(--ink);
 }
 
+/* Chosen: a wash of the seal's colour with a line of it round the edge, the
+   character left in its own ink. Plain to see across the table, and quiet
+   enough that a row of thirty chosen does not shout. */
 .chooser__character[aria-pressed='true'] {
   border-color: var(--vermilion);
-  background: var(--paper-tint);
+  background: var(--chosen);
 }
 
 /* Where the character stands in the run. Out of the flow, so the character
@@ -195,8 +191,10 @@
   display: block;
 }
 
-.chooser__character:hover,
-.chooser__character:focus-visible {
+/* Only what is not already chosen answers the finger: the chosen wash must not
+   flicker away under the tap that chose it. */
+.chooser__character:not([aria-pressed='true']):hover,
+.chooser__character:not([aria-pressed='true']):focus-visible {
   border-color: var(--hairline);
   background: var(--paper-tint);
 }
@@ -281,7 +279,10 @@
    takes no room. */
 .chooser__reading {
   font-family: var(--sans);
-  font-size: 0.5em;
+  /* On one line however long: a reading of ten kana is set smaller rather than
+     broken, since ちょくしゃにっこ over う is no reading at all. */
+  font-size: min(0.5em, calc(4.2em / var(--reading-length, 8)));
+  white-space: nowrap;
   line-height: 1.2;
   color: var(--ink-soft);
 }
@@ -301,15 +302,10 @@
 /* A chosen 単語 is filled in the colour of the way on, so which are in the run
    is plain at a glance across the whole 場面 — an outline alone was too easy
    to miss on a tile this size. Everything inside turns to match. */
+/* A chosen 単語 the same way as a chosen character. */
 .chooser__word[aria-pressed='true'] {
   border-color: var(--vermilion);
-  background: var(--card-chosen);
-  color: var(--on-vermilion);
-}
-
-.chooser__word[aria-pressed='true'] .chooser__reading,
-.chooser__word[aria-pressed='true'] .chooser__number {
-  color: var(--on-vermilion);
+  background: var(--chosen);
 }
 
 /* How many of a 場面's 単語 are in the run, in the same red corner as a 単語's
@@ -330,7 +326,7 @@
 
 .chooser__scene-tile:hover,
 .chooser__scene-tile:focus-visible,
-.chooser__word:hover,
-.chooser__word:focus-visible {
+.chooser__word:not([aria-pressed='true']):hover,
+.chooser__word:not([aria-pressed='true']):focus-visible {
   border-color: var(--hairline-strong);
 }
