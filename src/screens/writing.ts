@@ -16,7 +16,7 @@ import type { StrokeMeasurement } from '../writing/stroke-matcher'
 import type { TracedPoint } from '../writing/traced-point'
 import {
   wrongCells,
-  type StrokeOutcome,
+  type MarkedCell,
   type WritingSession,
   type WritingSessionState,
 } from '../writing/writing-session'
@@ -24,10 +24,14 @@ import { createWritingSurface, type WritingSurface } from '../writing/writing-su
 import './writing.css'
 
 /**
- * As much of a marked 升目 as the answer cares about — which the お題 in hand and
- * an お題 being looked back at both are.
+ * What a 升目 needs to go on the paper: which character it asks for, and any ink
+ * already in it. `CellState` is one being written; `AttemptCell`, which carries
+ * its ink, is one being looked back at.
  */
-type MarkedCell = { readonly outcomes: readonly StrokeOutcome[] }
+type PaperCell = {
+  readonly character: string
+  readonly written?: readonly (readonly TracedPoint[])[]
+}
 
 export function mountWriting(
   parent: HTMLElement,
@@ -53,7 +57,7 @@ export function mountWriting(
     </div>
     <div class="summary" hidden>
       <p class="summary__total"></p>
-      <ol class="summary__characters"></ol>
+      <ol class="summary__items"></ol>
     </div>
     <div class="writing__cells"></div>`
 
@@ -67,7 +71,7 @@ export function mountWriting(
   const cells = requireElement<HTMLDivElement>(screen, '.writing__cells')
   const summary = requireElement<HTMLDivElement>(screen, '.summary')
   const summaryTotal = requireElement<HTMLParagraphElement>(summary, '.summary__total')
-  const summaryCharacters = requireElement<HTMLOListElement>(summary, '.summary__characters')
+  const summaryItems = requireElement<HTMLOListElement>(summary, '.summary__items')
 
   const confirm = createConfirm()
 
@@ -110,7 +114,7 @@ export function mountWriting(
     retry.textContent = strings.retry
     confirm.setAnswers(strings.yes, strings.no)
 
-    // One character on its own needs no counting: the learner can see it.
+    // One お題 on its own needs no counting: the learner can see it.
     progress.hidden = state.phase !== 'writing' || state.chosen.length < 2
     progress.textContent = strings.progress(state.position, state.chosen.length)
 
@@ -136,21 +140,21 @@ export function mountWriting(
     // what there is to say, and counting to one helps nobody.
     summaryTotal.hidden = state.chosen.length < 2
     summaryTotal.textContent = strings.runScore(state.runScore.correct, state.runScore.total)
-    summaryCharacters.replaceChildren(
+    summaryItems.replaceChildren(
       ...state.results.map((result, index) => {
         const item = document.createElement('li')
         // Each one opens what was written for it, so a learner can see why.
         const open = document.createElement('button')
         open.type = 'button'
-        open.className = 'summary__character'
+        open.className = 'summary__item'
         open.dataset.correct = String(result.firstTimeCorrect)
-        const character = document.createElement('span')
-        character.lang = 'ja'
-        character.textContent = result.item
+        const written = document.createElement('span')
+        written.lang = 'ja'
+        written.textContent = result.item
         const mark = document.createElement('span')
         mark.className = 'summary__mark'
         mark.textContent = result.firstTimeCorrect ? '○' : '×'
-        open.append(character, mark)
+        open.append(written, mark)
         open.addEventListener('click', () => showAttempt(index + 1))
         item.append(open)
         return item
@@ -186,24 +190,20 @@ export function mountWriting(
 
   /**
    * Puts a row of 升目 on the paper, one per character, and remembers what each
-   * asks for. Ink means an お題 being looked back at rather than written, so the
-   * paper takes nothing more.
+   * asks for. A 升目 that arrives with ink in it is an お題 being looked back at
+   * rather than written, so the paper takes nothing more.
    */
-  const putUpCells = (
-    characters: readonly string[],
-    ink: readonly (readonly (readonly TracedPoint[])[])[] | null,
-  ): void => {
+  const putUpCells = (paper: readonly PaperCell[]): void => {
     const loaded = data
     if (!loaded) return
     for (const surface of surfaces) surface.destroy()
-    models = characters.map((character) => strokesFor(loaded, character))
+    const lookingBack = paper.some((cell) => cell.written !== undefined)
+    models = paper.map((cell) => strokesFor(loaded, cell.character))
     surfaces = models.map((model, index) =>
       createWritingSurface({
         model,
         square: loaded.viewBox,
-        // Ink already on the paper is an お題 being looked back at, so the 升目
-        // shows it and takes nothing more.
-        ...(ink ? { ink: ink[index] ?? [], readOnly: true } : {}),
+        ...(lookingBack ? { ink: paper[index]!.written ?? [], readOnly: true } : {}),
         onStrokeTraced(points) {
           showHint(session.traceStroke(points, index))
         },
@@ -217,7 +217,7 @@ export function mountWriting(
     )
     // The row has to fit across the screen however many 升目 it holds; the
     // stylesheet needs the count to work that out.
-    cells.style.setProperty('--cells', String(characters.length))
+    cells.style.setProperty('--cells', String(paper.length))
     cells.replaceChildren(...surfaces.map((surface) => surface.element))
   }
 
@@ -227,10 +227,7 @@ export function mountWriting(
     if (!data || !attempt) return
     reviewing = position
     showingResults = false
-    putUpCells(
-      attempt.cells.map((cell) => cell.character),
-      attempt.cells.map((cell) => cell.written),
-    )
+    putUpCells(attempt.cells)
     // The same marking and the same answer the learner saw when they sent it.
     showMarking(attempt.cells)
     render()
@@ -243,10 +240,7 @@ export function mountWriting(
     const state = session.state()
 
     if (data && state.item && !state.marked) {
-      putUpCells(
-        state.cells.map((cell) => cell.character),
-        null,
-      )
+      putUpCells(state.cells)
       // The hint is on before the first stroke: a learner who does not know
       // where the character starts should not have to guess to find out.
       showHint(state)

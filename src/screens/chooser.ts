@@ -77,9 +77,19 @@ const GOJUON: readonly (readonly number[])[] = [
 /** Chosen so every character of the group lands on screen at a size a finger can hit. */
 const KANJI_GRID = { columns: 16, rows: 5 }
 
-/** The twelve 場面, and the ten 単語 of the one that is open. Both fit whole. */
-const SCENE_GRID = { columns: 4, rows: 3 }
-const WORD_GRID = { columns: 5, rows: 2 }
+/**
+ * How wide the tiles of ことば are laid out. How many rows follows from how many
+ * there are: the word list says how many 場面 and how many 単語 each holds, and
+ * a second count of it here would be a second thing to get wrong.
+ */
+const SCENE_COLUMNS = 4
+const WORD_COLUMNS = 5
+
+/** A grid that many columns wide, with enough rows for everything to fit. */
+const tiles = (count: number, columns: number): { columns: number; rows: number } => ({
+  columns,
+  rows: Math.max(1, Math.ceil(count / columns)),
+})
 
 /** One kind of kana, in the blocks the table is built from. */
 type KanaBlocks = {
@@ -221,6 +231,17 @@ export function mountChooser(
   }
 
   /**
+   * The 場面 whose 単語 are on show, with them, or null when the twelve 場面 are.
+   * One answer to "where are we in ことば", so the grid, ぜんぶ and the 場面 bar
+   * cannot disagree about it.
+   */
+  const sceneOnShow = (): { scene: Scene; words: readonly Word[] } | null => {
+    if (words === null || openScene === null) return null
+    const scene = words.scenes[openScene]
+    return scene === undefined ? null : { scene, words: wordsOf(words, openScene) }
+  }
+
+  /**
    * The number an お題 carries is its place in the run, so taking one out
    * renumbers everything behind it. Cheap enough to redraw them all.
    */
@@ -235,16 +256,19 @@ export function mountChooser(
     start.disabled = chosen.length === 0 || strokeDataIfLoaded() === null
   }
 
-  /** Sizes the grid for what is about to go in it, and says which kind that is. */
-  const setGrid = (columns: number, rows: number, kind: 'scenes' | 'words' | null): void => {
-    grid.className = kind === null ? 'chooser__grid' : `chooser__grid chooser__grid--${kind}`
+  /**
+   * Sizes the grid for what is about to go in it. Tiles are the 場面 and 単語 of
+   * ことば, which fill the space they are given; the kana table's squares do not.
+   */
+  const setGrid = ({ columns, rows }: { columns: number; rows: number }, asTiles: boolean): void => {
+    grid.className = asTiles ? 'chooser__grid chooser__grid--tiles' : 'chooser__grid'
     grid.style.setProperty('--columns', String(columns))
     grid.style.setProperty('--rows', String(rows))
   }
 
   const drawCharacters = (kind: CharacterGroup): void => {
     const { columns, rows, cells } = layoutOf(kind, strokeDataIfLoaded())
-    setGrid(columns, rows, null)
+    setGrid({ columns, rows }, false)
     grid.replaceChildren(
       ...cells.map((character) => {
         if (character === null) {
@@ -316,26 +340,24 @@ export function mountChooser(
   }
 
   const drawWords = (strings: Strings, language: Language): void => {
-    setGrid(SCENE_GRID.columns, SCENE_GRID.rows, 'scenes')
     if (words === null) {
       // The 単語 are still on their way; the fetch draws the screen again.
       grid.replaceChildren()
       return
     }
-    const scene = openScene === null ? undefined : words.scenes[openScene]
-    if (openScene === null || scene === undefined) {
-      openScene = null
-      grid.replaceChildren(
-        ...Object.entries(words.scenes).map(([id, each]) => sceneButton(id, each, language)),
-      )
+    const showing = sceneOnShow()
+    if (showing === null) {
+      const scenes = Object.entries(words.scenes)
+      setGrid(tiles(scenes.length, SCENE_COLUMNS), true)
+      grid.replaceChildren(...scenes.map(([id, each]) => sceneButton(id, each, language)))
       return
     }
-    back.textContent = `← ${strings.back}`
-    sceneName.textContent = scene.name[language]
+    back.textContent = strings.back
+    sceneName.textContent = showing.scene.name[language]
     sceneName.lang = language
     sceneBar.hidden = false
-    setGrid(WORD_GRID.columns, WORD_GRID.rows, 'words')
-    grid.replaceChildren(...wordsOf(words, openScene).map((word) => wordButton(word, language)))
+    setGrid(tiles(showing.words.length, WORD_COLUMNS), true)
+    grid.replaceChildren(...showing.words.map((word) => wordButton(word, language)))
   }
 
   const render = (): void => {
@@ -355,7 +377,7 @@ export function mountChooser(
     if (group === 'words') drawWords(strings, language)
     else drawCharacters(group)
     // A 場面 is not an お題, so with the twelve on show ぜんぶ has nothing to take.
-    all.disabled = group === 'words' && openScene === null
+    all.disabled = group === 'words' && sceneOnShow() === null
     showChosen()
   }
 
@@ -363,8 +385,9 @@ export function mountChooser(
   // table happens to read in. Inside a 場面 that kind is its ten 単語.
   all.addEventListener('click', () => {
     if (group === 'words') {
-      if (words === null || openScene === null) return
-      session.chooseAll(wordsOf(words, openScene).map((word) => word.written))
+      const showing = sceneOnShow()
+      if (showing === null) return
+      session.chooseAll(showing.words.map((word) => word.written))
     } else session.chooseAll(charactersOf(group, strokeDataIfLoaded()))
     showChosen()
   })

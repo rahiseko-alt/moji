@@ -159,14 +159,17 @@ export type WritingSession = {
 }
 
 /**
+ * As much of a marked 升目 as the answer cares about — which the お題 in hand
+ * (`CellState`) and one being looked back at (`AttemptCell`) both are.
+ */
+export type MarkedCell = { readonly outcomes: readonly StrokeOutcome[] }
+
+/**
  * Which 升目 of a marked お題 went wrong: the ones the answer is walked through
  * after 送信, and only those — a 単語 with one character out of place should not
- * have the other three answered at it. The お題 in hand and one being looked
- * back at are both read this way.
+ * have the other three answered at it.
  */
-export function wrongCells(
-  cells: readonly { readonly outcomes: readonly StrokeOutcome[] }[],
-): readonly number[] {
+export function wrongCells(cells: readonly MarkedCell[]): readonly number[] {
   return cells.flatMap((cell, index) =>
     cell.outcomes.some((outcome) => !outcome.correct) ? [index] : [],
   )

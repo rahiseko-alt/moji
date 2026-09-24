@@ -32,9 +32,9 @@ export type Strings = {
    */
   readonly correct: string
   readonly incorrect: string
-  /** Chooses every character of the kind on show, or takes them all back out. */
+  /** Chooses everything on show — a kind of 字, or one 場面's 単語 — or takes it all back out. */
   readonly all: string
-  /** Begins writing the characters that have been chosen. */
+  /** Begins writing the お題 that have been chosen. */
   readonly start: string
   /** Sends the お題 to be marked. Nothing is judged before this. */
   readonly submit: string
@@ -42,7 +42,7 @@ export type Strings = {
   readonly results: string
   /** Leaves the marked お題 for the next one of the run. */
   readonly next: string
-  /** Wipes the finished character so it can be written again. */
+  /** Wipes the finished お題 so it can be written again. */
   readonly retry: string
   /** e.g. "3 / 10" — how far through the run the learner is. */
   readonly progress: (position: number, total: number) => string

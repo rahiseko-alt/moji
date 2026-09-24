@@ -119,6 +119,12 @@
   display: none;
 }
 
+/* The arrow belongs to the button, not to the word: the label is one of four
+   languages and should not have punctuation spliced onto it in code. */
+.chooser__back::before {
+  content: '← ';
+}
+
 .chooser__back {
   padding: 0.35rem 1rem;
   border: 1px solid var(--hairline);
@@ -213,8 +219,7 @@
  * the way the kana table does, so the tiles simply fill the space they are
  * given and the text wraps inside them.
  */
-.chooser__grid--scenes,
-.chooser__grid--words {
+.chooser__grid--tiles {
   inline-size: 100cqw;
   block-size: 100cqh;
   gap: 0.7cqh 0.7cqh;

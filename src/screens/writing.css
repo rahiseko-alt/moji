@@ -98,8 +98,8 @@
   touch-action: none;
 }
 
-/* How far through the run the learner is. Absent when there is only one
-   character to write: counting to one helps nobody. */
+/* How far through the run the learner is. Absent when there is only one お題 to
+   write, however many 升目 it takes: counting to one helps nobody. */
 .writing__progress {
   margin: 0;
   font-family: var(--serif);
@@ -201,12 +201,12 @@
 
 /* The list item is only there for the reading order: the card inside it is the
    thing that is laid out, and the thing a learner taps. */
-.summary__characters li {
+.summary__items li {
   display: contents;
 }
 
 /* Many お題 run off the side rather than pushing the square out of the way. */
-.summary__characters {
+.summary__items {
   display: flex;
   justify-content: flex-start;
   gap: 0.4rem;
@@ -220,7 +220,7 @@
 
 /* One card per お題, marked as it was written the first time. Tapping it puts
    what was written back on the paper. */
-.summary__character {
+.summary__item {
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
@@ -238,10 +238,10 @@
   color: var(--ink-soft);
 }
 
-.summary__character[data-correct='false'] {
+.summary__item[data-correct='false'] {
   border-color: var(--vermilion);
 }
 
-.summary__character[data-correct='false'] .summary__mark {
+.summary__item[data-correct='false'] .summary__mark {
   color: var(--vermilion);
 }
