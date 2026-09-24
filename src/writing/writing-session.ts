@@ -8,7 +8,7 @@
  * place worth testing thoroughly (ADR 0004).
  *
  * Nothing is judged until it is sent (ADR 0009). A learner writes the whole お題
- * with no interruption; 送信 marks every stroke at once, and the screen shows the
+ * with no interruption; 確定 marks every stroke at once, and the screen shows the
  * wrong ones in red and walks the hint through the characters that went wrong.
  *
  * A stroke is marked where the 升目 puts it. The dotted guide and the model are
@@ -64,14 +64,14 @@ export type Attempt = {
   readonly item: string
   /** One per character of the お題, in reading order: what to put back on the paper. */
   readonly cells: readonly AttemptCell[]
-  /** Strokes right at the first 送信: the count that stands however often it is rewritten. */
+  /** Strokes right at the first 確定: the count that stands however often it is rewritten. */
   readonly score: { readonly correct: number; readonly total: number }
 }
 
 /** How one お題 went, settled the first time it was sent. */
 export type ItemResult = {
   readonly item: string
-  /** Every stroke was right at the first 送信. */
+  /** Every stroke was right at the first 確定. */
   readonly firstTimeCorrect: boolean
 }
 
@@ -79,7 +79,7 @@ export type ItemResult = {
 export type CellState = {
   readonly character: string
   readonly writtenStrokes: number
-  /** The marking of this 升目, once 送信 has happened. Empty before it. */
+  /** The marking of this 升目, once 確定 has happened. Empty before it. */
   readonly outcomes: readonly StrokeOutcome[]
   /** Which stroke the hint should point at here, or null when it belongs elsewhere. */
   readonly navigationStroke: number | null
@@ -109,14 +109,14 @@ export type WritingSessionState = {
   /** Has the お題 in hand been sent and marked? */
   readonly marked: boolean
   /**
-   * What each written stroke measured against its model at the last 送信, for
-   * the tuning build's panel. Empty before 送信, and for a stroke the model has
+   * What each written stroke measured against its model at the last 確定, for
+   * the tuning build's panel. Empty before 確定, and for a stroke the model has
    * no counterpart for.
    */
   readonly measurements: readonly StrokeMeasurement[]
-  /** Strokes of the お題 in hand written correctly at the first 送信, or null before it. */
+  /** Strokes of the お題 in hand written correctly at the first 確定, or null before it. */
   readonly score: { readonly correct: number; readonly total: number } | null
-  /** お題 written correctly at the first 送信, out of them all. */
+  /** お題 written correctly at the first 確定, out of them all. */
   readonly runScore: { readonly correct: number; readonly total: number }
   /** How the お題 written so far went, in order. */
   readonly results: readonly ItemResult[]
@@ -166,7 +166,7 @@ export type MarkedCell = { readonly outcomes: readonly StrokeOutcome[] }
 
 /**
  * Which 升目 of a marked お題 went wrong: the ones the answer is walked through
- * after 送信, and only those — a 単語 with one character out of place should not
+ * after 確定, and only those — a 単語 with one character out of place should not
  * have the other three answered at it.
  */
 export function wrongCells(cells: readonly MarkedCell[]): readonly number[] {
@@ -190,7 +190,7 @@ export type WritingSessionOptions = {
   /** The model strokes of any character that might be chosen. */
   readonly strokesOf: (character: string) => readonly Stroke[]
   /**
-   * The numbers the marking judges by. Asked for afresh at every 送信, so they
+   * The numbers the marking judges by. Asked for afresh at every 確定, so they
    * can be moved while the app is running — which is how they get chosen at
    * all, since nobody can tell from the numbers alone whether they are right.
    */
@@ -209,7 +209,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   /** What the strokes on the paper measured, kept so the tuning panel can show the numbers. */
   let measurements: StrokeMeasurement[] = []
   let marked = false
-  /** One per お題 already sent, settled at its first 送信. */
+  /** One per お題 already sent, settled at its first 確定. */
   const results: ItemResult[] = []
   /**
    * The last thing written for each お題, kept for the whole run so the learner
@@ -217,7 +217,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
    */
   const attempts: Attempt[] = []
   /**
-   * The first 送信's marking of each お題. Writing an お題 again is practice, not
+   * The first 確定's marking of each お題. Writing an お題 again is practice, not
    * a second chance at the count (一発正解), so this is what the tally reads.
    */
   const firstMarking: StrokeOutcome[][] = []
@@ -359,7 +359,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       return state()
     },
     addStroke(points, cell = 0) {
-      // Judging happens at 送信 and nowhere else, so this only takes the ink.
+      // Judging happens at 確定 and nowhere else, so this only takes the ink.
       if (phase === 'choosing' || marked || points.length === 0) return state()
       const target = cells[cell]
       if (!target) return state()
@@ -408,7 +408,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
         })
       }
       // Written again, an お題 keeps only its latest attempt: the tally was
-      // settled at the first 送信 and does not change.
+      // settled at the first 確定 and does not change.
       attempts[at] = {
         item: chosen[at]!,
         cells: cells.map((cell) => ({

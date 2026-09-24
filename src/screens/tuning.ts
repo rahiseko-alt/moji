@@ -31,7 +31,7 @@ const REASONS: Readonly<Record<MistakeReason, string>> = {
 }
 
 export type TuningPanel = Screen & {
-  /** Puts the last 送信 up, or clears it when there is none. */
+  /** Puts the last 確定 up, or clears it when there is none. */
   show(measurements: readonly StrokeMeasurement[]): void
 }
 

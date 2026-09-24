@@ -413,7 +413,7 @@ describe('the numbers the marking judges by', () => {
     expect(marking(loose.submit()).every((outcome) => outcome.correct)).toBe(true)
   })
 
-  it('reads them afresh for every 送信, so a change part way through counts', () => {
+  it('reads them afresh for every 確定, so a change part way through counts', () => {
     let allowed = 40
     const session = createWritingSession({
       strokesOf,
@@ -553,7 +553,7 @@ describe('writing one お題 after another', () => {
   })
 })
 
-describe('counting the first 送信 and no other', () => {
+describe('counting the first 確定 and no other', () => {
   it('keeps the stroke count of the first attempt when the お題 is rewritten', () => {
     const session = begin('日')
     session.addStroke(traced(reversed(0)))
@@ -593,7 +593,7 @@ describe('writing an お題 again', () => {
     expect(session.retryItem().writtenStrokes).toBe(1)
   })
 
-  it('counts the first 送信, however well it goes the second time', () => {
+  it('counts the first 確定, however well it goes the second time', () => {
     const session = run()
     session.addStroke(traced(reversed(0)))
     session.submit()
@@ -872,7 +872,7 @@ describe('an お題 that is a 単語 rather than one character', () => {
     expect(state.writtenStrokes).toBe(0)
   })
 
-  it('keeps the first 送信 as the tally when it is written again', () => {
+  it('keeps the first 確定 as the tally when it is written again', () => {
     const session = word()
     writeCell(session, 0, '日')
     session.addStroke(traced(reversed(0)), 1)

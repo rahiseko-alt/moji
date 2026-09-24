@@ -38,7 +38,7 @@ export function mountWriting(
   choices: ChoicesStore,
   session: WritingSession,
   onHome: () => void,
-  /** The tuning build's panel wants the numbers behind the last 送信. */
+  /** The tuning build's panel wants the numbers behind the last 確定. */
   onMarked: (measurements: readonly StrokeMeasurement[]) => void = () => {},
 ): Screen {
   const screen = document.createElement('div')
@@ -120,7 +120,7 @@ export function mountWriting(
 
     // While an お題 is being looked back at, the verdict belongs to that one
     // rather than to the one in hand. An お題 is 一発正解 or it is not: every
-    // stroke right at the first 送信, or not, and which strokes went wrong is
+    // stroke right at the first 確定, or not, and which strokes went wrong is
     // already on the paper in red.
     const reviewed = reviewing === null ? null : session.attempt(reviewing)
     const showing = reviewed ? reviewed.score : state.score

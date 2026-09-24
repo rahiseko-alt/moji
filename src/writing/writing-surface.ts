@@ -4,7 +4,7 @@
  * It draws three things — the dotted guide, the faint model character, and the
  * ink the learner lays down — and reports each finished stroke as a list of
  * points. It holds no opinion about whether a stroke was right; the writing
- * session says so at 送信 (ADR 0009), and the answer is then walked through the
+ * session says so at 確定 (ADR 0009), and the answer is then walked through the
  * お題 by the hint. The ink stays the learner's own black either way, and
  * nothing is ever taken off the paper.
  */
@@ -266,7 +266,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     }
     written.push(points)
     draw()
-    // The session only takes it down; judging waits for 送信.
+    // The session only takes it down; judging waits for 確定.
     options.onStrokeFinished(points)
   }
 

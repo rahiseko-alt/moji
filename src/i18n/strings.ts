@@ -27,7 +27,7 @@ export type Strings = {
   readonly no: string
   /**
    * How the お題 just sent went. It is one or the other: every stroke right at
-   * the first 送信, or not. A count of strokes says nothing a learner can act
+   * the first 確定, or not. A count of strokes says nothing a learner can act
    * on — the red ink already shows which ones went wrong.
    */
   readonly correct: string
@@ -77,7 +77,7 @@ export const STRINGS: Record<Language, Strings> = {
     incorrect: '不正解',
     all: 'ぜんぶ',
     start: 'はじめる',
-    submit: '送信',
+    submit: '確定',
     results: 'けっか',
     next: '次へ',
     retry: 'やり直す',
@@ -103,7 +103,7 @@ export const STRINGS: Record<Language, Strings> = {
     incorrect: 'Not correct',
     all: 'All',
     start: 'Start',
-    submit: 'Send',
+    submit: 'Done',
     results: 'Results',
     next: 'Next',
     retry: 'Again',
@@ -129,7 +129,7 @@ export const STRINGS: Record<Language, Strings> = {
     incorrect: 'Chưa đúng',
     all: 'Tất cả',
     start: 'Bắt đầu',
-    submit: 'Gửi',
+    submit: 'Xong',
     results: 'Kết quả',
     next: 'Tiếp theo',
     retry: 'Viết lại',
@@ -155,7 +155,7 @@ export const STRINGS: Record<Language, Strings> = {
     incorrect: 'गलत',
     all: 'सबै',
     start: 'सुरु',
-    submit: 'पठाउनुहोस्',
+    submit: 'सकियो',
     results: 'नतिजा',
     next: 'अर्को',
     retry: 'फेरि',
