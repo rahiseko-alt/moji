@@ -11,7 +11,6 @@
   --paper-plain: #fdfaf4; /* inside a writing cell, where the texture would hide the guide */
   --ink-faint: #d3cbbe; /* the model character, there to be traced over */
   --guide: #c6bcab; /* the dotted sixteenths inside a cell */
-  --wrong: #c0392b; /* a stroke shown back to the learner before it is taken away */
 
   /* Ink and paper at less than full strength. Anything laid over the artwork
      needs one of these rather than a colour of its own. */
@@ -22,6 +21,11 @@
   --paper-veil: rgb(246 240 231 / 0.72); /* calms the artwork behind a writing cell */
   --paper-veil-strong: rgb(246 240 231 / 0.92); /* behind dense text, where the artwork would compete */
   --paper-tint: rgb(255 255 255 / 0.6); /* a control resting on the artwork */
+  /* A card — a 場面 or 単語 to choose, a result to look back at — lets a little
+     of the paper through, so it reads as lying on the page rather than cut out
+     of it. Just a little: what is written on it has to stay crisp. */
+  --card: rgb(255 255 255 / 0.5);
+  --chosen: rgb(181 48 28 / 0.16); /* --vermilion as a wash: something picked */
   --on-vermilion: #fff;
 
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif;

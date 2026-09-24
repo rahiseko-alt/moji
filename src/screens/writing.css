@@ -1,6 +1,11 @@
+/*
+ * Bar, results strip, paper. The strip is hidden most of the time, and a hidden
+ * child is no grid item at all — so the rows are named rather than filled in
+ * order, or the paper slides up into the strip's row and collapses.
+ */
 .writing {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   block-size: 100%;
   inline-size: 100%;
   background: var(--paper);
@@ -24,6 +29,7 @@
 }
 
 .writing__bar {
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -47,21 +53,39 @@
   color: var(--ink);
 }
 
+/* Wrong reads in the same vermilion as the ink it is talking about. */
+.writing__score[data-correct='false'] {
+  color: var(--vermilion);
+}
+
 .writing__score[hidden] {
   display: none;
 }
 
+/*
+ * One 升目 for a character, a row of them for a 単語. The row is measured here
+ * rather than by the screen: --cells says how many there are, and the squares
+ * take whichever is smaller, the height they are given or the share of the
+ * width that is left once the gaps are taken out. Four of them still fit.
+ */
 .writing__cells {
+  grid-row: 3;
+  container-type: size;
+  --cells: 1;
+  --cell-gap: 1.5vmin;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5vmin;
+  gap: var(--cell-gap);
   padding: 0 0.7rem 0.5rem;
   min-block-size: 0;
 }
 
 .cell {
-  block-size: 100%;
+  block-size: min(
+    100cqh,
+    calc((100cqw - (var(--cells) - 1) * var(--cell-gap)) / var(--cells))
+  );
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -74,55 +98,150 @@
   touch-action: none;
 }
 
-.confirm {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-content: center;
-  padding: 2rem;
-  /* A card rather than a wash, so the learner can still see the writing they
-     are being asked to give up. */
-  background: var(--scrim);
+/* How far through the run the learner is. Absent when there is only one お題 to
+   write, however many 升目 it takes: counting to one helps nobody. */
+.writing__progress {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
 }
 
-.confirm__card {
-  display: grid;
-  justify-items: center;
-  gap: 1.2rem;
-  padding: 1.4rem 2.2rem;
-  border: 1px solid var(--hairline);
-  background: var(--paper);
-  box-shadow: 0 0.5rem 2rem var(--shadow);
-}
-
-.confirm[hidden] {
+.writing__progress[hidden],
+.writing__list[hidden],
+.writing__submit[hidden],
+.writing__retry[hidden],
+.writing__next[hidden] {
   display: none;
 }
 
-.confirm__question {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 1.2rem;
-}
-
-.confirm__answers {
-  display: flex;
-  gap: 1rem;
-}
-
-.confirm__answers button {
-  min-inline-size: 6rem;
-  padding: 0.5rem 1.2rem;
+/* The one way on while writing. Dim until there is something to send. */
+.writing__submit {
+  padding: 0.35rem 1.4rem;
   border: 1.5px solid var(--vermilion);
   border-radius: 2px;
-  background: none;
+  background: var(--vermilion);
   font-family: var(--serif);
-  color: var(--vermilion);
+  font-size: 0.85rem;
+  color: var(--on-vermilion);
 }
 
-/* Carrying on is the safe answer, so it is the one that reads as the default. */
-.confirm__answers button[data-answer='no'] {
+.writing__submit:disabled {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+  color: var(--ink-soft);
+}
+
+.writing__actions {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Back to the list of results from the お題 being looked at. */
+.writing__list,
+/* The quieter of the two ways on: writing the character again is a choice, not
+   the expected path. */
+.writing__retry {
+  padding: 0.35rem 1.1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+/* Sits at the far end of the bar, away from ホーム: the two mean opposite
+   things and a mis-tap costs the learner their writing. */
+.writing__next {
+  padding: 0.35rem 1.4rem;
+  border: 1.5px solid var(--vermilion);
+  border-radius: 2px;
   background: var(--vermilion);
+  font-family: var(--serif);
+  font-size: 0.85rem;
   color: var(--on-vermilion);
+}
+
+/*
+ * The whole run, once it is written. It sits between the bar and the paper
+ * rather than over it: the answer walks through the last お題 as the results
+ * appear, and anything covering the square would hide the one thing the learner
+ * most needs to see. The square gives up the height it takes.
+ */
+.summary {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem 1rem;
+  /* A grid item is as wide as its content unless told otherwise, and a long run
+     would push the whole screen sideways. */
+  min-inline-size: 0;
+  padding: 0.2rem 0.7rem 0.45rem;
+}
+
+.summary[hidden] {
+  display: none;
+}
+
+.summary__total[hidden] {
+  display: none;
+}
+
+.summary__total {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+/* The list item is only there for the reading order: the card inside it is the
+   thing that is laid out, and the thing a learner taps. */
+.summary__items li {
+  display: contents;
+}
+
+/* Many お題 run off the side rather than pushing the square out of the way. */
+.summary__items {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  min-inline-size: 0;
+  flex: 0 1 auto;
+  margin: 0;
+  padding: 0.15rem 0;
+  overflow-x: auto;
+  list-style: none;
+}
+
+/* One card per お題, marked as it was written the first time. Tapping it puts
+   what was written back on the paper. */
+.summary__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  flex: none;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.summary__mark {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.summary__item[data-correct='false'] {
+  border-color: var(--vermilion);
+}
+
+.summary__item[data-correct='false'] .summary__mark {
+  color: var(--vermilion);
 }

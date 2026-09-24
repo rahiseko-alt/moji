@@ -8,6 +8,7 @@
  */
 import { CHARACTER_SOURCES } from '../data/characters'
 import { loadStrokeData } from '../data/stroke-data'
+import { loadWordData } from '../data/word-data'
 import { requireElement } from '../app/dom'
 import { STRINGS } from '../i18n/strings'
 import type { ChoicesStore } from '../app/choices'
@@ -16,6 +17,9 @@ import './credits.css'
 
 /** The address KanjiVG's licence asks to be linked. */
 const KANJIVG_SITE = 'http://kanjivg.tagaini.net'
+
+/** Vietnamese and Nepali are drafts until a native speaker has been through them. */
+const TRANSLATIONS_IN_REVIEW = 'ベトナム語・ネパール語は確認中 / Vietnamese and Nepali are being checked'
 
 export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Screen {
   const open = document.createElement('button')
@@ -60,11 +64,15 @@ export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Sc
   }
 
   const kanji = CHARACTER_SOURCES.kanjiGrade1
-  void loadStrokeData().then((data) => {
+  void Promise.all([loadStrokeData(), loadWordData()]).then(([strokes, words]) => {
     list.replaceChildren()
     // KanjiVG's licence asks for a link to its own site, not only to the code.
-    entry('筆順 / Stroke order', [data.attribution], [KANJIVG_SITE, data.source])
+    entry('筆順 / Stroke order', [strokes.attribution], [KANJIVG_SITE, strokes.source])
     entry('漢字80字', [kanji.title, kanji.note], [kanji.url])
+    for (const source of words.sources) entry('単語 / Words', [source.title, source.license], [source.url])
+    // The two languages with no freely usable dictionary behind them. Said here
+    // rather than beside each word, where it would only unsettle the learner.
+    entry('単語の意味 / Meanings', [TRANSLATIONS_IN_REVIEW], [])
   })
 
   const render = (): void => {

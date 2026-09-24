@@ -1,6 +1,7 @@
 .chooser {
+  container-type: inline-size;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   block-size: 100%;
   inline-size: 100%;
   background: var(--paper);
@@ -28,15 +29,61 @@
   padding: 0.45rem 0.7rem;
 }
 
-.chooser__home {
-  justify-self: start;
-  padding: 0.3rem 0.9rem;
-  border: 1px solid var(--hairline);
+/*
+ * Every button along the top is the same size, whatever it says and in
+ * whichever of the four languages: a row of pills of different lengths reads
+ * as a row of different kinds of thing. The size is the widest a label needs,
+ * or an eighth of the screen when that is less — the bar holds seven of them,
+ * and centring the four in the middle costs the room of one more.
+ */
+.chooser__home,
+.chooser__group,
+.chooser__all,
+.chooser__start,
+.chooser__back {
+  box-sizing: border-box;
+  inline-size: min(5.6rem, calc((100cqw - 4rem) / 8));
+  block-size: 1.9rem;
+  padding: 0 0.3rem;
+  border: 1.5px solid var(--hairline);
   border-radius: 999px;
   background: var(--paper-tint);
   font-family: var(--serif);
   font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
   color: var(--ink);
+}
+
+.chooser__home {
+  justify-self: start;
+}
+
+.chooser__actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* The way on. Dressed as the one action of the screen, and dimmed until there
+   is something to start with. */
+.chooser__start {
+  border-color: var(--vermilion);
+  background: var(--vermilion);
+  color: var(--on-vermilion);
+}
+
+.chooser__start:disabled {
+  border-color: var(--hairline);
+  background: var(--paper-tint);
+  color: var(--ink-soft);
+}
+
+/* Dimmed while the 場面 are on show, where there is no set to take at once. */
+.chooser__all:disabled {
+  border-color: var(--hairline);
+  color: var(--ink-faint);
 }
 
 .chooser__groups {
@@ -46,12 +93,6 @@
 }
 
 .chooser__group {
-  padding: 0.3rem 1rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-tint);
-  font-family: var(--serif);
-  font-size: 0.85rem;
   color: var(--ink-soft);
 }
 
@@ -61,12 +102,34 @@
   color: var(--paper);
 }
 
+/* The way back out of an open 場面 — nothing else: the 単語 below say which
+   場面 it is. It sits under the bar rather than in it, so the group row never
+   shifts under a learner's thumb. Its row is named, and so is the grid's below:
+   with no 場面 open this bar is not laid out at all, and the grid would
+   otherwise slide up into its place. */
+.chooser__scene {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.7rem 0.35rem;
+}
+
+.chooser__scene[hidden] {
+  display: none;
+}
+
+
 .chooser__list {
+  grid-row: 3;
   container-type: size;
   display: grid;
   place-items: center;
   min-block-size: 0;
   padding: 0 0.7rem 0.7rem;
+  /* Only the 単語 of a 場面 are ever taller than this; everything else fits. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /*
@@ -77,13 +140,20 @@
 .chooser__grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), 1fr);
-  gap: 0.2cqh;
+  grid-template-rows: repeat(var(--rows), 1fr);
+  /* A wider gap between columns than between rows, so the kana table reads as
+     separate rows of the syllabary rather than one block of characters. */
+  gap: 0.2cqh 1.2cqh;
   inline-size: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
+  /* With the marked and small kana the table is nearly twice as wide as it was,
+     so width runs out first and the squares would leave the height unused. The
+     cells take it instead: a taller target for a finger, same character in it. */
+  block-size: 100cqh;
   font-size: calc(min(100cqw / var(--columns), 100cqh / var(--rows)) * 0.52);
 }
 
 .chooser__character {
-  aspect-ratio: 1;
+  position: relative;
   display: grid;
   place-items: center;
   padding: 0;
@@ -96,8 +166,167 @@
   color: var(--ink);
 }
 
-.chooser__character:hover,
-.chooser__character:focus-visible {
+/* Chosen: a wash of the seal's colour with a line of it round the edge, the
+   character left in its own ink. Plain to see across the table, and quiet
+   enough that a row of thirty chosen does not shout. */
+.chooser__character[aria-pressed='true'] {
+  border-color: var(--vermilion);
+  background: var(--chosen);
+}
+
+/* Where the character stands in the run. Out of the flow, so the character
+   itself stays centred in its square. */
+.chooser__number {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0.08em;
+  font-family: var(--sans);
+  font-size: 0.34em;
+  line-height: 1.2;
+  color: var(--vermilion);
+}
+
+/* A syllable the table does not have. It holds its place and nothing else. */
+.chooser__gap {
+  display: block;
+}
+
+/* Only what is not already chosen answers the finger: the chosen wash must not
+   flicker away under the tap that chose it. */
+.chooser__character:not([aria-pressed='true']):hover,
+.chooser__character:not([aria-pressed='true']):focus-visible {
   border-color: var(--hairline);
   background: var(--paper-tint);
+}
+
+/*
+ * 場面 and 単語 are words, not squares, and nothing here has to be read as a
+ * column the way the kana table does. So the tiles are only as big as their
+ * words need and sit together in the middle, rather than stretching to fill
+ * the screen. Every column and row is as wide and as tall as the biggest tile
+ * in the grid, so the tiles all come out one size: a grid of mixed sizes reads
+ * as mixed kinds of thing.
+ */
+.chooser__grid--tiles {
+  gap: 0.4rem;
+  inline-size: auto;
+  max-inline-size: 100cqw;
+  block-size: auto;
+}
+
+/*
+ * A 場面 holds a hundred 単語, and no screen shows a hundred tiles a finger can
+ * hit. So this one grid is the exception to seeing everything at once: as many
+ * tiles across as the width takes, every tile the size a four-character 単語
+ * needs, and the rest further down, to scroll to. It starts at the top rather
+ * than the middle, since the middle of something taller than the screen is off
+ * it.
+ */
+.chooser__grid--words {
+  --word-tile: max(44px, calc(4.95 * 1.3rem + 2px));
+  grid-template-columns: repeat(auto-fill, var(--word-tile));
+  grid-template-rows: none;
+  grid-auto-rows: auto;
+  justify-content: center;
+  align-self: start;
+  inline-size: 100cqw;
+  padding-block-end: 0.4rem;
+}
+
+.chooser__scene-tile,
+.chooser__word {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Never smaller than a fingertip, however short what it says. */
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0.3em 0.5em;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--card);
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+}
+
+/* The 場面 is named in the learner's language, in the type of the buttons
+   along the top. A long Vietnamese or Nepali name stays on one line while the
+   screen has room for it, and only wraps when four across would not fit. */
+.chooser__scene-tile {
+  font-family: var(--serif);
+  font-size: 0.8rem;
+}
+
+/* The 単語 is the tile; everything else in it is measured from that size. Every
+   tile keeps room for four characters and a reading over them, the most any
+   単語 has, so a 場面 of short kana words gets tiles the same size as one of
+   kanji — and the written form sits in the middle when there is no reading. */
+.chooser__word {
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 0.1em;
+  /* Four characters across; a reading, the gap and the 単語 down; and the
+     padding and border round both. */
+  min-inline-size: max(44px, calc(4em + 0.7em + 2px));
+  min-block-size: max(44px, calc(0.6em + 0.1em + 1.1em + 0.6em + 2px));
+  padding: 0.3em 0.35em;
+  font-size: 1.3rem;
+}
+
+/* How the 単語 is read, where the written form does not say it — furigana, in
+   the place furigana go. Empty for a 単語 that reads as itself, and then it
+   takes no room. */
+.chooser__reading {
+  font-family: var(--sans);
+  /* On one line however long: a reading of ten kana is set smaller rather than
+     broken, since ちょくしゃにっこ over う is no reading at all. */
+  font-size: min(0.5em, calc(4.2em / var(--reading-length, 8)));
+  white-space: nowrap;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.chooser__reading:empty {
+  display: none;
+}
+
+/* A 単語 is never broken across lines: コンビ over ニ is not a word any more. */
+.chooser__written {
+  font-family: var(--serif);
+  font-size: 1em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* A chosen 単語 is filled in the colour of the way on, so which are in the run
+   is plain at a glance across the whole 場面 — an outline alone was too easy
+   to miss on a tile this size. Everything inside turns to match. */
+/* A chosen 単語 the same way as a chosen character. */
+.chooser__word[aria-pressed='true'] {
+  border-color: var(--vermilion);
+  background: var(--chosen);
+}
+
+/* How many of a 場面's 単語 are in the run, in the same red corner as a 単語's
+   place in it. The tile for every 場面 leads the list and says so in weight. */
+.chooser__scene-tile .chooser__number {
+  font-size: 0.75em;
+}
+
+.chooser__scene-tile--every {
+  font-weight: 700;
+}
+
+/* A 単語 is set smaller than a character of the kana table, so its number is a
+   bigger share of it: the same small red mark in the same corner either way. */
+.chooser__word .chooser__number {
+  font-size: 0.42em;
+}
+
+.chooser__scene-tile:hover,
+.chooser__scene-tile:focus-visible,
+.chooser__word:not([aria-pressed='true']):hover,
+.chooser__word:not([aria-pressed='true']):focus-visible {
+  border-color: var(--hairline-strong);
 }

@@ -3,19 +3,27 @@
  *
  * It draws three things — the dotted guide, the faint model character, and the
  * ink the learner lays down — and reports each finished stroke as a list of
- * points. It holds no opinion about whether a stroke was right; that is the
- * writing session's job (#6).
+ * points. It holds no opinion about whether a stroke was right; the writing
+ * session says so at 確定 (ADR 0009), and the answer is then walked through the
+ * お題 by the hint. The ink stays the learner's own black either way, and
+ * nothing is ever taken off the paper.
  */
 import type { Point, Stroke } from '../data/stroke-data'
 import type { TracedPoint } from './traced-point'
 
 export type WritingSurfaceOptions = {
-  /** The character's model strokes, drawn faintly to trace over. Empty hides the model. */
+  /** The character's model strokes, drawn faintly to trace over. */
   readonly model: readonly Stroke[]
   /** The side of the square the stroke coordinates are defined in. */
   readonly square: number
+  /** Called as the finger moves, with the stroke so far. The hint follows this. */
+  readonly onStrokeTraced: (points: readonly TracedPoint[]) => void
   /** Called once the finger lifts, with the stroke in the character's own coordinates. */
   readonly onStrokeFinished: (points: readonly TracedPoint[]) => void
+  /** Ink to start with: an お題 being looked back at, rather than written. */
+  readonly ink?: readonly (readonly TracedPoint[])[]
+  /** Takes no ink at all, for looking back at what was written. */
+  readonly readOnly?: boolean
 }
 
 /** Three dotted lines each way, splitting the square into sixteen. */
@@ -25,17 +33,13 @@ const MODEL_WIDTH = 5
 const INK_WIDTH = 5.5
 /** Below this, a touch is a tap rather than a stroke, and is discarded. */
 const MINIMUM_STROKE_LENGTH = 2
-/** Long enough to see what was written before it is taken away, short enough not to nag. */
-const REJECTION_MS = 450
-/** One trip of the hint along a stroke. Slow enough to follow with a finger. */
-const NAVIGATION_MS = 1400
+/** One trip of the hint along a stroke. Brisk, but still a movement rather than a flash. */
+const NAVIGATION_MS = 800
 /** The pause at the end of a trip, before it starts over. */
-const NAVIGATION_REST_MS = 350
+const NAVIGATION_REST_MS = 250
 
 export type WritingSurface = {
   readonly element: HTMLElement
-  /** Shows the last stroke in red for a moment, then takes it off the paper. */
-  rejectLastStroke(): void
   /** Stops taking ink, for once the character is finished and there is nothing left to judge. */
   stopAcceptingStrokes(): void
   /**
@@ -43,6 +47,11 @@ export type WritingSurface = {
    * along it over and over. Null puts the hint away.
    */
   setNavigation(stroke: Stroke | null): void
+  /**
+   * Walks the hint through every one of these strokes in turn, once, and stops.
+   * This is the answer to an お題 that went wrong; an empty list shows nothing.
+   */
+  showAnswer(strokes: readonly Stroke[]): void
   hasInk(): boolean
   destroy(): void
 }
@@ -58,16 +67,15 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
   const context = canvas.getContext('2d')
   if (!context) throw new Error('This browser cannot draw on a canvas')
 
-  /** Only strokes the session accepted. A refused one is moved out at once. */
-  const accepted: TracedPoint[][] = []
+  /** Everything the learner has written, right or wrong. Nothing is removed. */
+  const written: TracedPoint[][] = (options.ink ?? []).map((stroke) => [...stroke])
   let inProgress: TracedPoint[] | null = null
-  /** The refused stroke being shown back in red before it disappears. */
-  let rejectedStroke: TracedPoint[] | null = null
-  let rejectionTimer: ReturnType<typeof setTimeout> | null = null
-  /** Goes false once the character is finished, so no more ink can be laid down. */
-  let accepting = true
-  /** The stroke the hint is walking along, if the learner has stalled. */
+  /** Goes false once the お題 is sent, so no more ink can be laid down. */
+  let accepting = options.readOnly !== true
+  /** The stroke the hint is walking along while the learner writes. */
   let navigation: Stroke | null = null
+  /** The strokes the hint walks through once, to answer an お題 that went wrong. */
+  let answer: readonly Stroke[] = []
   let navigationStartedAt = 0
   let navigationFrame: number | null = null
 
@@ -93,19 +101,21 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.fillStyle = colour('--paper-plain')
     context.fillRect(0, 0, SIDE, SIDE)
 
-    context.lineWidth = 0.6
-    context.strokeStyle = colour('--guide')
-    context.setLineDash([2, 2.6])
-    context.beginPath()
-    for (let n = 1; n < DIVISIONS; n++) {
-      const at = (SIDE * n) / DIVISIONS
-      context.moveTo(at, 0)
-      context.lineTo(at, SIDE)
-      context.moveTo(0, at)
-      context.lineTo(SIDE, at)
+    {
+      context.lineWidth = 0.6
+      context.strokeStyle = colour('--guide')
+      context.setLineDash([2, 2.6])
+      context.beginPath()
+      for (let n = 1; n < DIVISIONS; n++) {
+        const at = (SIDE * n) / DIVISIONS
+        context.moveTo(at, 0)
+        context.lineTo(at, SIDE)
+        context.moveTo(0, at)
+        context.lineTo(SIDE, at)
+      }
+      context.stroke()
+      context.setLineDash([])
     }
-    context.stroke()
-    context.setLineDash([])
 
     context.lineCap = 'round'
     context.lineJoin = 'round'
@@ -114,16 +124,36 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     context.lineWidth = MODEL_WIDTH
     for (const stroke of options.model) context.stroke(new Path2D(stroke.d))
 
+    // One colour for everything the learner wrote, right or wrong: what was
+    // wrong is shown by the hint walking the answer, not by recolouring their
+    // own hand.
     context.lineWidth = INK_WIDTH
     context.strokeStyle = colour('--ink')
-    for (const stroke of accepted) strokePolyline(stroke)
+    for (const stroke of written) strokePolyline(stroke)
     if (inProgress) strokePolyline(inProgress)
-    if (rejectedStroke) {
-      context.strokeStyle = colour('--wrong')
-      strokePolyline(rejectedStroke)
-    }
 
-    if (navigation) drawNavigation()
+    if (navigation) drawTrip(navigation, loopedProgress())
+    if (answer.length > 0) drawAnswer()
+  }
+
+  /** How far along its stroke the looping hint is, right now. */
+  const loopedProgress = (): number => {
+    const elapsed = (performance.now() - navigationStartedAt) % (NAVIGATION_MS + NAVIGATION_REST_MS)
+    return Math.min(elapsed / NAVIGATION_MS, 1)
+  }
+
+  /**
+   * The answer walks the character from its first stroke to its last, one trip
+   * each, and then stays put: the learner has seen it and can look at the whole
+   * character beside their own attempt.
+   */
+  const drawAnswer = (): void => {
+    const perStroke = NAVIGATION_MS + NAVIGATION_REST_MS
+    const elapsed = performance.now() - navigationStartedAt
+    const at = Math.floor(elapsed / perStroke)
+    for (let n = 0; n < Math.min(at, answer.length); n++) drawTrip(answer[n]!, 1)
+    const walking = answer[at]
+    if (walking) drawTrip(walking, Math.min((elapsed - at * perStroke) / NAVIGATION_MS, 1))
   }
 
   /**
@@ -131,10 +161,8 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
    * with the part already covered drawn behind it. Direction is the thing a
    * still picture cannot teach, so the hint has to move.
    */
-  const drawNavigation = (): void => {
-    const median = navigation!.median
-    const elapsed = (performance.now() - navigationStartedAt) % (NAVIGATION_MS + NAVIGATION_REST_MS)
-    const progress = Math.min(elapsed / NAVIGATION_MS, 1)
+  const drawTrip = (stroke: Stroke, progress: number): void => {
+    const median = stroke.median
     const reached = progress * (median.length - 1)
     const index = Math.min(Math.floor(reached), median.length - 2)
     const from = median[index]!
@@ -168,8 +196,17 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   const animateNavigation = (): void => {
     navigationFrame = null
-    if (!navigation) return
+    if (!navigation && answer.length === 0) return
     draw()
+    // The answer runs out; the writing hint loops until it is put away.
+    const finished =
+      answer.length > 0 &&
+      performance.now() - navigationStartedAt >
+        answer.length * (NAVIGATION_MS + NAVIGATION_REST_MS)
+    if (finished && !navigation) {
+      draw()
+      return
+    }
     navigationFrame = requestAnimationFrame(animateNavigation)
   }
 
@@ -201,28 +238,21 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
     return total
   }
 
-  const clearRejection = (): void => {
-    if (rejectionTimer) clearTimeout(rejectionTimer)
-    rejectionTimer = null
-    rejectedStroke = null
-  }
-
   const onPointerDown = (event: PointerEvent): void => {
     // A resting palm or a second finger must not take over the stroke, and it
     // must not silently swallow the one the learner is drawing either.
     if (!event.isPrimary || inProgress || !accepting) return
-    // Starting to write answers the refused stroke: take it away now rather
-    // than letting its timer pull the rug from under what is being written.
-    clearRejection()
     canvas.setPointerCapture(event.pointerId)
     inProgress = [toCharacterSpace(event)]
     draw()
+    options.onStrokeTraced(inProgress)
   }
 
   const onPointerMove = (event: PointerEvent): void => {
     if (!inProgress || !canvas.hasPointerCapture(event.pointerId)) return
     inProgress.push(toCharacterSpace(event))
     draw()
+    options.onStrokeTraced(inProgress)
   }
 
   const onPointerUp = (event: PointerEvent): void => {
@@ -234,9 +264,9 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       draw()
       return
     }
-    accepted.push(points)
+    written.push(points)
     draw()
-    // The session judges it here and may call rejectLastStroke() straight back.
+    // The session only takes it down; judging waits for 確定.
     options.onStrokeFinished(points)
   }
 
@@ -251,18 +281,6 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
 
   return {
     element,
-    rejectLastStroke() {
-      const stroke = accepted.pop()
-      if (!stroke) return
-      clearRejection()
-      rejectedStroke = stroke
-      draw()
-      rejectionTimer = setTimeout(() => {
-        rejectionTimer = null
-        rejectedStroke = null
-        draw()
-      }, REJECTION_MS)
-    },
     stopAcceptingStrokes() {
       accepting = false
     },
@@ -270,6 +288,7 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
       if (navigation === stroke) return
       navigation = stroke
       if (stroke) {
+        answer = []
         navigationStartedAt = performance.now()
         if (navigationFrame === null) navigationFrame = requestAnimationFrame(animateNavigation)
       } else {
@@ -278,9 +297,16 @@ export function createWritingSurface(options: WritingSurfaceOptions): WritingSur
         draw()
       }
     },
-    hasInk: () => accepted.length > 0 || inProgress !== null,
+    showAnswer(strokes) {
+      navigation = null
+      answer = strokes
+      navigationStartedAt = performance.now()
+      if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
+      navigationFrame = strokes.length > 0 ? requestAnimationFrame(animateNavigation) : null
+      draw()
+    },
+    hasInk: () => written.length > 0 || inProgress !== null,
     destroy() {
-      if (rejectionTimer) clearTimeout(rejectionTimer)
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame)
       observer.disconnect()
     },

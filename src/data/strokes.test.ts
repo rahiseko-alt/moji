@@ -5,10 +5,25 @@
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { ALL_CHARACTERS, HIRAGANA, KANJI_GRADE1, KATAKANA } from './characters'
+import {
+  ALL_CHARACTERS,
+  charactersFor,
+  HIRAGANA,
+  KANJI_GRADE1,
+  KATAKANA,
+  LONG_VOWEL,
+  MARKED_HIRAGANA,
+  MARKED_KATAKANA,
+  PLAIN_HIRAGANA,
+  PLAIN_KATAKANA,
+  SMALL_HIRAGANA,
+  SMALL_KATAKANA,
+} from './characters'
 import type { StrokeData } from './stroke-data'
+import type { WordData } from './word-data'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
+const words = JSON.parse(readFileSync('assets/data/words.json', 'utf8')) as WordData
 const entries = Object.entries(data.characters)
 
 /*
@@ -22,9 +37,18 @@ const entries = Object.entries(data.characters)
 const FIRST_YEAR_KANJI =
   '一円右雨火王音花下貝学気九休玉金空月犬見五口校左三山糸子四七字耳車手十女出小上森水人正青生夕石赤千川先草早足村大男中虫竹町天田土二年日入白八百文木本名目立林力六'
 
-/** The 46 plain syllables, in the order they are taught. */
-const PLAIN_HIRAGANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
-const PLAIN_KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
+/*
+ * The kana, transcribed here independently of src/data/characters.json so the
+ * list is compared against something other than itself.
+ */
+const PLAIN_HIRA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
+const PLAIN_KATA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
+/** The 20 voiced, then the 5 half-voiced. */
+const MARKED_HIRA = 'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ'
+const MARKED_KATA = 'ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ'
+/** The five small vowels, small ya/yu/yo, the double consonant, small wa. */
+const SMALL_HIRA = 'ぁぃぅぇぉゃゅょっゎ'
+const SMALL_KATA = 'ァィゥェォャュョッヮ'
 
 const sorted = (characters: Iterable<string>): string[] => [...characters].sort()
 
@@ -35,70 +59,82 @@ describe('the characters the app teaches', () => {
     expect(new Set(KANJI_GRADE1).size).toBe(80)
   })
 
-  it('has exactly the 46 plain hiragana and the 46 plain katakana', () => {
-    expect(sorted(HIRAGANA)).toEqual(sorted(PLAIN_HIRAGANA))
-    expect(sorted(KATAKANA)).toEqual(sorted(PLAIN_KATAKANA))
+  it('has the 46 plain syllables of each kana, in the order the table reads', () => {
+    expect([...PLAIN_HIRAGANA].join('')).toBe(PLAIN_HIRA)
+    expect([...PLAIN_KATAKANA].join('')).toBe(PLAIN_KATA)
   })
 
-  it('leaves out voiced marks and small kana, which add a mark rather than strokes', () => {
-    const notPlain = [...'がざだばぱぁぃゃっガザダバパァィャッ']
-    for (const character of notPlain) {
-      expect([...HIRAGANA, ...KATAKANA], character).not.toContain(character)
-    }
+  it('has the 25 marked and the 10 small of each kana', () => {
+    expect([...MARKED_HIRAGANA].join('')).toBe(MARKED_HIRA)
+    expect([...MARKED_KATAKANA].join('')).toBe(MARKED_KATA)
+    expect([...SMALL_HIRAGANA].join('')).toBe(SMALL_HIRA)
+    expect([...SMALL_KATAKANA].join('')).toBe(SMALL_KATA)
   })
 
-  it('carries stroke data for every one of them, and nothing spare', () => {
-    expect(Object.keys(data.characters).sort()).toEqual([...ALL_CHARACTERS].sort())
+  // Written words need these: でんしゃ and コンビニ cannot be spelled without
+  // them, whatever the strokes of the plain syllable already taught (ADR 0015).
+  it('teaches every kana a modern word can be written with', () => {
+    expect(sorted(HIRAGANA)).toEqual(sorted(PLAIN_HIRA + MARKED_HIRA + SMALL_HIRA))
+    expect(sorted(KATAKANA)).toEqual(sorted(PLAIN_KATA + MARKED_KATA + SMALL_KATA + 'ー'))
+    expect(LONG_VOWEL).toEqual(['ー'])
+  })
+
+  it('carries stroke data for every one of them, and every one a 単語 needs, and nothing spare', () => {
+    const needed = charactersFor(words.words)
+    expect(Object.keys(data.characters).sort()).toEqual([...needed].sort())
+    for (const character of ALL_CHARACTERS) expect(needed).toContain(character)
   })
 })
 
+/*
+ * Nearly nine thousand strokes, so each check walks them all once and collects
+ * what fails, then asserts on the list: an empty list passes, and a failing
+ * one names every offending stroke at once. Asserting point by point made
+ * hundreds of thousands of assertions and ran past the time limit.
+ */
+const everyStroke = function* () {
+  for (const [character, strokes] of entries) {
+    for (const [index, stroke] of strokes.entries()) {
+      yield { name: `${character} stroke ${index + 1}`, stroke }
+    }
+  }
+}
+
 describe('every stroke', () => {
   it('belongs to a character that has at least one', () => {
-    for (const [character, strokes] of entries) {
-      expect(strokes.length, character).toBeGreaterThan(0)
-    }
+    expect(entries.filter(([, strokes]) => strokes.length === 0).map(([character]) => character)).toEqual([])
   })
 
   it('has the same number of points as every other', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        expect(stroke.median.length, `${character} stroke ${index + 1}`).toBe(data.pointsPerStroke)
-      }
-    }
+    const wrong = [...everyStroke()]
+      .filter(({ stroke }) => stroke.median.length !== data.pointsPerStroke)
+      .map(({ name }) => name)
+    expect(wrong).toEqual([])
   })
 
   it('stays inside the square the coordinates are defined in', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        for (const [x, y] of stroke.median) {
-          expect(x, `${character} stroke ${index + 1}`).toBeGreaterThanOrEqual(0)
-          expect(x, `${character} stroke ${index + 1}`).toBeLessThanOrEqual(data.viewBox)
-          expect(y, `${character} stroke ${index + 1}`).toBeGreaterThanOrEqual(0)
-          expect(y, `${character} stroke ${index + 1}`).toBeLessThanOrEqual(data.viewBox)
-        }
-      }
-    }
+    const inside = (value: number): boolean => value >= 0 && value <= data.viewBox
+    const outside = [...everyStroke()]
+      .filter(({ stroke }) => stroke.median.some(([x, y]) => !inside(x) || !inside(y)))
+      .map(({ name }) => name)
+    expect(outside).toEqual([])
   })
 
   it('goes somewhere, rather than collapsing to a point', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
+    const collapsed = [...everyStroke()]
+      .filter(({ stroke }) => {
         const [first] = stroke.median
-        const last = stroke.median[stroke.median.length - 1]
-        const spread = Math.max(
-          ...stroke.median.map(([x, y]) => Math.hypot(x - first![0], y - first![1])),
-        )
-        expect(spread, `${character} stroke ${index + 1} from ${first} to ${last}`).toBeGreaterThan(1)
-      }
-    }
+        return !stroke.median.some(([x, y]) => Math.hypot(x - first![0], y - first![1]) > 1)
+      })
+      .map(({ name }) => name)
+    expect(collapsed).toEqual([])
   })
 
   it('keeps the path it was sampled from', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        expect(stroke.d, `${character} stroke ${index + 1}`).toMatch(/^[Mm]/)
-      }
-    }
+    const pathless = [...everyStroke()]
+      .filter(({ stroke }) => !/^[Mm]/.test(stroke.d))
+      .map(({ name }) => name)
+    expect(pathless).toEqual([])
   })
 })
 
@@ -108,6 +144,11 @@ describe('stroke counts follow Japanese school convention', () => {
     ['あ', 3],
     ['き', 4],
     ['ん', 1],
+    // A mark is drawn, not implied: が is か plus its two, ぱ is は plus the ring.
+    ['が', 5],
+    ['ぱ', 4],
+    ['っ', 1],
+    ['ー', 1],
     ['日', 4],
     ['学', 8],
     ['森', 12],
