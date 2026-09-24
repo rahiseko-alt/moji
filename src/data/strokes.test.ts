@@ -86,53 +86,55 @@ describe('the characters the app teaches', () => {
   })
 })
 
+/*
+ * Nearly nine thousand strokes, so each check walks them all once and collects
+ * what fails, then asserts on the list: an empty list passes, and a failing
+ * one names every offending stroke at once. Asserting point by point made
+ * hundreds of thousands of assertions and ran past the time limit.
+ */
+const everyStroke = function* () {
+  for (const [character, strokes] of entries) {
+    for (const [index, stroke] of strokes.entries()) {
+      yield { name: `${character} stroke ${index + 1}`, stroke }
+    }
+  }
+}
+
 describe('every stroke', () => {
   it('belongs to a character that has at least one', () => {
-    for (const [character, strokes] of entries) {
-      expect(strokes.length, character).toBeGreaterThan(0)
-    }
+    expect(entries.filter(([, strokes]) => strokes.length === 0).map(([character]) => character)).toEqual([])
   })
 
   it('has the same number of points as every other', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        expect(stroke.median.length, `${character} stroke ${index + 1}`).toBe(data.pointsPerStroke)
-      }
-    }
+    const wrong = [...everyStroke()]
+      .filter(({ stroke }) => stroke.median.length !== data.pointsPerStroke)
+      .map(({ name }) => name)
+    expect(wrong).toEqual([])
   })
 
   it('stays inside the square the coordinates are defined in', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        for (const [x, y] of stroke.median) {
-          expect(x, `${character} stroke ${index + 1}`).toBeGreaterThanOrEqual(0)
-          expect(x, `${character} stroke ${index + 1}`).toBeLessThanOrEqual(data.viewBox)
-          expect(y, `${character} stroke ${index + 1}`).toBeGreaterThanOrEqual(0)
-          expect(y, `${character} stroke ${index + 1}`).toBeLessThanOrEqual(data.viewBox)
-        }
-      }
-    }
+    const inside = (value: number): boolean => value >= 0 && value <= data.viewBox
+    const outside = [...everyStroke()]
+      .filter(({ stroke }) => stroke.median.some(([x, y]) => !inside(x) || !inside(y)))
+      .map(({ name }) => name)
+    expect(outside).toEqual([])
   })
 
   it('goes somewhere, rather than collapsing to a point', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
+    const collapsed = [...everyStroke()]
+      .filter(({ stroke }) => {
         const [first] = stroke.median
-        const last = stroke.median[stroke.median.length - 1]
-        const spread = Math.max(
-          ...stroke.median.map(([x, y]) => Math.hypot(x - first![0], y - first![1])),
-        )
-        expect(spread, `${character} stroke ${index + 1} from ${first} to ${last}`).toBeGreaterThan(1)
-      }
-    }
+        return !stroke.median.some(([x, y]) => Math.hypot(x - first![0], y - first![1]) > 1)
+      })
+      .map(({ name }) => name)
+    expect(collapsed).toEqual([])
   })
 
   it('keeps the path it was sampled from', () => {
-    for (const [character, strokes] of entries) {
-      for (const [index, stroke] of strokes.entries()) {
-        expect(stroke.d, `${character} stroke ${index + 1}`).toMatch(/^[Mm]/)
-      }
-    }
+    const pathless = [...everyStroke()]
+      .filter(({ stroke }) => !/^[Mm]/.test(stroke.d))
+      .map(({ name }) => name)
+    expect(pathless).toEqual([])
   })
 })
 
