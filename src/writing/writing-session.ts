@@ -28,11 +28,9 @@ import type { Stroke } from '../data/stroke-data'
 import { length } from './polyline'
 import {
   DEFAULT_THRESHOLDS,
-  measureStroke,
-  verdictOf,
+  matchStroke,
   type MatchThresholds,
   type MistakeReason,
-  type StrokeMeasurement,
 } from './stroke-matcher'
 import { asPoint, type TracedPoint } from './traced-point'
 
@@ -108,12 +106,6 @@ export type WritingSessionState = {
   readonly canSubmit: boolean
   /** Has the お題 in hand been sent and marked? */
   readonly marked: boolean
-  /**
-   * What each written stroke measured against its model at the last 確定, for
-   * the tuning build's panel. Empty before 確定, and for a stroke the model has
-   * no counterpart for.
-   */
-  readonly measurements: readonly StrokeMeasurement[]
   /** Strokes of the お題 in hand written correctly at the first 確定, or null before it. */
   readonly score: { readonly correct: number; readonly total: number } | null
   /** お題 written correctly at the first 確定, out of them all. */
@@ -190,9 +182,9 @@ export type WritingSessionOptions = {
   /** The model strokes of any character that might be chosen. */
   readonly strokesOf: (character: string) => readonly Stroke[]
   /**
-   * The numbers the marking judges by. Asked for afresh at every 確定, so they
-   * can be moved while the app is running — which is how they get chosen at
-   * all, since nobody can tell from the numbers alone whether they are right.
+   * The numbers the marking judges by, asked for afresh at every 確定. The app
+   * always uses the one fixed setting; the tests move them to show what each
+   * one decides.
    */
   readonly thresholds?: () => MatchThresholds
 }
@@ -206,8 +198,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
   let at = 0
   /** One 升目 per character of the お題 in hand, in reading order. */
   let cells: Cell[] = []
-  /** What the strokes on the paper measured, kept so the tuning panel can show the numbers. */
-  let measurements: StrokeMeasurement[] = []
   let marked = false
   /** One per お題 already sent, settled at its first 確定. */
   const results: ItemResult[] = []
@@ -239,7 +229,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       written: [],
       outcomes: [],
     }))
-    measurements = []
     marked = false
     pastHalfway = false
   }
@@ -301,7 +290,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       writtenStrokes,
       canSubmit: phase !== 'choosing' && !marked && writtenStrokes > 0,
       marked,
-      measurements: [...measurements],
       score: countOf(firstMarking[at]),
       runScore: {
         correct: results.filter((result) => result.firstTimeCorrect).length,
@@ -376,7 +364,6 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
       // Anything beyond the model's count is a stroke too many, and a model
       // stroke never written is a stroke missing; both count as wrong.
       const judgingBy = thresholds()
-      measurements = []
       for (const cell of cells) {
         cell.outcomes = Array.from(
           { length: Math.max(cell.written.length, cell.strokes.length) },
@@ -385,9 +372,7 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
             const stroke = cell.written[index]
             if (!model) return { correct: false, problem: 'extra' as const }
             if (!stroke) return { correct: false, problem: 'missing' as const }
-            const measured = measureStroke(stroke.map(asPoint), model.median, judgingBy)
-            measurements.push(measured)
-            const verdict = verdictOf(measured)
+            const verdict = matchStroke(stroke.map(asPoint), model.median, judgingBy)
             return verdict.correct
               ? { correct: true, problem: null }
               : { correct: false, problem: verdict.reason }

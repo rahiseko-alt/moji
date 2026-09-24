@@ -8,8 +8,6 @@
  * made on the way back in — nothing is remembered (ADR 0005).
  */
 import type { ChoicesStore } from './choices'
-import { mountTuning } from '../screens/tuning'
-import { DEFAULT_STRICTNESS, thresholdsFor } from '../writing/stroke-matcher'
 import type { Screen } from './screen'
 import { loadStrokeData, strokeDataIfLoaded, strokesFor } from '../data/stroke-data'
 import { mountChooser } from '../screens/chooser'
@@ -17,25 +15,8 @@ import { mountCover } from '../screens/cover'
 import { mountWriting } from '../screens/writing'
 import { createWritingSession, type WritingSession } from '../writing/writing-session'
 
-declare const __TUNING__: boolean
-
 export function startApp(root: HTMLElement, choices: ChoicesStore): void {
   let current: Screen | null = null
-  /*
-   * How strict the marking is. Fixed in the build the school hands out; in the
-   * tuning build the panel moves it between attempts, which is the only way
-   * anyone can tell whether it is set right.
-   */
-  let strictness = DEFAULT_STRICTNESS
-  const tuning = __TUNING__
-    ? mountTuning(
-        root,
-        () => strictness,
-        (next) => {
-          strictness = next
-        },
-      )
-    : null
   // Warmed here so the first writing screen has nothing to wait for.
   void loadStrokeData()
 
@@ -51,7 +32,6 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
 
   const toChooser = (): void => {
     const session = createWritingSession({
-      thresholds: () => thresholdsFor(strictness),
       // The chooser keeps はじめる out of reach until the data has landed, so a
       // run never begins on the empty stand-in below.
       strokesOf: (character) => {
@@ -63,7 +43,7 @@ export function startApp(root: HTMLElement, choices: ChoicesStore): void {
   }
 
   const toWriting = (session: WritingSession): void =>
-    swap(mountWriting(root, choices, session, toCover, (measurements) => tuning?.show(measurements)))
+    swap(mountWriting(root, choices, session, toCover))
 
   toCover()
 }

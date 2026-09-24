@@ -9,8 +9,8 @@
  * something different, so the answer names which.
  *
  * The thresholds are deliberately loose: this is a finger on a phone, not a
- * pen on paper. They live together here so they can be tuned from one place
- * once the app has been used on real hardware.
+ * pen on paper. They live together here, in one setting the school chose by
+ * writing with it on real hardware.
  */
 import type { Point } from '../data/stroke-data'
 import { bend, bow, directionAgreement, frechetDistance, length, resample } from './polyline'
@@ -49,32 +49,22 @@ export type MatchThresholds = {
 }
 
 /*
- * Five settings, from strict to forgiving, and the app runs on one of them.
- * Nine separate numbers turned out to be nobody's idea of a dial: what a person
- * can say is "this is too strict", so that is what there is to move.
- *
- * Measured against the strokes a real finger drew on a real phone, kept in
- * the recorder tool, and against ways of not writing the character at all. Level 3
- * is where honest handwriting starts passing; below it, a normally written い
- * or う is failed. The numbers are in the character's own 109-wide square.
+ * The one setting the app marks by. Five were tried on a real phone, from
+ * strict to forgiving, and the school fixed on the middle one: below it, a
+ * normally written い or う is failed; above it, a wrong stroke starts passing.
+ * The numbers are in the character's own 109-wide square.
  */
-export const STRICTNESS_LEVELS: readonly MatchThresholds[] = [
-  { direction: 0.7, ends: 0.35, endsFloor: 12, endsCeiling: 18, shape: 0.25, shapeFloor: 10, length: 0.7, curve: 0.5, bend: 0.05 },
-  { direction: 0.65, ends: 0.4, endsFloor: 16, endsCeiling: 22, shape: 0.3, shapeFloor: 13, length: 0.6, curve: 0.4, bend: 0.06 },
-  { direction: 0.6, ends: 0.5, endsFloor: 20, endsCeiling: 28, shape: 0.35, shapeFloor: 16, length: 0.5, curve: 0.3, bend: 0.07 },
-  { direction: 0.55, ends: 0.6, endsFloor: 25, endsCeiling: 34, shape: 0.42, shapeFloor: 20, length: 0.4, curve: 0.2, bend: 0.08 },
-  { direction: 0.45, ends: 0.75, endsFloor: 32, endsCeiling: 42, shape: 0.5, shapeFloor: 26, length: 0.3, curve: 0.1, bend: 0.1 },
-]
-
-/** Counting from one, as the tuning panel shows it. */
-export const DEFAULT_STRICTNESS = 3
-
-/** The numbers of one setting, counting from one as the panel shows it. */
-export function thresholdsFor(strictness: number): MatchThresholds {
-  return STRICTNESS_LEVELS[strictness - 1] ?? STRICTNESS_LEVELS[DEFAULT_STRICTNESS - 1]!
+export const DEFAULT_THRESHOLDS: MatchThresholds = {
+  direction: 0.6,
+  ends: 0.5,
+  endsFloor: 20,
+  endsCeiling: 28,
+  shape: 0.35,
+  shapeFloor: 16,
+  length: 0.5,
+  curve: 0.3,
+  bend: 0.07,
 }
-
-export const DEFAULT_THRESHOLDS: MatchThresholds = thresholdsFor(DEFAULT_STRICTNESS)
 
 /** Enough to describe a stroke's shape without being fussy about wobble. */
 const COMPARISON_POINTS = 16
@@ -101,7 +91,7 @@ function curveKept(written: readonly number[], model: readonly number[]): number
  * is also what to show someone asking why a stroke was called wrong, or
  * choosing where to move a number.
  */
-export type StrokeMeasurement = {
+type StrokeMeasurement = {
   /** What the stroke did: the same five quantities the verdict is made of. */
   readonly direction: number
   readonly ends: number
@@ -119,7 +109,7 @@ export type StrokeMeasurement = {
   }
 }
 
-export function measureStroke(
+function measureStroke(
   written: readonly Point[],
   model: readonly Point[],
   thresholds: MatchThresholds = DEFAULT_THRESHOLDS,
@@ -156,7 +146,7 @@ export function measureStroke(
 }
 
 /** The verdict is nothing but these five comparisons, in this order. */
-export function verdictOf(measured: StrokeMeasurement): StrokeVerdict {
+function verdictOf(measured: StrokeMeasurement): StrokeVerdict {
   // In this order, so that the reason a learner is given is the plainest one
   // that applies: barely drawn beats backwards, backwards beats out of place.
   if (measured.length < measured.allowed.length) return { correct: false, reason: 'tooShort' }

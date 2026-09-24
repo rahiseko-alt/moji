@@ -246,7 +246,7 @@
   padding: 0.3em 0.5em;
   border: 1px solid var(--hairline);
   border-radius: 6px;
-  background: var(--paper-tint);
+  background: var(--card);
   line-height: 1.25;
   color: var(--ink);
   text-align: center;
@@ -303,7 +303,7 @@
    to miss on a tile this size. Everything inside turns to match. */
 .chooser__word[aria-pressed='true'] {
   border-color: var(--vermilion);
-  background: var(--vermilion);
+  background: var(--card-chosen);
   color: var(--on-vermilion);
 }
 
