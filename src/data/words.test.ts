@@ -7,11 +7,16 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { LANGUAGES } from '../app/choices'
+import { KANJI_GRADE1 } from './characters'
 import type { StrokeData } from './stroke-data'
 import type { WordData } from './word-data'
 
 const words = JSON.parse(readFileSync('assets/data/words.json', 'utf8')) as WordData
 const strokes = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
+const joyo = JSON.parse(readFileSync('src/data/joyo-kanji.json', 'utf8')) as { kanji: string }
+const JOYO = new Set(joyo.kanji)
+
+const isKanji = (character: string): boolean => /\p{Script=Han}/u.test(character)
 
 const entries = words.words
 const scenes = words.scenes
@@ -67,6 +72,17 @@ describe('every word', () => {
     }
   })
 
+  // A kanji beyond the first year is there because a 単語 needs it, and it has
+  // to be one the government lists for everyday writing — not a rare one that
+  // happens to have strokes in KanjiVG (ADR 0017).
+  it('uses only kanji from the 常用漢字表', () => {
+    for (const word of entries) {
+      for (const character of word.written) {
+        if (isKanji(character)) expect(JOYO.has(character), `${word.written} uses ${character}`).toBe(true)
+      }
+    }
+  })
+
   it('has a reading written in kana', () => {
     for (const word of entries) {
       expect(word.reading, word.written).toMatch(KANA)
@@ -90,6 +106,14 @@ describe('every word', () => {
   it('appears only once', () => {
     const written = entries.map((word) => word.written)
     expect(new Set(written).size).toBe(written.length)
+  })
+})
+
+describe('the 常用漢字表 the kanji are drawn from', () => {
+  it('has its 2,136 kanji, once each, the first-year ones among them', () => {
+    expect([...joyo.kanji]).toHaveLength(2136)
+    expect(JOYO.size).toBe(2136)
+    for (const character of KANJI_GRADE1) expect(JOYO.has(character), character).toBe(true)
   })
 })
 
