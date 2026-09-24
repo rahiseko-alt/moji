@@ -4,10 +4,20 @@
   box-sizing: border-box;
 }
 
+/*
+ * The page is the screen's height, measured as the screen is now (dvh, so a
+ * mobile browser's toolbar coming and going is followed). Everything inside
+ * fills what it is given rather than measuring the screen again: a host that
+ * pads the page — the artifact viewer keeps its own header clear that way —
+ * then shrinks the app instead of pushing its bottom edge off the screen.
+ */
+html {
+  block-size: 100dvh;
+}
+
 html,
 body {
   margin: 0;
-  block-size: 100%;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
@@ -17,8 +27,12 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+body,
 #app {
-  block-size: 100dvh;
+  block-size: 100%;
+}
+
+#app {
   inline-size: 100%;
 }
 

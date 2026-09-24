@@ -21,7 +21,10 @@
   z-index: 80;
   inline-size: var(--tuning-width);
   overflow-y: auto;
-  padding: 0.5rem 0.55rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  /* Fixed to the screen, so it keeps clear of whatever the host puts over the
+     top and bottom edges itself. */
+  padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.55rem
+    calc(0.6rem + env(safe-area-inset-bottom, 0px));
   border-inline-start: 1px solid var(--hairline);
   background: var(--paper);
   font-size: 0.75rem;
