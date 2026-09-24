@@ -5,7 +5,19 @@
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { ALL_CHARACTERS, HIRAGANA, KANJI_GRADE1, KATAKANA } from './characters'
+import {
+  ALL_CHARACTERS,
+  HIRAGANA,
+  KANJI_GRADE1,
+  KATAKANA,
+  LONG_VOWEL,
+  MARKED_HIRAGANA,
+  MARKED_KATAKANA,
+  PLAIN_HIRAGANA,
+  PLAIN_KATAKANA,
+  SMALL_HIRAGANA,
+  SMALL_KATAKANA,
+} from './characters'
 import type { StrokeData } from './stroke-data'
 
 const data = JSON.parse(readFileSync('assets/data/strokes.json', 'utf8')) as StrokeData
@@ -22,9 +34,18 @@ const entries = Object.entries(data.characters)
 const FIRST_YEAR_KANJI =
   '一円右雨火王音花下貝学気九休玉金空月犬見五口校左三山糸子四七字耳車手十女出小上森水人正青生夕石赤千川先草早足村大男中虫竹町天田土二年日入白八百文木本名目立林力六'
 
-/** The 46 plain syllables, in the order they are taught. */
-const PLAIN_HIRAGANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
-const PLAIN_KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
+/*
+ * The kana, transcribed here independently of src/data/characters.json so the
+ * list is compared against something other than itself.
+ */
+const PLAIN_HIRA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
+const PLAIN_KATA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
+/** The 20 voiced, then the 5 half-voiced. */
+const MARKED_HIRA = 'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ'
+const MARKED_KATA = 'ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ'
+/** The five small vowels, small ya/yu/yo, the double consonant, small wa. */
+const SMALL_HIRA = 'ぁぃぅぇぉゃゅょっゎ'
+const SMALL_KATA = 'ァィゥェォャュョッヮ'
 
 const sorted = (characters: Iterable<string>): string[] => [...characters].sort()
 
@@ -35,16 +56,24 @@ describe('the characters the app teaches', () => {
     expect(new Set(KANJI_GRADE1).size).toBe(80)
   })
 
-  it('has exactly the 46 plain hiragana and the 46 plain katakana', () => {
-    expect(sorted(HIRAGANA)).toEqual(sorted(PLAIN_HIRAGANA))
-    expect(sorted(KATAKANA)).toEqual(sorted(PLAIN_KATAKANA))
+  it('has the 46 plain syllables of each kana, in the order the table reads', () => {
+    expect([...PLAIN_HIRAGANA].join('')).toBe(PLAIN_HIRA)
+    expect([...PLAIN_KATAKANA].join('')).toBe(PLAIN_KATA)
   })
 
-  it('leaves out voiced marks and small kana, which add a mark rather than strokes', () => {
-    const notPlain = [...'がざだばぱぁぃゃっガザダバパァィャッ']
-    for (const character of notPlain) {
-      expect([...HIRAGANA, ...KATAKANA], character).not.toContain(character)
-    }
+  it('has the 25 marked and the 10 small of each kana', () => {
+    expect([...MARKED_HIRAGANA].join('')).toBe(MARKED_HIRA)
+    expect([...MARKED_KATAKANA].join('')).toBe(MARKED_KATA)
+    expect([...SMALL_HIRAGANA].join('')).toBe(SMALL_HIRA)
+    expect([...SMALL_KATAKANA].join('')).toBe(SMALL_KATA)
+  })
+
+  // Written words need these: でんしゃ and コンビニ cannot be spelled without
+  // them, whatever the strokes of the plain syllable already taught (ADR 0015).
+  it('teaches every kana a modern word can be written with', () => {
+    expect(sorted(HIRAGANA)).toEqual(sorted(PLAIN_HIRA + MARKED_HIRA + SMALL_HIRA))
+    expect(sorted(KATAKANA)).toEqual(sorted(PLAIN_KATA + MARKED_KATA + SMALL_KATA + 'ー'))
+    expect(LONG_VOWEL).toEqual(['ー'])
   })
 
   it('carries stroke data for every one of them, and nothing spare', () => {
@@ -108,6 +137,11 @@ describe('stroke counts follow Japanese school convention', () => {
     ['あ', 3],
     ['き', 4],
     ['ん', 1],
+    // A mark is drawn, not implied: が is か plus its two, ぱ is は plus the ring.
+    ['が', 5],
+    ['ぱ', 4],
+    ['っ', 1],
+    ['ー', 1],
     ['日', 4],
     ['学', 8],
     ['森', 12],

@@ -4,15 +4,29 @@
  * Kana are laid out as the gojuon table every Japanese classroom uses: one
  * column per row of the syllabary — a, ka, sa, ta, na, ha, ma, ya, ra, wa —
  * read downward through the five vowels, with the gaps left empty where a
- * syllable does not exist. Kanji come easiest first, by stroke count, so
- * working down the grid is also working up in difficulty. Every character is
- * on screen at once: a learner picks by looking, not by scrolling.
+ * syllable does not exist. The marked kana (ga, za, da, ba, pa) follow as five
+ * more columns of the same shape, and after them the small kana and the long
+ * mark, which belong to no vowel and are simply listed. Kanji come easiest
+ * first, by stroke count, so working down the grid is also working up in
+ * difficulty. Every character is on screen at once: a learner picks by
+ * looking, not by scrolling.
  */
 import type { ChoicesStore } from '../app/choices'
 import { createConfirm } from '../app/confirm'
 import { requireElement } from '../app/dom'
 import type { Screen } from '../app/screen'
-import { HIRAGANA, KANJI_GRADE1, KATAKANA } from '../data/characters'
+import {
+  HIRAGANA,
+  KANJI_GRADE1,
+  KATAKANA,
+  LONG_VOWEL,
+  MARKED_HIRAGANA,
+  MARKED_KATAKANA,
+  PLAIN_HIRAGANA,
+  PLAIN_KATAKANA,
+  SMALL_HIRAGANA,
+  SMALL_KATAKANA,
+} from '../data/characters'
 import { loadStrokeData, strokeDataIfLoaded, type StrokeData } from '../data/stroke-data'
 import { STRINGS, type Strings } from '../i18n/strings'
 import type { WritingSession } from '../writing/writing-session'
@@ -53,20 +67,64 @@ const GOJUON: readonly (readonly number[])[] = [
 /** Chosen so every character of the group lands on screen at a size a finger can hit. */
 const KANJI_GRID = { columns: 16, rows: 5 }
 
+/** One kind of kana, in the blocks the table is built from. */
+type KanaBlocks = {
+  readonly plain: readonly string[]
+  readonly marked: readonly string[]
+  readonly small: readonly string[]
+  readonly long: readonly string[]
+}
+
+const KANA: Readonly<Record<'hiragana' | 'katakana', KanaBlocks>> = {
+  hiragana: {
+    plain: PLAIN_HIRAGANA,
+    marked: MARKED_HIRAGANA,
+    small: SMALL_HIRAGANA,
+    long: [],
+  },
+  katakana: {
+    plain: PLAIN_KATAKANA,
+    marked: MARKED_KATAKANA,
+    small: SMALL_KATAKANA,
+    long: LONG_VOWEL,
+  },
+}
+
 const label = (strings: Strings, group: Group): string => strings[group]
 
+/** One column of the table, top to bottom, with holes where it runs out. */
+const column = (characters: readonly string[]): (string | null)[] =>
+  Array.from({ length: VOWELS }, (_, vowel) => characters[vowel] ?? null)
+
 /**
- * Pours the kana, which are in syllabary order, into the table column by
- * column, and hands back the cells row by row for the grid to lay out.
+ * Pours the kana into the table column by column, and hands back the cells row
+ * by row for the grid to lay out.
  */
-function gojuonLayout(characters: readonly string[]): Layout {
-  const columns = GOJUON.length
-  const cells: (string | null)[] = Array.from({ length: columns * VOWELS }, () => null)
+function kanaLayout(blocks: KanaBlocks): Layout {
+  const columns: (string | null)[][] = []
   let next = 0
-  for (const [column, vowels] of GOJUON.entries()) {
-    for (const vowel of vowels) cells[vowel * columns + column] = characters[next++] ?? null
+  for (const vowels of GOJUON) {
+    const cells = column([])
+    for (const vowel of vowels) cells[vowel] = blocks.plain[next++] ?? null
+    columns.push(cells)
   }
-  return { columns, rows: VOWELS, cells }
+  // The marked kana are five whole rows of the syllabary, so they read down
+  // through the vowels exactly like the columns before them.
+  for (let at = 0; at < blocks.marked.length; at += VOWELS) {
+    columns.push(column(blocks.marked.slice(at, at + VOWELS)))
+  }
+  // The small kana and the long mark have no vowel of their own. They are
+  // listed in columns of the same height, so the table stays one grid.
+  for (let at = 0; at < blocks.small.length; at += VOWELS) {
+    columns.push(column(blocks.small.slice(at, at + VOWELS)))
+  }
+  if (blocks.long.length > 0) columns.push(column(blocks.long))
+
+  const cells: (string | null)[] = []
+  for (let vowel = 0; vowel < VOWELS; vowel++) {
+    for (const cell of columns) cells.push(cell[vowel] ?? null)
+  }
+  return { columns: columns.length, rows: VOWELS, cells }
 }
 
 /** The characters of one kind, in the order they are taught and shown. */
@@ -82,9 +140,8 @@ function charactersOf(group: Group, data: StrokeData | null): readonly string[] 
 }
 
 function layoutOf(group: Group, data: StrokeData | null): Layout {
-  const characters = charactersOf(group, data)
-  if (group === 'kanji') return { ...KANJI_GRID, cells: characters }
-  return gojuonLayout(characters)
+  if (group === 'kanji') return { ...KANJI_GRID, cells: charactersOf(group, data) }
+  return kanaLayout(KANA[group])
 }
 
 export function mountChooser(

@@ -113,16 +113,20 @@
 .chooser__grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
   /* A wider gap between columns than between rows, so the kana table reads as
-     ten separate rows of the syllabary rather than one block of characters. */
-  gap: 0.2cqh 1.4cqh;
+     separate rows of the syllabary rather than one block of characters. */
+  gap: 0.2cqh 1.2cqh;
   inline-size: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
+  /* With the marked and small kana the table is nearly twice as wide as it was,
+     so width runs out first and the squares would leave the height unused. The
+     cells take it instead: a taller target for a finger, same character in it. */
+  block-size: 100cqh;
   font-size: calc(min(100cqw / var(--columns), 100cqh / var(--rows)) * 0.52);
 }
 
 .chooser__character {
   position: relative;
-  aspect-ratio: 1;
   display: grid;
   place-items: center;
   padding: 0;
@@ -154,7 +158,7 @@
 
 /* A syllable the table does not have. It holds its place and nothing else. */
 .chooser__gap {
-  aspect-ratio: 1;
+  display: block;
 }
 
 .chooser__character:hover,
