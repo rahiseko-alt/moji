@@ -1,4 +1,5 @@
 .chooser {
+  container-type: inline-size;
   display: grid;
   grid-template-rows: auto auto 1fr;
   block-size: 100%;
@@ -28,15 +29,34 @@
   padding: 0.45rem 0.7rem;
 }
 
-.chooser__home {
-  justify-self: start;
-  padding: 0.3rem 0.9rem;
-  border: 1px solid var(--hairline);
+/*
+ * Every button along the top is the same size, whatever it says and in
+ * whichever of the four languages: a row of pills of different lengths reads
+ * as a row of different kinds of thing. The size is the widest a label needs,
+ * or an eighth of the screen when that is less — the bar holds seven of them,
+ * and centring the four in the middle costs the room of one more.
+ */
+.chooser__home,
+.chooser__group,
+.chooser__all,
+.chooser__start,
+.chooser__back {
+  box-sizing: border-box;
+  inline-size: min(5.6rem, calc((100cqw - 4rem) / 8));
+  block-size: 1.9rem;
+  padding: 0 0.3rem;
+  border: 1.5px solid var(--hairline);
   border-radius: 999px;
   background: var(--paper-tint);
   font-family: var(--serif);
   font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
   color: var(--ink);
+}
+
+.chooser__home {
+  justify-self: start;
 }
 
 .chooser__actions {
@@ -46,26 +66,11 @@
   gap: 0.4rem;
 }
 
-/* Every character of the kind on show, in one tap — and out again in the next. */
-.chooser__all {
-  padding: 0.3rem 0.9rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-tint);
-  font-family: var(--serif);
-  font-size: 0.8rem;
-  color: var(--ink);
-}
-
 /* The way on. Dressed as the one action of the screen, and dimmed until there
    is something to start with. */
 .chooser__start {
-  padding: 0.3rem 1.1rem;
-  border: 1.5px solid var(--vermilion);
-  border-radius: 999px;
+  border-color: var(--vermilion);
   background: var(--vermilion);
-  font-family: var(--serif);
-  font-size: 0.85rem;
   color: var(--on-vermilion);
 }
 
@@ -88,12 +93,6 @@
 }
 
 .chooser__group {
-  padding: 0.3rem 1rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-tint);
-  font-family: var(--serif);
-  font-size: 0.85rem;
   color: var(--ink-soft);
 }
 
@@ -119,21 +118,6 @@
   display: none;
 }
 
-/* The arrow belongs to the button, not to the word: the label is one of four
-   languages and should not have punctuation spliced onto it in code. */
-.chooser__back::before {
-  content: '← ';
-}
-
-.chooser__back {
-  padding: 0.35rem 1rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-tint);
-  font-family: var(--serif);
-  font-size: 0.8rem;
-  color: var(--ink);
-}
 
 .chooser__scene-name {
   margin: 0;
@@ -253,7 +237,10 @@
   grid-template-rows: auto auto;
   align-content: center;
   gap: 0.15em;
-  font-size: min(1.85rem, 12cqh);
+  /* By the height the rows allow, and by the width a tile gets: four
+     characters of a 単語 have to fit across one, even with the tuning panel
+     taking a third of the screen. */
+  font-size: min(1.85rem, 12cqh, calc(100cqw / var(--columns) / 5));
 }
 
 /* How the 単語 is read, where the written form does not say it — furigana, in
@@ -270,24 +257,36 @@
   display: none;
 }
 
+/* A 単語 is never broken across lines: コンビ over ニ is not a word any more. */
 .chooser__written {
   font-family: var(--serif);
   font-size: 1em;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 /* What the 単語 means, said once and small: it is there to choose by, not to
    be learnt, and the Japanese above it is what the learner is here for. */
 .chooser__meaning {
   font-family: var(--sans);
-  font-size: 0.42em;
+  font-size: max(0.42em, 0.7rem);
   line-height: 1.25;
   color: var(--ink-soft);
 }
 
+/* A chosen 単語 is filled in the colour of the way on, so which are in the run
+   is plain at a glance across the whole 場面 — an outline alone was too easy
+   to miss on a tile this size. Everything inside turns to match. */
 .chooser__word[aria-pressed='true'] {
   border-color: var(--vermilion);
-  background: var(--paper-plain);
+  background: var(--vermilion);
+  color: var(--on-vermilion);
+}
+
+.chooser__word[aria-pressed='true'] .chooser__reading,
+.chooser__word[aria-pressed='true'] .chooser__meaning,
+.chooser__word[aria-pressed='true'] .chooser__number {
+  color: var(--on-vermilion);
 }
 
 /* The number sits in a tile far bigger than a character square, so it is a
