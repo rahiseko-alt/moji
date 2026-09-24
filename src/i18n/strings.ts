@@ -16,9 +16,12 @@ export type Strings = {
   readonly close: string
   readonly home: string
   readonly quitQuestion: string
-  /** Asked when the characters picked out for a run would be thrown away. */
+  /** Asked when the お題 picked out for a run would be thrown away. */
   readonly quitChosenQuestion: string
-  /** e.g. "あと7字あります。やめますか" — asked part way through a run. */
+  /**
+   * e.g. "あと7つあります。やめますか" — asked part way through a run. It counts お題,
+   * which may be single characters or whole 単語, so it names neither.
+   */
   readonly quitRunQuestion: (remaining: number) => string
   readonly yes: string
   readonly no: string
@@ -53,6 +56,10 @@ export type Strings = {
   readonly hiragana: string
   readonly katakana: string
   readonly kanji: string
+  /** The fourth kind to choose from: whole 単語, gathered by 場面, instead of single 字. */
+  readonly words: string
+  /** Leaves the 単語 of one 場面 for the list of 場面 again. */
+  readonly back: string
 }
 
 export const STRINGS: Record<Language, Strings> = {
@@ -62,8 +69,8 @@ export const STRINGS: Record<Language, Strings> = {
     close: '閉じる',
     home: 'ホーム',
     quitQuestion: 'やめますか',
-    quitChosenQuestion: '選んだ字が消えます。やめますか',
-    quitRunQuestion: (remaining) => `あと${remaining}字あります。やめますか`,
+    quitChosenQuestion: '選んだものが消えます。やめますか',
+    quitRunQuestion: (remaining) => `あと${remaining}つあります。やめますか`,
     yes: 'はい',
     no: 'いいえ',
     correct: '正解',
@@ -79,6 +86,8 @@ export const STRINGS: Record<Language, Strings> = {
     hiragana: 'ひらがな',
     katakana: 'カタカナ',
     kanji: '漢字',
+    words: 'ことば',
+    back: 'もどる',
   },
   en: {
     rotateToLandscape: 'Please turn your phone sideways',
@@ -86,8 +95,8 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'Close',
     home: 'Home',
     quitQuestion: 'Stop writing?',
-    quitChosenQuestion: 'Your chosen characters will be lost. Stop?',
-    quitRunQuestion: (remaining) => `${remaining} characters to go. Stop?`,
+    quitChosenQuestion: 'What you chose will be lost. Stop?',
+    quitRunQuestion: (remaining) => `${remaining} to go. Stop?`,
     yes: 'Yes',
     no: 'No',
     correct: 'Correct',
@@ -103,6 +112,8 @@ export const STRINGS: Record<Language, Strings> = {
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
+    words: 'Words',
+    back: 'Back',
   },
   vi: {
     rotateToLandscape: 'Vui lòng xoay ngang điện thoại',
@@ -110,8 +121,8 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'Đóng',
     home: 'Trang đầu',
     quitQuestion: 'Dừng viết?',
-    quitChosenQuestion: 'Các chữ đã chọn sẽ mất. Dừng lại?',
-    quitRunQuestion: (remaining) => `Còn ${remaining} chữ. Dừng lại?`,
+    quitChosenQuestion: 'Những gì bạn đã chọn sẽ mất. Dừng lại?',
+    quitRunQuestion: (remaining) => `Còn ${remaining}. Dừng lại?`,
     yes: 'Có',
     no: 'Không',
     correct: 'Đúng',
@@ -127,6 +138,8 @@ export const STRINGS: Record<Language, Strings> = {
     hiragana: 'Hiragana',
     katakana: 'Katakana',
     kanji: 'Kanji',
+    words: 'Từ vựng',
+    back: 'Quay lại',
   },
   ne: {
     rotateToLandscape: 'कृपया फोन तेर्सो पार्नुहोस्',
@@ -134,8 +147,8 @@ export const STRINGS: Record<Language, Strings> = {
     close: 'बन्द गर्नुहोस्',
     home: 'गृह',
     quitQuestion: 'लेख्न रोक्ने?',
-    quitChosenQuestion: 'छानिएका अक्षरहरू हराउँछन्। रोक्ने?',
-    quitRunQuestion: (remaining) => `${remaining} अक्षर बाँकी छन्। रोक्ने?`,
+    quitChosenQuestion: 'छानिएका कुराहरू हराउँछन्। रोक्ने?',
+    quitRunQuestion: (remaining) => `${remaining} बाँकी छन्। रोक्ने?`,
     yes: 'हो',
     no: 'होइन',
     correct: 'सही',
@@ -151,5 +164,7 @@ export const STRINGS: Record<Language, Strings> = {
     hiragana: 'हिरागाना',
     katakana: 'काताकाना',
     kanji: 'कान्जी',
+    words: 'शब्दहरू',
+    back: 'पछाडि',
   },
 }

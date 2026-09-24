@@ -1,3 +1,8 @@
+/*
+ * Bar, results strip, paper. The strip is hidden most of the time, and a hidden
+ * child is no grid item at all — so the rows are named rather than filled in
+ * order, or the paper slides up into the strip's row and collapses.
+ */
 .writing {
   display: grid;
   grid-template-rows: auto auto 1fr;
@@ -24,6 +29,7 @@
 }
 
 .writing__bar {
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -56,17 +62,30 @@
   display: none;
 }
 
+/*
+ * One 升目 for a character, a row of them for a 単語. The row is measured here
+ * rather than by the screen: --cells says how many there are, and the squares
+ * take whichever is smaller, the height they are given or the share of the
+ * width that is left once the gaps are taken out. Four of them still fit.
+ */
 .writing__cells {
+  grid-row: 3;
+  container-type: size;
+  --cells: 1;
+  --cell-gap: 1.5vmin;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5vmin;
+  gap: var(--cell-gap);
   padding: 0 0.7rem 0.5rem;
   min-block-size: 0;
 }
 
 .cell {
-  block-size: 100%;
+  block-size: min(
+    100cqh,
+    calc((100cqw - (var(--cells) - 1) * var(--cell-gap)) / var(--cells))
+  );
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -153,6 +172,7 @@
  * most needs to see. The square gives up the height it takes.
  */
 .summary {
+  grid-row: 2;
   display: flex;
   align-items: center;
   justify-content: center;

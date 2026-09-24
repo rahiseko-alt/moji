@@ -1,10 +1,10 @@
 /**
  * The screen a learner writes on.
  *
- * It shows one cell at a time: the character the run is up to. Writing it fills
- * the cell, and 次へ puts a fresh one up for the next character. The session
- * decides all of that (#17); this screen only draws what it is told and hands
- * back what the finger did.
+ * It shows the お題 the run is up to: one 升目 for a character, a row of them for
+ * a 単語 (ADR 0016). Writing fills them, and 次へ puts a fresh お題 up. The session
+ * decides all of that (#17); this screen only draws what it is told, says which
+ * 升目 the finger was in, and hands back what it did.
  */
 import type { ChoicesStore } from '../app/choices'
 import { createConfirm } from '../app/confirm'
@@ -13,9 +13,21 @@ import type { Screen } from '../app/screen'
 import { loadStrokeData, strokesFor, type Stroke, type StrokeData } from '../data/stroke-data'
 import { STRINGS } from '../i18n/strings'
 import type { StrokeMeasurement } from '../writing/stroke-matcher'
-import type { WritingSession, WritingSessionState } from '../writing/writing-session'
+import type { TracedPoint } from '../writing/traced-point'
+import {
+  wrongCells,
+  type StrokeOutcome,
+  type WritingSession,
+  type WritingSessionState,
+} from '../writing/writing-session'
 import { createWritingSurface, type WritingSurface } from '../writing/writing-surface'
 import './writing.css'
+
+/**
+ * As much of a marked 升目 as the answer cares about — which the お題 in hand and
+ * an お題 being looked back at both are.
+ */
+type MarkedCell = { readonly outcomes: readonly StrokeOutcome[] }
 
 export function mountWriting(
   parent: HTMLElement,
@@ -60,8 +72,10 @@ export function mountWriting(
   const confirm = createConfirm()
 
   let data: StrokeData | null = null
-  let surface: WritingSurface | null = null
-  let model: readonly Stroke[] = []
+  /** One per 升目 of the お題 on the paper, in reading order. */
+  let surfaces: WritingSurface[] = []
+  /** The model strokes behind each of those 升目. */
+  let models: (readonly Stroke[])[] = []
   /** Which お題 of the finished run is being looked back at, counting from one. */
   let reviewing: number | null = null
   /**
@@ -74,13 +88,16 @@ export function mountWriting(
   let showingResults = false
 
   /**
-   * The session says which stroke the hint belongs on; this puts it there. It
-   * has to be called after anything that moves the session on, since the hint
-   * runs ahead of the writing rather than on a clock of its own.
+   * The session says which stroke of which 升目 the hint belongs on; this puts it
+   * there and takes it out of the others. It has to be called after anything
+   * that moves the session on, since the hint runs ahead of the writing rather
+   * than on a clock of its own.
    */
   const showHint = (state: WritingSessionState): void => {
-    const stroke = state.navigationStroke
-    surface?.setNavigation(stroke === null ? null : (model[stroke] ?? null))
+    for (const [index, surface] of surfaces.entries()) {
+      const stroke = state.cells[index]?.navigationStroke ?? null
+      surface.setNavigation(stroke === null ? null : (models[index]?.[stroke] ?? null))
+    }
   }
 
   const render = (): void => {
@@ -154,13 +171,54 @@ export function mountWriting(
   }
 
   /**
-   * Walks the answer through the お題 when something in it was wrong. Both the
-   * moment it is sent and every time it is looked back at, which is the same
-   * thing to the learner. The learner's own ink is never recoloured: the paper
-   * keeps their hand, and the hint shows what it should have been.
+   * Walks the answer through each 升目 that went wrong, and leaves the ones that
+   * went right alone. Both the moment the お題 is sent and every time it is
+   * looked back at, which is the same thing to the learner. The learner's own
+   * ink is never recoloured: the paper keeps their hand, and the hint shows what
+   * it should have been.
    */
-  const showMarking = (outcomes: readonly { readonly correct: boolean }[]): void => {
-    surface?.showAnswer(outcomes.some((outcome) => !outcome.correct) ? model : [])
+  const showMarking = (marking: readonly MarkedCell[]): void => {
+    const wrong = wrongCells(marking)
+    for (const [index, surface] of surfaces.entries()) {
+      surface.showAnswer(wrong.includes(index) ? (models[index] ?? []) : [])
+    }
+  }
+
+  /**
+   * Puts a row of 升目 on the paper, one per character, and remembers what each
+   * asks for. Ink means an お題 being looked back at rather than written, so the
+   * paper takes nothing more.
+   */
+  const putUpCells = (
+    characters: readonly string[],
+    ink: readonly (readonly (readonly TracedPoint[])[])[] | null,
+  ): void => {
+    const loaded = data
+    if (!loaded) return
+    for (const surface of surfaces) surface.destroy()
+    models = characters.map((character) => strokesFor(loaded, character))
+    surfaces = models.map((model, index) =>
+      createWritingSurface({
+        model,
+        square: loaded.viewBox,
+        // Ink already on the paper is an お題 being looked back at, so the 升目
+        // shows it and takes nothing more.
+        ...(ink ? { ink: ink[index] ?? [], readOnly: true } : {}),
+        onStrokeTraced(points) {
+          showHint(session.traceStroke(points, index))
+        },
+        onStrokeFinished(points) {
+          // Nothing is judged here: the stroke goes on the paper and stays
+          // there until the learner sends the お題 (ADR 0009).
+          showHint(session.addStroke(points, index))
+          render()
+        },
+      }),
+    )
+    // The row has to fit across the screen however many 升目 it holds; the
+    // stylesheet needs the count to work that out.
+    cells.style.setProperty('--cells', String(characters.length))
+    cells.replaceChildren(...surfaces.map((surface) => surface.element))
   }
 
   /** Puts what was written for one お題 of the finished run back on the paper. */
@@ -169,50 +227,33 @@ export function mountWriting(
     if (!data || !attempt) return
     reviewing = position
     showingResults = false
-    surface?.destroy()
-    model = strokesFor(data, attempt.item)
-    surface = createWritingSurface({
-      model,
-      square: data.viewBox,
-      ink: attempt.written,
-      readOnly: true,
-      onStrokeTraced: () => {},
-      onStrokeFinished: () => {},
-    })
-    cells.replaceChildren(surface.element)
+    putUpCells(
+      attempt.cells.map((cell) => cell.character),
+      attempt.cells.map((cell) => cell.written),
+    )
     // The same marking and the same answer the learner saw when they sent it.
-    showMarking(attempt.outcomes)
+    showMarking(attempt.cells)
     render()
   }
 
-  /** Puts a fresh cell up for the お題 the run is now on. */
+  /** Puts fresh 升目 up for the お題 the run is now on. */
   const showItem = (): void => {
     reviewing = null
     showingResults = false
-    surface?.destroy()
-    surface = null
     const state = session.state()
 
     if (data && state.item && !state.marked) {
-      model = strokesFor(data, state.item)
-      surface = createWritingSurface({
-        model,
-        square: data.viewBox,
-        onStrokeTraced(points) {
-          showHint(session.traceStroke(points))
-        },
-        onStrokeFinished(points) {
-          // Nothing is judged here: the stroke goes on the paper and stays
-          // there until the learner sends the お題 (ADR 0009).
-          showHint(session.addStroke(points))
-          render()
-        },
-      })
-      cells.replaceChildren(surface.element)
+      putUpCells(
+        state.cells.map((cell) => cell.character),
+        null,
+      )
       // The hint is on before the first stroke: a learner who does not know
       // where the character starts should not have to guess to find out.
       showHint(state)
     } else {
+      for (const surface of surfaces) surface.destroy()
+      surfaces = []
+      models = []
       cells.replaceChildren()
     }
     render()
@@ -226,14 +267,16 @@ export function mountWriting(
   submit.addEventListener('click', () => {
     const state = session.submit()
     if (!state.marked) return
-    // The ink stays where it is; the marking only colours it.
-    surface?.stopAcceptingStrokes()
-    surface?.setNavigation(null)
+    // The ink stays where it is; the marking only answers beside it.
+    for (const surface of surfaces) {
+      surface.stopAcceptingStrokes()
+      surface.setNavigation(null)
+    }
     if (state.phase === 'finished') {
       resultsExist = true
       showingResults = true
     }
-    showMarking(state.outcomes)
+    showMarking(state.cells)
     onMarked(state.measurements)
     render()
   })
@@ -263,7 +306,7 @@ export function mountWriting(
     // Nothing written yet and nothing written before: there is nothing to lose,
     // and a question there would only be in the way. Once the run is over, the
     // same is true — the tally has already been shown.
-    const written = (surface?.hasInk() ?? false) || state.position > 1
+    const written = surfaces.some((surface) => surface.hasInk()) || state.position > 1
     if (state.phase === 'finished' || !written) {
       onHome()
       return
@@ -281,7 +324,7 @@ export function mountWriting(
   return {
     destroy() {
       unsubscribe()
-      surface?.destroy()
+      for (const surface of surfaces) surface.destroy()
       confirm.destroy()
       screen.remove()
     },

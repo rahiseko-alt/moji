@@ -1,6 +1,6 @@
 .chooser {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   block-size: 100%;
   inline-size: 100%;
   background: var(--paper);
@@ -75,6 +75,12 @@
   color: var(--ink-soft);
 }
 
+/* Dimmed while the 場面 are on show, where there is no set to take at once. */
+.chooser__all:disabled {
+  border-color: var(--hairline);
+  color: var(--ink-faint);
+}
+
 .chooser__groups {
   display: flex;
   justify-content: center;
@@ -97,7 +103,42 @@
   color: var(--paper);
 }
 
+/* Which 場面 is open, and the way back out of it. It sits under the bar rather
+   than in it, so the group row never shifts under a learner's thumb. Its row
+   is named, and so is the grid's below: with no 場面 open this bar is not laid
+   out at all, and the grid would otherwise slide up into its place. */
+.chooser__scene {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.7rem 0.35rem;
+}
+
+.chooser__scene[hidden] {
+  display: none;
+}
+
+.chooser__back {
+  padding: 0.35rem 1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper-tint);
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+.chooser__scene-name {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
 .chooser__list {
+  grid-row: 3;
   container-type: size;
   display: grid;
   place-items: center;
@@ -165,4 +206,80 @@
 .chooser__character:focus-visible {
   border-color: var(--hairline);
   background: var(--paper-tint);
+}
+
+/*
+ * 場面 and 単語 are words, not squares. Nothing here has to be read as a column
+ * the way the kana table does, so the tiles simply fill the space they are
+ * given and the text wraps inside them.
+ */
+.chooser__grid--scenes,
+.chooser__grid--words {
+  inline-size: 100cqw;
+  block-size: 100cqh;
+  gap: 0.7cqh 0.7cqh;
+}
+
+.chooser__scene-tile,
+.chooser__word {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0.3em;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--paper-tint);
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+}
+
+/* The 場面 is named in the learner's language, and Vietnamese and Nepali names
+   run long, so the tile is sized to hold two lines of it rather than one. */
+.chooser__scene-tile {
+  font-family: var(--sans);
+  font-size: min(1.05rem, 5.5cqh);
+}
+
+/* The 単語 is the tile; everything else in it is measured from that size. The
+   word and its meaning sit together in the middle rather than filling the
+   tile, so the pair reads as one thing however short the meaning is. */
+.chooser__word {
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 0.15em;
+  font-size: min(1.85rem, 12cqh);
+}
+
+.chooser__written {
+  font-family: var(--serif);
+  font-size: 1em;
+  line-height: 1.1;
+}
+
+/* What the 単語 means, said once and small: it is there to choose by, not to
+   be learnt, and the Japanese above it is what the learner is here for. */
+.chooser__meaning {
+  font-family: var(--sans);
+  font-size: 0.42em;
+  line-height: 1.25;
+  color: var(--ink-soft);
+}
+
+.chooser__word[aria-pressed='true'] {
+  border-color: var(--vermilion);
+  background: var(--paper-plain);
+}
+
+/* The number sits in a tile far bigger than a character square, so it is a
+   smaller share of it — still the same red mark in the same corner. */
+.chooser__word .chooser__number {
+  font-size: 0.42em;
+}
+
+.chooser__scene-tile:hover,
+.chooser__scene-tile:focus-visible,
+.chooser__word:hover,
+.chooser__word:focus-visible {
+  border-color: var(--hairline-strong);
 }
