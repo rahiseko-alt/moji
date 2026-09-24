@@ -29,8 +29,8 @@ const scenes = words.scenes
 const KANA = /^[\u3041-\u3096\u30A1-\u30FA\u30FC]+$/
 
 describe('the scenes a word can belong to', () => {
-  it('has the twelve the school chose', () => {
-    expect(Object.keys(scenes)).toHaveLength(12)
+  it('has the thirteen the school chose', () => {
+    expect(Object.keys(scenes)).toHaveLength(13)
   })
 
   it('has a hundred words in each', () => {
@@ -49,8 +49,8 @@ describe('the scenes a word can belong to', () => {
 })
 
 describe('the list as a whole', () => {
-  it('has the twelve hundred words the school asked for', () => {
-    expect(entries).toHaveLength(1200)
+  it('has the thirteen hundred words the school asked for', () => {
+    expect(entries).toHaveLength(1300)
   })
 
   it('says how it was made, including what could not be backed up', () => {

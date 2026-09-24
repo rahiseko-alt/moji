@@ -12,7 +12,7 @@
     }
   ],
   "notes": [
-    "単語は12場面×100。国立国語研究所『日本語教育のための基本語彙調査』の見出し語が約半分（582語）。残りは場面ごとに、外国人が看板・書類・お知らせ・画面で出会って読めずに困る語から選んだ。下の公的資料が場面ごとに名前を挙げている語（255語）は、すべて入れてある。",
+    "単語は13場面×100。国立国語研究所『日本語教育のための基本語彙調査』の見出し語が約半分（622語）。残りは場面ごとに、外国人が看板・書類・お知らせ・画面で出会って読めずに困る語から選んだ。下の公的資料が場面ごとに名前を挙げている語（255語）は、すべて入れてある。",
     "「困る」ことの裏付けと語の確認に使った公的資料（語の一覧を写したものではない）: 文化庁「生活Can do」 https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/94276701_01.pdf 、文化庁「標準的なカリキュラム案」 https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/nihongo_curriculum/pdf/curriculum_ver09.pdf と「教材例集」 https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/nihongo_curriculum/pdf/curriculum_kyouzai.pdf 、出入国在留管理庁・文化庁「在留支援のためのやさしい日本語ガイドライン」 https://www.moj.go.jp/isa/content/930006072.pdf 、出入国在留管理庁「生活・就労ガイドブック」 https://www.moj.go.jp/isa/support/portal/guidebook_all.html 、同「在留外国人に対する基礎調査」 https://www.moj.go.jp/isa/content/001462411.pdf 、気象庁 多言語辞書 https://www.data.jma.go.jp/developer/multilingual.html 、厚生労働省 外国人向け多言語説明資料 https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/kokusai/setsumei-ml.html 、国土交通省 部屋探しのガイドブック https://www.mlit.go.jp/common/001317843.pdf 、総務省 デジタル活用支援 講習会教材 https://www.soumu.go.jp/main_sosiki/joho_tsusin/b_free/b_free03b.html",
     "1年生の80字の外の漢字は、常用漢字表（平成22年内閣告示第2号）の中からだけ使う。常用漢字でない字を含む語（咳・惣菜など）は、かなで書くか入れない。",
     "「コンビニ」「時給」「シフト」「出席」「遅刻」など、上の資料で確かめられなかった語は、学校の判断で入れたもの。",
@@ -49,6 +49,14 @@
         "en": "Part-time work",
         "vi": "Làm thêm",
         "ne": "पार्ट टाइम काम"
+      }
+    },
+    "work": {
+      "name": {
+        "ja": "仕事",
+        "en": "Work",
+        "vi": "Công việc",
+        "ne": "काम"
       }
     },
     "school": {
@@ -3718,14 +3726,14 @@
       "draftTranslation": true
     },
     {
-      "written": "仕事",
-      "reading": "しごと",
+      "written": "試用期間",
+      "reading": "しようきかん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "お金をもらってする働き",
-        "en": "work, job",
-        "vi": "công việc",
-        "ne": "काम"
+        "ja": "やとわれてすぐの、ためしに働く期間",
+        "en": "probation period",
+        "vi": "thời gian thử việc",
+        "ne": "परीक्षण अवधि"
       },
       "draftTranslation": true
     },
@@ -4786,62 +4794,62 @@
       "draftTranslation": true
     },
     {
-      "written": "報告",
-      "reading": "ほうこく",
+      "written": "打刻",
+      "reading": "だこく",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "したことやあったことをつたえること",
-        "en": "report",
-        "vi": "báo cáo",
-        "ne": "रिपोर्ट"
+        "ja": "出勤や退勤の時刻を記録すること",
+        "en": "clocking in or out",
+        "vi": "chấm công",
+        "ne": "समय दर्ता"
       },
       "draftTranslation": true
     },
     {
-      "written": "連絡",
-      "reading": "れんらく",
+      "written": "交代",
+      "reading": "こうたい",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "知らせること",
-        "en": "contact, notice",
-        "vi": "liên lạc",
-        "ne": "सम्पर्क"
+        "ja": "ほかの人と入れかわること",
+        "en": "shift change, swap",
+        "vi": "đổi ca, thay phiên",
+        "ne": "पालो फेर्ने"
       },
       "draftTranslation": true
     },
     {
-      "written": "相談",
-      "reading": "そうだん",
+      "written": "陳列",
+      "reading": "ちんれつ",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "ほかの人に話して考えてもらうこと",
-        "en": "consultation",
-        "vi": "trao đổi, hỏi ý kiến",
-        "ne": "सल्लाह"
+        "ja": "商品を棚などにならべること",
+        "en": "display (of goods)",
+        "vi": "trưng bày",
+        "ne": "सामान मिलाएर राख्ने"
       },
       "draftTranslation": true
     },
     {
-      "written": "指示",
-      "reading": "しじ",
+      "written": "棚卸し",
+      "reading": "たなおろし",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "こうしなさいと言うこと",
-        "en": "instructions",
-        "vi": "chỉ thị",
-        "ne": "निर्देशन"
+        "ja": "店や倉庫の品物の数を数えること",
+        "en": "stocktaking",
+        "vi": "kiểm kê hàng",
+        "ne": "मौज्दात गणना"
       },
       "draftTranslation": true
     },
     {
-      "written": "確認",
-      "reading": "かくにん",
+      "written": "釣り銭",
+      "reading": "つりせん",
       "scene": "part-time-work",
       "meaning": {
-        "ja": "まちがいがないか見ること",
-        "en": "check, confirm",
-        "vi": "xác nhận",
-        "ne": "पुष्टि"
+        "ja": "客にかえす細かいお金",
+        "en": "change (money)",
+        "vi": "tiền thối lại",
+        "ne": "फिर्ता पैसा"
       },
       "draftTranslation": true
     },
@@ -4914,6 +4922,1206 @@
         "en": "year-end tax adjustment",
         "vi": "quyết toán thuế cuối năm",
         "ne": "वर्षान्त कर मिलान"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "仕事",
+      "reading": "しごと",
+      "scene": "work",
+      "meaning": {
+        "ja": "お金をもらってする働き",
+        "en": "work, job",
+        "vi": "công việc",
+        "ne": "काम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "報告",
+      "reading": "ほうこく",
+      "scene": "work",
+      "meaning": {
+        "ja": "したことやあったことをつたえること",
+        "en": "report",
+        "vi": "báo cáo",
+        "ne": "रिपोर्ट"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "連絡",
+      "reading": "れんらく",
+      "scene": "work",
+      "meaning": {
+        "ja": "知らせること",
+        "en": "contact, notice",
+        "vi": "liên lạc",
+        "ne": "सम्पर्क"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "相談",
+      "reading": "そうだん",
+      "scene": "work",
+      "meaning": {
+        "ja": "ほかの人に話して考えてもらうこと",
+        "en": "consultation",
+        "vi": "trao đổi, hỏi ý kiến",
+        "ne": "सल्लाह"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "指示",
+      "reading": "しじ",
+      "scene": "work",
+      "meaning": {
+        "ja": "こうしなさいと言うこと",
+        "en": "instructions",
+        "vi": "chỉ thị",
+        "ne": "निर्देशन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "確認",
+      "reading": "かくにん",
+      "scene": "work",
+      "meaning": {
+        "ja": "まちがいがないか見ること",
+        "en": "check, confirm",
+        "vi": "xác nhận",
+        "ne": "पुष्टि"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "会議",
+      "reading": "かいぎ",
+      "scene": "work",
+      "meaning": {
+        "ja": "人が集まって話し合い、決めること",
+        "en": "meeting",
+        "vi": "cuộc họp",
+        "ne": "बैठक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "会議室",
+      "reading": "かいぎしつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会議をする部屋",
+        "en": "meeting room",
+        "vi": "phòng họp",
+        "ne": "बैठक कोठा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "議題",
+      "reading": "ぎだい",
+      "scene": "work",
+      "meaning": {
+        "ja": "会議で話し合うテーマ",
+        "en": "agenda item",
+        "vi": "chủ đề cuộc họp",
+        "ne": "बैठकको विषय"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "議事録",
+      "reading": "ぎじろく",
+      "scene": "work",
+      "meaning": {
+        "ja": "会議で話したことや決まったことの記録",
+        "en": "minutes",
+        "vi": "biên bản cuộc họp",
+        "ne": "बैठकको माइन्युट"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "資料",
+      "reading": "しりょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "説明や会議のために用意する書類やデータ",
+        "en": "materials, handout",
+        "vi": "tài liệu",
+        "ne": "सामग्री, कागजात"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "打合せ",
+      "reading": "うちあわせ",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事の進め方を前もって相手と話すこと",
+        "en": "work meeting",
+        "vi": "buổi trao đổi công việc",
+        "ne": "छलफल बैठक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "定例会議",
+      "reading": "ていれいかいぎ",
+      "scene": "work",
+      "meaning": {
+        "ja": "毎週や毎月など、決まった日に開く会議",
+        "en": "regular meeting",
+        "vi": "cuộc họp định kỳ",
+        "ne": "नियमित बैठक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "日程",
+      "reading": "にってい",
+      "scene": "work",
+      "meaning": {
+        "ja": "何をいつするかの予定",
+        "en": "schedule, dates",
+        "vi": "lịch trình",
+        "ne": "कार्यतालिका"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "司会",
+      "reading": "しかい",
+      "scene": "work",
+      "meaning": {
+        "ja": "会議や式を進める役の人",
+        "en": "chairperson, MC",
+        "vi": "người dẫn chương trình, chủ trì",
+        "ne": "सञ्चालक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "出欠",
+      "reading": "しゅっけつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "出るか休むか",
+        "en": "attendance",
+        "vi": "có mặt hay vắng mặt",
+        "ne": "उपस्थिति वा अनुपस्थिति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "報告書",
+      "reading": "ほうこくしょ",
+      "scene": "work",
+      "meaning": {
+        "ja": "したことや結果を書いてわたす書類",
+        "en": "written report",
+        "vi": "bản báo cáo",
+        "ne": "प्रतिवेदन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "日報",
+      "reading": "にっぽう",
+      "scene": "work",
+      "meaning": {
+        "ja": "その日にした仕事を書く毎日の報告",
+        "en": "daily report",
+        "vi": "báo cáo hằng ngày",
+        "ne": "दैनिक रिपोर्ट"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "企画書",
+      "reading": "きかくしょ",
+      "scene": "work",
+      "meaning": {
+        "ja": "新しい計画の内容を書いた書類",
+        "en": "proposal document",
+        "vi": "bản kế hoạch, đề án",
+        "ne": "योजना प्रस्ताव"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "見積書",
+      "reading": "みつもりしょ",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事や品物にかかるお金を前もって書いた書類",
+        "en": "quotation",
+        "vi": "bảng báo giá",
+        "ne": "मूल्य अनुमान पत्र"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "納品書",
+      "reading": "のうひんしょ",
+      "scene": "work",
+      "meaning": {
+        "ja": "品物をとどけたときにいっしょにわたす書類",
+        "en": "delivery note",
+        "vi": "phiếu giao hàng",
+        "ne": "डेलिभरी पत्र"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "印刷",
+      "reading": "いんさつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "紙に文字や絵を出すこと",
+        "en": "printing",
+        "vi": "in ấn",
+        "ne": "छपाइ"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "回覧",
+      "reading": "かいらん",
+      "scene": "work",
+      "meaning": {
+        "ja": "書類を順番に何人もの人に見せること",
+        "en": "circulation (of a document)",
+        "vi": "chuyền tay nhau đọc",
+        "ne": "क्रमशः पढ्न पठाउने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "送付",
+      "reading": "そうふ",
+      "scene": "work",
+      "meaning": {
+        "ja": "書類や品物を相手に送ること",
+        "en": "sending (documents)",
+        "vi": "gửi (tài liệu)",
+        "ne": "पठाउने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "受領",
+      "reading": "じゅりょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "お金や品物をたしかに受け取ること",
+        "en": "receipt, receiving",
+        "vi": "nhận, tiếp nhận",
+        "ne": "प्राप्ति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "保管",
+      "reading": "ほかん",
+      "scene": "work",
+      "meaning": {
+        "ja": "なくさないように大事にしまっておくこと",
+        "en": "storage, keeping",
+        "vi": "bảo quản, lưu giữ",
+        "ne": "सुरक्षित राख्ने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "承認",
+      "reading": "しょうにん",
+      "scene": "work",
+      "meaning": {
+        "ja": "よいと認めて許すこと",
+        "en": "approval",
+        "vi": "phê duyệt",
+        "ne": "स्वीकृति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "決裁",
+      "reading": "けっさい",
+      "scene": "work",
+      "meaning": {
+        "ja": "上の立場の人が案を見て、よいか決めること",
+        "en": "sign-off, approval",
+        "vi": "phê duyệt (của cấp trên)",
+        "ne": "अन्तिम स्वीकृति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "決定",
+      "reading": "けってい",
+      "scene": "work",
+      "meaning": {
+        "ja": "はっきり決めること",
+        "en": "decision",
+        "vi": "quyết định",
+        "ne": "निर्णय"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "依頼",
+      "reading": "いらい",
+      "scene": "work",
+      "meaning": {
+        "ja": "人に仕事などをしてくれるようにたのむこと",
+        "en": "request",
+        "vi": "yêu cầu, nhờ",
+        "ne": "अनुरोध"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "提案",
+      "reading": "ていあん",
+      "scene": "work",
+      "meaning": {
+        "ja": "考えや案を出すこと",
+        "en": "proposal, suggestion",
+        "vi": "đề xuất",
+        "ne": "प्रस्ताव"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "了解",
+      "reading": "りょうかい",
+      "scene": "work",
+      "meaning": {
+        "ja": "相手の言うことがわかったと答えること",
+        "en": "understood, OK",
+        "vi": "đã hiểu, rõ",
+        "ne": "बुझें"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "対応",
+      "reading": "たいおう",
+      "scene": "work",
+      "meaning": {
+        "ja": "起きたことや相手に合わせて動くこと",
+        "en": "handling, response",
+        "vi": "xử lý, ứng phó",
+        "ne": "कारबाही, व्यवहार"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "進捗",
+      "reading": "しんちょく",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事がどこまで進んだか",
+        "en": "progress",
+        "vi": "tiến độ",
+        "ne": "प्रगति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "至急",
+      "reading": "しきゅう",
+      "scene": "work",
+      "meaning": {
+        "ja": "とても急いですること",
+        "en": "urgent",
+        "vi": "khẩn cấp, gấp",
+        "ne": "अत्यावश्यक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "納期",
+      "reading": "のうき",
+      "scene": "work",
+      "meaning": {
+        "ja": "品物や仕事をわたす約束の日",
+        "en": "delivery date, deadline",
+        "vi": "thời hạn giao hàng",
+        "ne": "डेलिभरी मिति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "期日",
+      "reading": "きじつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "前もって決めた日",
+        "en": "due date",
+        "vi": "ngày hạn định",
+        "ne": "तोकिएको मिति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "本日",
+      "reading": "ほんじつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "この日。今日の改まった言い方",
+        "en": "today (formal)",
+        "vi": "hôm nay (trang trọng)",
+        "ne": "आज (औपचारिक)"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "月末",
+      "reading": "げつまつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "月の終わりのころ",
+        "en": "end of the month",
+        "vi": "cuối tháng",
+        "ne": "महिनाको अन्त्य"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "年度",
+      "reading": "ねんど",
+      "scene": "work",
+      "meaning": {
+        "ja": "4月から次の3月までのような、仕事の一年",
+        "en": "fiscal year",
+        "vi": "năm tài chính",
+        "ne": "आर्थिक वर्ष"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "四半期",
+      "reading": "しはんき",
+      "scene": "work",
+      "meaning": {
+        "ja": "一年を四つに分けた三か月",
+        "en": "quarter (of a year)",
+        "vi": "quý",
+        "ne": "त्रैमासिक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "予定",
+      "reading": "よてい",
+      "scene": "work",
+      "meaning": {
+        "ja": "これからすることを前もって決めたこと",
+        "en": "plan, schedule",
+        "vi": "dự định, kế hoạch",
+        "ne": "योजना, तालिका"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "会社",
+      "reading": "かいしゃ",
+      "scene": "work",
+      "meaning": {
+        "ja": "人が集まって商売や仕事をする組織",
+        "en": "company",
+        "vi": "công ty",
+        "ne": "कम्पनी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "本社",
+      "reading": "ほんしゃ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の中心になる事務所",
+        "en": "head office",
+        "vi": "trụ sở chính",
+        "ne": "मुख्य कार्यालय"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "部署",
+      "reading": "ぶしょ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の中で仕事ごとに分かれたグループ",
+        "en": "department",
+        "vi": "bộ phận, phòng ban",
+        "ne": "विभाग"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "部長",
+      "reading": "ぶちょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "部の一番上の人",
+        "en": "department manager",
+        "vi": "trưởng phòng (bộ phận)",
+        "ne": "विभाग प्रमुख"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "課長",
+      "reading": "かちょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "課の一番上の人",
+        "en": "section manager",
+        "vi": "trưởng ban (khoa)",
+        "ne": "शाखा प्रमुख"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社長",
+      "reading": "しゃちょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の一番上の人",
+        "en": "company president",
+        "vi": "giám đốc",
+        "ne": "कम्पनीको अध्यक्ष"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "部下",
+      "reading": "ぶか",
+      "scene": "work",
+      "meaning": {
+        "ja": "自分の下で働く人",
+        "en": "subordinate",
+        "vi": "cấp dưới",
+        "ne": "मातहतका कर्मचारी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "所属",
+      "reading": "しょぞく",
+      "scene": "work",
+      "meaning": {
+        "ja": "ある部署やグループに入っていること",
+        "en": "affiliation",
+        "vi": "thuộc (bộ phận)",
+        "ne": "आबद्ध भएको ठाउँ"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "人事",
+      "reading": "じんじ",
+      "scene": "work",
+      "meaning": {
+        "ja": "社員の採用や異動などをあつかう仕事",
+        "en": "human resources",
+        "vi": "nhân sự",
+        "ne": "मानव संसाधन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "総務",
+      "reading": "そうむ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社全体の事務をあつかう仕事",
+        "en": "general affairs",
+        "vi": "bộ phận hành chính tổng hợp",
+        "ne": "सामान्य प्रशासन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "経理",
+      "reading": "けいり",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社のお金の出入りをあつかう仕事",
+        "en": "accounting",
+        "vi": "kế toán",
+        "ne": "लेखा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "営業",
+      "reading": "えいぎょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "商品を売るために客と会う仕事",
+        "en": "sales",
+        "vi": "kinh doanh, bán hàng",
+        "ne": "बिक्री विभाग"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "取引先",
+      "reading": "とりひきさき",
+      "scene": "work",
+      "meaning": {
+        "ja": "商売の相手の会社",
+        "en": "business partner, client",
+        "vi": "đối tác",
+        "ne": "व्यापारिक साझेदार"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "顧客",
+      "reading": "こきゃく",
+      "scene": "work",
+      "meaning": {
+        "ja": "いつも買ってくれる客",
+        "en": "customer",
+        "vi": "khách hàng",
+        "ne": "ग्राहक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "来客",
+      "reading": "らいきゃく",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社にたずねて来る人",
+        "en": "visitor",
+        "vi": "khách đến thăm",
+        "ne": "आगन्तुक"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "各位",
+      "reading": "かくい",
+      "scene": "work",
+      "meaning": {
+        "ja": "みなさま。お知らせのあて名に使う",
+        "en": "all concerned (to all)",
+        "vi": "kính gửi mọi người",
+        "ne": "सबैलाई"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "御中",
+      "reading": "おんちゅう",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社や部署へのあて名のあとにつける言葉",
+        "en": "to (a company or department)",
+        "vi": "kính gửi (công ty)",
+        "ne": "(संस्थालाई) प्रति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "担当者",
+      "reading": "たんとうしゃ",
+      "scene": "work",
+      "meaning": {
+        "ja": "その仕事を受け持つ人",
+        "en": "person in charge",
+        "vi": "người phụ trách",
+        "ne": "जिम्मेवार व्यक्ति"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "名刺",
+      "reading": "めいし",
+      "scene": "work",
+      "meaning": {
+        "ja": "名前や会社名を書いた小さいカード",
+        "en": "business card",
+        "vi": "danh thiếp",
+        "ne": "भिजिटिङ कार्ड"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "敬語",
+      "reading": "けいご",
+      "scene": "work",
+      "meaning": {
+        "ja": "相手をうやまう言い方",
+        "en": "honorific language",
+        "vi": "kính ngữ",
+        "ne": "आदरार्थी भाषा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "尊敬語",
+      "reading": "そんけいご",
+      "scene": "work",
+      "meaning": {
+        "ja": "相手の動作を高めて言う言葉",
+        "en": "respectful language",
+        "vi": "tôn kính ngữ",
+        "ne": "सम्मानसूचक भाषा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "謙譲語",
+      "reading": "けんじょうご",
+      "scene": "work",
+      "meaning": {
+        "ja": "自分の動作を低くして言う言葉",
+        "en": "humble language",
+        "vi": "khiêm nhường ngữ",
+        "ne": "विनम्र भाषा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "報連相",
+      "reading": "ほうれんそう",
+      "scene": "work",
+      "meaning": {
+        "ja": "報告・連絡・相談をまとめた言い方",
+        "en": "report, inform, consult",
+        "vi": "báo cáo, liên lạc, trao đổi",
+        "ne": "रिपोर्ट, सूचना, सल्लाह"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "内線",
+      "reading": "ないせん",
+      "scene": "work",
+      "meaning": {
+        "ja": "同じ会社の中でつながる電話",
+        "en": "extension (phone)",
+        "vi": "điện thoại nội bộ",
+        "ne": "भित्री फोन लाइन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "伝言",
+      "reading": "でんごん",
+      "scene": "work",
+      "meaning": {
+        "ja": "ほかの人に言ってもらうことば",
+        "en": "message",
+        "vi": "lời nhắn",
+        "ne": "सन्देश"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "折り返し",
+      "reading": "おりかえし",
+      "scene": "work",
+      "meaning": {
+        "ja": "電話をもらった人があとでかけ直すこと",
+        "en": "calling back",
+        "vi": "gọi lại",
+        "ne": "फेरि फोन गर्ने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社内",
+      "reading": "しゃない",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の中",
+        "en": "inside the company",
+        "vi": "trong công ty",
+        "ne": "कम्पनीभित्र"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社外",
+      "reading": "しゃがい",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の外",
+        "en": "outside the company",
+        "vi": "ngoài công ty",
+        "ne": "कम्पनीबाहिर"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社外秘",
+      "reading": "しゃがいひ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の外の人に見せてはいけないこと",
+        "en": "confidential (internal only)",
+        "vi": "bí mật nội bộ",
+        "ne": "कम्पनीको गोप्य"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "守秘義務",
+      "reading": "しゅひぎむ",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事で知ったひみつを人に話さない決まり",
+        "en": "duty of confidentiality",
+        "vi": "nghĩa vụ bảo mật",
+        "ne": "गोपनीयताको दायित्व"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社員証",
+      "reading": "しゃいんしょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "その会社の社員だと示すカード",
+        "en": "employee ID card",
+        "vi": "thẻ nhân viên",
+        "ne": "कर्मचारी परिचयपत्र"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "就業規則",
+      "reading": "しゅうぎょうきそく",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社で働くときの決まりを書いたもの",
+        "en": "work rules",
+        "vi": "nội quy lao động",
+        "ne": "कार्य नियमावली"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "勤怠",
+      "reading": "きんたい",
+      "scene": "work",
+      "meaning": {
+        "ja": "出勤や休み、遅れの記録",
+        "en": "attendance record",
+        "vi": "chuyên cần, chấm công",
+        "ne": "हाजिरी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "始業",
+      "reading": "しぎょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "その日の仕事を始めること",
+        "en": "start of work",
+        "vi": "bắt đầu giờ làm",
+        "ne": "काम सुरु"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "終業",
+      "reading": "しゅうぎょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "その日の仕事を終えること",
+        "en": "end of work",
+        "vi": "kết thúc giờ làm",
+        "ne": "काम समाप्त"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "定時",
+      "reading": "ていじ",
+      "scene": "work",
+      "meaning": {
+        "ja": "決まった仕事の終わりの時刻",
+        "en": "regular hours, set time",
+        "vi": "giờ tan làm quy định",
+        "ne": "तोकिएको समय"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "朝礼",
+      "reading": "ちょうれい",
+      "scene": "work",
+      "meaning": {
+        "ja": "朝、仕事の前にみんなで集まる会",
+        "en": "morning meeting",
+        "vi": "buổi họp sáng",
+        "ne": "बिहानको भेला"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "出張",
+      "reading": "しゅっちょう",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事でほかの土地へ行くこと",
+        "en": "business trip",
+        "vi": "đi công tác",
+        "ne": "कामको सिलसिलामा यात्रा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "外出",
+      "reading": "がいしゅつ",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事中に会社の外へ出かけること",
+        "en": "going out",
+        "vi": "ra ngoài",
+        "ne": "बाहिर जाने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "直行",
+      "reading": "ちょっこう",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社に寄らずに行き先へ直接行くこと",
+        "en": "going directly (to a site)",
+        "vi": "đi thẳng (không qua công ty)",
+        "ne": "सिधै जाने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "直帰",
+      "reading": "ちょっき",
+      "scene": "work",
+      "meaning": {
+        "ja": "行き先から会社にもどらずに家へ帰ること",
+        "en": "going straight home",
+        "vi": "về thẳng nhà",
+        "ne": "सिधै घर फर्कने"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "在宅勤務",
+      "reading": "ざいたくきんむ",
+      "scene": "work",
+      "meaning": {
+        "ja": "家で会社の仕事をすること",
+        "en": "working from home",
+        "vi": "làm việc tại nhà",
+        "ne": "घरबाट काम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "離席",
+      "reading": "りせき",
+      "scene": "work",
+      "meaning": {
+        "ja": "少しの間、自分の席を離れること",
+        "en": "away from desk",
+        "vi": "rời khỏi chỗ ngồi",
+        "ne": "सिटबाट टाढा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "入社",
+      "reading": "にゅうしゃ",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社に入って社員になること",
+        "en": "joining a company",
+        "vi": "vào công ty",
+        "ne": "कम्पनीमा प्रवेश"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "異動",
+      "reading": "いどう",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の中でほかの部署や仕事にかわること",
+        "en": "transfer (within a company)",
+        "vi": "thuyên chuyển",
+        "ne": "सरुवा (कम्पनीभित्र)"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "転勤",
+      "reading": "てんきん",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社の命令でほかの場所の事務所へ移ること",
+        "en": "relocation",
+        "vi": "chuyển nơi làm việc",
+        "ne": "अर्को ठाउँमा सरुवा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "休暇",
+      "reading": "きゅうか",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事を休むことが認められた日",
+        "en": "leave, holiday",
+        "vi": "kỳ nghỉ, ngày nghỉ phép",
+        "ne": "बिदा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "休日出勤",
+      "reading": "きゅうじつしゅっきん",
+      "scene": "work",
+      "meaning": {
+        "ja": "休みの日に会社へ出て働くこと",
+        "en": "working on a day off",
+        "vi": "đi làm ngày nghỉ",
+        "ne": "बिदाको दिन काम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "代休",
+      "reading": "だいきゅう",
+      "scene": "work",
+      "meaning": {
+        "ja": "休みの日に働いたかわりにとる休み",
+        "en": "compensatory day off",
+        "vi": "ngày nghỉ bù",
+        "ne": "सट्टा बिदा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "正社員",
+      "reading": "せいしゃいん",
+      "scene": "work",
+      "meaning": {
+        "ja": "期間を決めずにやとわれている社員",
+        "en": "full-time employee",
+        "vi": "nhân viên chính thức",
+        "ne": "स्थायी कर्मचारी"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "派遣",
+      "reading": "はけん",
+      "scene": "work",
+      "meaning": {
+        "ja": "派遣会社からほかの会社へ行って働くこと",
+        "en": "temporary dispatch work",
+        "vi": "lao động phái cử",
+        "ne": "अस्थायी खटाइएको काम"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "社会保険",
+      "reading": "しゃかいほけん",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社を通して入る健康保険や年金",
+        "en": "social insurance",
+        "vi": "bảo hiểm xã hội",
+        "ne": "सामाजिक बीमा"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "厚生年金",
+      "reading": "こうせいねんきん",
+      "scene": "work",
+      "meaning": {
+        "ja": "会社で働く人が入る年金",
+        "en": "employees' pension",
+        "vi": "lương hưu phúc lợi",
+        "ne": "कर्मचारी पेन्सन"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "賞与",
+      "reading": "しょうよ",
+      "scene": "work",
+      "meaning": {
+        "ja": "給料とは別に出るお金",
+        "en": "bonus",
+        "vi": "tiền thưởng",
+        "ne": "बोनस"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "扶養",
+      "reading": "ふよう",
+      "scene": "work",
+      "meaning": {
+        "ja": "家族の生活のお金を出して支えること",
+        "en": "dependent support",
+        "vi": "phụ dưỡng, nuôi dưỡng",
+        "ne": "पालनपोषण"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "内定",
+      "reading": "ないてい",
+      "scene": "work",
+      "meaning": {
+        "ja": "入社することが決まったという知らせ",
+        "en": "job offer",
+        "vi": "được nhận việc (chính thức)",
+        "ne": "जागिरको प्रस्ताव"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "経費",
+      "reading": "けいひ",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事のために使ったお金",
+        "en": "expenses",
+        "vi": "chi phí",
+        "ne": "खर्च"
+      },
+      "draftTranslation": true
+    },
+    {
+      "written": "経費精算",
+      "reading": "けいひせいさん",
+      "scene": "work",
+      "meaning": {
+        "ja": "仕事で立てかえたお金を会社から返してもらうこと",
+        "en": "expense claim",
+        "vi": "thanh toán chi phí",
+        "ne": "खर्च फिर्ता दाबी"
       },
       "draftTranslation": true
     },
