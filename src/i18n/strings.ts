@@ -60,6 +60,11 @@ export type Strings = {
   readonly words: string
   /** Leaves the 単語 of one 場面 for the list of 場面 again. */
   readonly back: string
+  /**
+   * The tile at the head of the 場面 that opens every 場面's 単語 in one list, so
+   * a run can be picked from all of them without going in and out of each.
+   */
+  readonly everyScene: string
 }
 
 export const STRINGS: Record<Language, Strings> = {
@@ -88,6 +93,7 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: '漢字',
     words: 'ことば',
     back: 'もどる',
+    everyScene: 'すべての場面',
   },
   en: {
     rotateToLandscape: 'Please turn your phone sideways',
@@ -114,6 +120,7 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: 'Kanji',
     words: 'Words',
     back: 'Back',
+    everyScene: 'Every scene',
   },
   vi: {
     rotateToLandscape: 'Vui lòng xoay ngang điện thoại',
@@ -140,6 +147,7 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: 'Kanji',
     words: 'Từ vựng',
     back: 'Quay lại',
+    everyScene: 'Tất cả chủ đề',
   },
   ne: {
     rotateToLandscape: 'कृपया फोन तेर्सो पार्नुहोस्',
@@ -166,5 +174,6 @@ export const STRINGS: Record<Language, Strings> = {
     kanji: 'कान्जी',
     words: 'शब्दहरू',
     back: 'पछाडि',
+    everyScene: 'सबै विषय',
   },
 }

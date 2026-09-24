@@ -207,8 +207,11 @@ export function mountChooser(
 
   const confirm = createConfirm()
   let group: Group = 'hiragana'
-  /** Whose 単語 are on show, or null while the twelve 場面 are. */
-  let openScene: string | null = null
+  /**
+   * Whose 単語 are on show: one 場面's, every 場面's at once, or — null — none,
+   * while the list of 場面 is.
+   */
+  let opened: { readonly scene: string } | { readonly every: true } | null = null
   /** The 単語 land after the screen is first drawn, exactly as the strokes do. */
   let words: WordData | null = null
   /** The お題 buttons on show, with their number, so those can be redrawn alone. */
@@ -223,7 +226,7 @@ export function mountChooser(
       group = candidate
       // Coming back to ことば starts at the 場面 again. A learner who left the
       // words behind is asking where to look, not carrying on down a list.
-      openScene = null
+      opened = null
       render()
     })
     groupButtons.set(candidate, button)
@@ -231,15 +234,20 @@ export function mountChooser(
   }
 
   /**
-   * The 場面 whose 単語 are on show, with them, or null when the twelve 場面 are.
-   * One answer to "where are we in ことば", so the grid, ぜんぶ and the 場面 bar
-   * cannot disagree about it.
+   * The 場面 whose 単語 are on show, with them — no 場面 but every 単語 when all
+   * of them are open at once — or null while the list of 場面 is. One answer to
+   * "where are we in ことば", so the grid, ぜんぶ and the 場面 bar cannot disagree
+   * about it.
    */
-  const sceneOnShow = (): { scene: Scene; words: readonly Word[] } | null => {
-    if (words === null || openScene === null) return null
-    const scene = words.scenes[openScene]
-    return scene === undefined ? null : { scene, words: wordsOf(words, openScene) }
+  const sceneOnShow = (): { scene: Scene | null; words: readonly Word[] } | null => {
+    if (words === null || opened === null) return null
+    if ('every' in opened) return { scene: null, words: words.words }
+    const scene = words.scenes[opened.scene]
+    return scene === undefined ? null : { scene, words: wordsOf(words, opened.scene) }
   }
+
+  /** Each 場面 tile's count of chosen 単語, so a run built across 場面 can be seen from the list. */
+  const sceneCounts = new Map<string | null, HTMLElement>()
 
   /**
    * The number an お題 carries is its place in the run, so taking one out
@@ -251,6 +259,16 @@ export function mountChooser(
       const place = chosen.indexOf(item)
       button.setAttribute('aria-pressed', String(place !== -1))
       number.textContent = place === -1 ? '' : String(place + 1)
+    }
+    // How many of its 単語 are in the run, on each 場面's tile; the tile for every
+    // 場面 counts them all. Nothing is shown for none.
+    if (words !== null) {
+      for (const [scene, count] of sceneCounts) {
+        const inRun = (scene === null ? words.words : wordsOf(words, scene)).filter((word) =>
+          chosen.includes(word.written),
+        ).length
+        count.textContent = inRun === 0 ? '' : String(inRun)
+      }
     }
     // Without the stroke data there is nothing to write, so the way on stays shut.
     start.disabled = chosen.length === 0 || strokeDataIfLoaded() === null
@@ -307,15 +325,22 @@ export function mountChooser(
     )
   }
 
-  /** One 場面, named in the learner's own language — the Japanese is what they write. */
-  const sceneButton = (id: string, scene: Scene, language: Language): HTMLButtonElement => {
+  /**
+   * One 場面, named in the learner's own language — the Japanese is what they
+   * write — or, with no id, the tile that opens every 場面 at once.
+   */
+  const sceneButton = (id: string | null, name: string, language: Language): HTMLButtonElement => {
     const button = document.createElement('button')
     button.type = 'button'
-    button.className = 'chooser__scene-tile'
+    button.className = id === null ? 'chooser__scene-tile chooser__scene-tile--every' : 'chooser__scene-tile'
     button.lang = language
-    button.textContent = scene.name[language]
+    const count = document.createElement('span')
+    count.className = 'chooser__number'
+    count.setAttribute('aria-hidden', 'true')
+    button.append(count, name)
+    sceneCounts.set(id, count)
     button.addEventListener('click', () => {
-      openScene = id
+      opened = id === null ? { every: true } : { scene: id }
       render()
     })
     return button
@@ -359,13 +384,18 @@ export function mountChooser(
     }
     const showing = sceneOnShow()
     if (showing === null) {
+      // Every 場面 first, then each on its own: picking across 場面 should not
+      // mean going in and out of twelve lists.
       const scenes = Object.entries(words.scenes)
-      setGrid(tiles(scenes.length, SCENE_COLUMNS), 'scenes')
-      grid.replaceChildren(...scenes.map(([id, each]) => sceneButton(id, each, language)))
+      setGrid(tiles(scenes.length + 1, SCENE_COLUMNS), 'scenes')
+      grid.replaceChildren(
+        sceneButton(null, strings.everyScene, language),
+        ...scenes.map(([id, each]) => sceneButton(id, each.name[language], language)),
+      )
       return
     }
     back.textContent = strings.back
-    sceneName.textContent = showing.scene.name[language]
+    sceneName.textContent = showing.scene?.name[language] ?? strings.everyScene
     sceneName.lang = language
     sceneBar.hidden = false
     setGrid(tiles(showing.words.length, WORD_COLUMNS), 'words')
@@ -385,11 +415,14 @@ export function mountChooser(
     }
 
     buttons.clear()
+    sceneCounts.clear()
     sceneBar.hidden = true
     if (group === 'words') drawWords(strings, language)
     else drawCharacters(group)
-    // A 場面 is not an お題, so with the twelve on show ぜんぶ has nothing to take.
-    all.disabled = group === 'words' && sceneOnShow() === null
+    // A 場面 is not an お題, so with the 場面 on show ぜんぶ has nothing to take.
+    // Every 場面's 単語 at once is a thousand-odd お題, which no one sets out to
+    // write in one go, so there it has nothing sensible to take either.
+    all.disabled = group === 'words' && (sceneOnShow()?.scene ?? null) === null
     showChosen()
   }
 
@@ -398,7 +431,7 @@ export function mountChooser(
   all.addEventListener('click', () => {
     if (group === 'words') {
       const showing = sceneOnShow()
-      if (showing === null) return
+      if (showing === null || showing.scene === null) return
       session.chooseAll(showing.words.map((word) => word.written))
     } else session.chooseAll(charactersOf(group, strokeDataIfLoaded()))
     showChosen()
@@ -407,7 +440,7 @@ export function mountChooser(
   // Leaving a 場面 keeps whatever was chosen in it: the run is built across
   // 場面 as freely as across the kana table.
   back.addEventListener('click', () => {
-    openScene = null
+    opened = null
     render()
   })
 

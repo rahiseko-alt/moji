@@ -312,6 +312,16 @@
   color: var(--on-vermilion);
 }
 
+/* How many of a 場面's 単語 are in the run, in the same red corner as a 単語's
+   place in it. The tile for every 場面 leads the list and says so in weight. */
+.chooser__scene-tile .chooser__number {
+  font-size: 0.75em;
+}
+
+.chooser__scene-tile--every {
+  font-weight: 700;
+}
+
 /* A 単語 is set smaller than a character of the kana table, so its number is a
    bigger share of it: the same small red mark in the same corner either way. */
 .chooser__word .chooser__number {
