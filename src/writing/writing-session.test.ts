@@ -839,6 +839,17 @@ describe('an お題 that is a 単語 rather than one character', () => {
     expect(hintAt(session.traceStroke(traced(truncated(last, 0.6)), 0))).toEqual([1, 0])
   })
 
+  it('leads into a 升目 that still needs strokes, not one already full', () => {
+    const session = word()
+    // 本 written first, out of order, then 日 all but its last stroke.
+    writeCell(session, 1, '本')
+    for (let n = 0; n < strokesOf('日').length - 1; n++) {
+      session.addStroke(traced(perfectOf('日', n), n * 1000), 0)
+    }
+    const last = strokesOf('日').length - 1
+    expect(hintAt(session.traceStroke(traced(truncated(last, 0.6)), 0))).toBeNull()
+  })
+
   it('runs one stroke ahead inside a later 升目 too', () => {
     const session = word()
     writeCell(session, 0, '日')

@@ -256,6 +256,20 @@
   font-size: min(1.85rem, 12cqh);
 }
 
+/* How the 単語 is read, where the written form does not say it — furigana, in
+   the place furigana go. Empty for a 単語 that reads as itself, and then it
+   takes no room. */
+.chooser__reading {
+  font-family: var(--sans);
+  font-size: 0.34em;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.chooser__reading:empty {
+  display: none;
+}
+
 .chooser__written {
   font-family: var(--serif);
   font-size: 1em;

@@ -312,8 +312,10 @@ export function mountChooser(
   }
 
   /**
-   * A 単語 as it is written, with what it means underneath. The meaning is
-   * there to pick by, not to learn: it is said once, small, in one language.
+   * A 単語 as it is written, with how it is read above it and what it means
+   * underneath. The meaning is there to pick by, not to learn: it is said once,
+   * small, in one language. The reading is only there when it tells the learner
+   * something the written form does not — 百円 needs it, ふくろ reads as itself.
    */
   const wordButton = (word: Word, language: Language): HTMLButtonElement => {
     const button = document.createElement('button')
@@ -322,6 +324,10 @@ export function mountChooser(
     const number = document.createElement('span')
     number.className = 'chooser__number'
     number.setAttribute('aria-hidden', 'true')
+    const reading = document.createElement('span')
+    reading.className = 'chooser__reading'
+    reading.lang = 'ja'
+    reading.textContent = word.reading === word.written ? '' : word.reading
     const written = document.createElement('span')
     written.className = 'chooser__written'
     written.lang = 'ja'
@@ -330,7 +336,7 @@ export function mountChooser(
     meaning.className = 'chooser__meaning'
     meaning.lang = language
     meaning.textContent = word.meaning[language]
-    button.append(number, written, meaning)
+    button.append(number, reading, written, meaning)
     button.addEventListener('click', () => {
       session.chooseItem(word.written)
       showChosen()

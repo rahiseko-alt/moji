@@ -275,7 +275,11 @@ export function createWritingSession(options: WritingSessionOptions): WritingSes
     if (inHand === null) return null
     const target = cells[inHand]!.written.length + (pastHalfway ? 1 : 0)
     if (target < cells[inHand]!.strokes.length) return { cell: inHand, stroke: target }
-    const next = cells.findIndex((cell, index) => index > inHand && cell.strokes.length > 0)
+    // The next 升目 still short of its model, which is not always the one after:
+    // a learner who filled a later square first should not be sent back to it.
+    const next = cells.findIndex(
+      (cell, index) => index > inHand && cell.written.length < cell.strokes.length,
+    )
     return next === -1 ? null : { cell: next, stroke: 0 }
   }
 
