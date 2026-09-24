@@ -199,14 +199,18 @@
 }
 
 /*
- * 場面 and 単語 are words, not squares. Nothing here has to be read as a column
- * the way the kana table does, so the tiles simply fill the space they are
- * given and the text wraps inside them.
+ * 場面 and 単語 are words, not squares, and nothing here has to be read as a
+ * column the way the kana table does. So the tiles are only as big as their
+ * words need and sit together in the middle, rather than stretching to fill
+ * the screen. Every column and row is as wide and as tall as the biggest tile
+ * in the grid, so the tiles all come out one size: a grid of mixed sizes reads
+ * as mixed kinds of thing.
  */
 .chooser__grid--tiles {
-  inline-size: 100cqw;
-  block-size: 100cqh;
-  gap: 0.7cqh 0.7cqh;
+  gap: 0.4rem;
+  inline-size: auto;
+  max-inline-size: 100cqw;
+  block-size: auto;
 }
 
 .chooser__scene-tile,
@@ -214,7 +218,10 @@
   position: relative;
   display: grid;
   place-items: center;
-  padding: 0.3em;
+  /* Never smaller than a fingertip, however short what it says. */
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0.3em 0.5em;
   border: 1px solid var(--hairline);
   border-radius: 6px;
   background: var(--paper-tint);
@@ -223,24 +230,28 @@
   text-align: center;
 }
 
-/* The 場面 is named in the learner's language, and Vietnamese and Nepali names
-   run long, so the tile is sized to hold two lines of it rather than one. */
+/* The 場面 is named in the learner's language, in the type of the buttons
+   along the top. A long Vietnamese or Nepali name stays on one line while the
+   screen has room for it, and only wraps when four across would not fit. */
 .chooser__scene-tile {
-  font-family: var(--sans);
-  font-size: min(1.05rem, 5.5cqh);
+  font-family: var(--serif);
+  font-size: 0.8rem;
 }
 
-/* The 単語 is the tile; everything else in it is measured from that size. The
-   word and its meaning sit together in the middle rather than filling the
-   tile, so the pair reads as one thing however short the meaning is. */
+/* The 単語 is the tile; everything else in it is measured from that size. Every
+   tile keeps room for four characters and a reading over them, the most any
+   単語 has, so a 場面 of short kana words gets tiles the same size as one of
+   kanji — and the written form sits in the middle when there is no reading. */
 .chooser__word {
   grid-template-rows: auto auto;
   align-content: center;
-  gap: 0.15em;
-  /* By the height the rows allow, and by the width a tile gets: four
-     characters of a 単語 have to fit across one, even with the tuning panel
-     taking a third of the screen. */
-  font-size: min(1.85rem, 12cqh, calc(100cqw / var(--columns) / 5));
+  gap: 0.1em;
+  /* Four characters across; a reading, the gap and the 単語 down; and the
+     padding and border round both. */
+  min-inline-size: max(44px, calc(4em + 0.7em + 2px));
+  min-block-size: max(44px, calc(0.6em + 0.1em + 1.1em + 0.6em + 2px));
+  padding: 0.3em 0.35em;
+  font-size: 1.3rem;
 }
 
 /* How the 単語 is read, where the written form does not say it — furigana, in
@@ -248,7 +259,7 @@
    takes no room. */
 .chooser__reading {
   font-family: var(--sans);
-  font-size: 0.34em;
+  font-size: 0.5em;
   line-height: 1.2;
   color: var(--ink-soft);
 }
@@ -265,15 +276,6 @@
   white-space: nowrap;
 }
 
-/* What the 単語 means, said once and small: it is there to choose by, not to
-   be learnt, and the Japanese above it is what the learner is here for. */
-.chooser__meaning {
-  font-family: var(--sans);
-  font-size: max(0.42em, 0.7rem);
-  line-height: 1.25;
-  color: var(--ink-soft);
-}
-
 /* A chosen 単語 is filled in the colour of the way on, so which are in the run
    is plain at a glance across the whole 場面 — an outline alone was too easy
    to miss on a tile this size. Everything inside turns to match. */
@@ -284,13 +286,12 @@
 }
 
 .chooser__word[aria-pressed='true'] .chooser__reading,
-.chooser__word[aria-pressed='true'] .chooser__meaning,
 .chooser__word[aria-pressed='true'] .chooser__number {
   color: var(--on-vermilion);
 }
 
-/* The number sits in a tile far bigger than a character square, so it is a
-   smaller share of it — still the same red mark in the same corner. */
+/* A 単語 is set smaller than a character of the kana table, so its number is a
+   bigger share of it: the same small red mark in the same corner either way. */
 .chooser__word .chooser__number {
   font-size: 0.42em;
 }

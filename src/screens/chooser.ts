@@ -258,7 +258,8 @@ export function mountChooser(
 
   /**
    * Sizes the grid for what is about to go in it. Tiles are the 場面 and 単語 of
-   * ことば, which fill the space they are given; the kana table's squares do not.
+   * ことば, which take only the room their words need and sit together in the
+   * middle; the squares of the kana and kanji tables fill the space instead.
    */
   const setGrid = ({ columns, rows }: { columns: number; rows: number }, asTiles: boolean): void => {
     grid.className = asTiles ? 'chooser__grid chooser__grid--tiles' : 'chooser__grid'
@@ -312,12 +313,12 @@ export function mountChooser(
   }
 
   /**
-   * A 単語 as it is written, with how it is read above it and what it means
-   * underneath. The meaning is there to pick by, not to learn: it is said once,
-   * small, in one language. The reading is only there when it tells the learner
-   * something the written form does not — 百円 needs it, ふくろ reads as itself.
+   * A 単語 as it is written, with how it is read above it and nothing else: the
+   * tile is for picking, and the Japanese is what the learner picks by. The
+   * reading is only there when it tells the learner something the written form
+   * does not — 百円 needs it, ふくろ reads as itself.
    */
-  const wordButton = (word: Word, language: Language): HTMLButtonElement => {
+  const wordButton = (word: Word): HTMLButtonElement => {
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'chooser__word'
@@ -332,11 +333,7 @@ export function mountChooser(
     written.className = 'chooser__written'
     written.lang = 'ja'
     written.textContent = word.written
-    const meaning = document.createElement('span')
-    meaning.className = 'chooser__meaning'
-    meaning.lang = language
-    meaning.textContent = word.meaning[language]
-    button.append(number, reading, written, meaning)
+    button.append(number, reading, written)
     button.addEventListener('click', () => {
       session.chooseItem(word.written)
       showChosen()
@@ -363,7 +360,7 @@ export function mountChooser(
     sceneName.lang = language
     sceneBar.hidden = false
     setGrid(tiles(showing.words.length, WORD_COLUMNS), true)
-    grid.replaceChildren(...showing.words.map((word) => wordButton(word, language)))
+    grid.replaceChildren(...showing.words.map(wordButton))
   }
 
   const render = (): void => {
