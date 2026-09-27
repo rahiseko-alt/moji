@@ -1,7 +1,7 @@
 /**
  * The cover: the first thing a learner sees after scanning the classroom QR
- * code. It carries the school's seal, and asks for the only thing the app needs
- * before it can start — which language to speak.
+ * code. It carries the developer's seal, and asks for the only thing the app
+ * needs before it can start — which language to speak.
  */
 import { LANGUAGES, LANGUAGE_ENDONYMS, type ChoicesStore, type Language } from '../app/choices'
 import { requireElement } from '../app/dom'
