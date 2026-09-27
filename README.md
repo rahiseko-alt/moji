@@ -30,6 +30,7 @@ npm run build      # 配信用の組み立て
 
 `assets/cover.png` は本プロジェクトのために用意した表紙です。
 `assets/favicon.png` はその円相部分を切り出したものです。
+スマホのホーム画面用（`apple-touch-icon.png`、`icon-192.png`、`icon-512.png`）も同じ部分から切り出しています。
 
 ---
 
