@@ -29,9 +29,10 @@ export type Word = {
   readonly scene: string
   readonly meaning: PerLanguage
   /**
-   * The Vietnamese and Nepali meanings have not been through a native speaker
-   * yet. True until one has seen them. The learner is never told: a warning
-   * they cannot act on only undermines the word in front of them.
+   * The meanings in every language but Japanese and English have not been
+   * through a native speaker yet. True until one has seen them. The learner is
+   * never told: a warning they cannot act on only undermines the word in front
+   * of them.
    */
   readonly draftTranslation: boolean
 }

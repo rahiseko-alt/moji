@@ -35,21 +35,24 @@
   gap: 3cqh;
 }
 
+/* One row, however many languages: a second row would push START off the
+   bottom of the painting. The row has to stay clear of the seal on the left
+   (its right edge is at 7.7% of the width), so it is sized to fit within 84%. */
 .cover__languages {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 2.2cqw;
+  gap: 1.3cqw;
 }
 
 .cover__language {
-  padding: 0.9cqh 2.2cqw;
+  padding: 0.9cqh 1.5cqw;
   border: 1px solid var(--hairline);
   border-radius: 999px;
   background: var(--paper-tint);
   font-family: var(--serif);
-  font-size: 2.7cqw;
+  font-size: 2.4cqw;
   line-height: 1.2;
+  white-space: nowrap;
   color: var(--ink-soft);
 }
 

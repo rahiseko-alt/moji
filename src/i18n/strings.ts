@@ -1,11 +1,11 @@
 /**
- * Every word the interface says, in the four languages the school needs — with
- * one deliberate exception: the cover's START. A learner who cannot yet read any
- * of the four has to be able to see where to press, so that one word is the same
+ * Every word the interface says, in the languages the school's learners speak —
+ * with one deliberate exception: the cover's START. A learner who cannot yet read
+ * any of them has to be able to see where to press, so that one word is the same
  * everywhere and lives in the cover's own markup.
  *
- * The Vietnamese and Nepali wordings are drafts awaiting a native speaker's
- * review (see issue #2). Only interface wording lives here: the Japanese being
+ * Every wording but the Japanese and English is a draft awaiting a native
+ * speaker's review (see issue #2). Only interface wording lives here: the Japanese being
  * written, and its reading, are never translated.
  */
 import type { Language } from '../app/choices'
@@ -175,5 +175,85 @@ export const STRINGS: Record<Language, Strings> = {
     words: 'शब्दहरू',
     back: 'पछाडि',
     everyScene: 'सबै विषय',
+  },  my: {
+    rotateToLandscape: 'ဖုန်းကို အလျားလိုက် လှည့်ပေးပါ',
+    sources: 'ကိုးကားချက်',
+    close: 'ပိတ်ရန်',
+    home: 'ပင်မ',
+    quitQuestion: 'ရေးတာ ရပ်မလား။',
+    quitChosenQuestion: 'ရွေးထားတာတွေ ပျောက်သွားပါမယ်။ ရပ်မလား။',
+    quitRunQuestion: (remaining) => `နောက်ထပ် ${remaining} ခု ကျန်ပါသေးတယ်။ ရပ်မလား။`,
+    yes: 'ဟုတ်ကဲ့',
+    no: 'မဟုတ်ပါ',
+    correct: 'မှန်',
+    incorrect: 'မှား',
+    all: 'အားလုံး',
+    start: 'စမယ်',
+    submit: 'ပြီးပြီ',
+    results: 'ရလဒ်',
+    next: 'နောက်တစ်ခု',
+    retry: 'ပြန်ရေး',
+    progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `မှန် ${correct}/${total}`,
+    hiragana: 'ဟီရာဂါနာ',
+    katakana: 'ခါတာခါနာ',
+    kanji: 'ခန်ဂျိ',
+    words: 'စကားလုံး',
+    back: 'နောက်သို့',
+    everyScene: 'အကြောင်းအရာ အားလုံး',
+  },
+  si: {
+    rotateToLandscape: 'කරුණාකර දුරකථනය තිරස් අතට හරවන්න',
+    sources: 'මූලාශ්‍ර',
+    close: 'වසන්න',
+    home: 'මුල් පිටුව',
+    quitQuestion: 'ලිවීම නවත්වන්නද?',
+    quitChosenQuestion: 'ඔබ තෝරාගත් දේ නැති වේ. නවත්වන්නද?',
+    quitRunQuestion: (remaining) => `තව ${remaining}ක් ඉතිරියි. නවත්වන්නද?`,
+    yes: 'ඔව්',
+    no: 'නැත',
+    correct: 'නිවැරදියි',
+    incorrect: 'වැරදියි',
+    all: 'සියල්ල',
+    start: 'අරඹන්න',
+    submit: 'අවසන්',
+    results: 'ප්‍රතිඵල',
+    next: 'ඊළඟ',
+    retry: 'නැවත',
+    progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `නිවැරදි ${correct}/${total}`,
+    hiragana: 'හිරගනා',
+    katakana: 'කතකනා',
+    kanji: 'කන්ජි',
+    words: 'වචන',
+    back: 'ආපසු',
+    everyScene: 'සියලු මාතෘකා',
+  },
+  bn: {
+    rotateToLandscape: 'অনুগ্রহ করে ফোনটি আড়াআড়ি করুন',
+    sources: 'উৎস',
+    close: 'বন্ধ করুন',
+    home: 'হোম',
+    quitQuestion: 'লেখা বন্ধ করবেন?',
+    quitChosenQuestion: 'আপনার বাছাই করা সব মুছে যাবে। বন্ধ করবেন?',
+    quitRunQuestion: (remaining) => `আরও ${remaining}টি বাকি আছে। বন্ধ করবেন?`,
+    yes: 'হ্যাঁ',
+    no: 'না',
+    correct: 'সঠিক',
+    incorrect: 'ভুল',
+    all: 'সব',
+    start: 'শুরু',
+    submit: 'শেষ',
+    results: 'ফলাফল',
+    next: 'পরবর্তী',
+    retry: 'আবার',
+    progress: (position, total) => `${position} / ${total}`,
+    runScore: (correct, total) => `সঠিক ${correct}/${total}`,
+    hiragana: 'হিরাগানা',
+    katakana: 'কাতাকানা',
+    kanji: 'কানজি',
+    words: 'শব্দ',
+    back: 'ফিরে যান',
+    everyScene: 'সব বিষয়',
   },
 }

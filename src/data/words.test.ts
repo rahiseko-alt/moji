@@ -39,7 +39,7 @@ describe('the scenes a word can belong to', () => {
     }
   })
 
-  it('names every scene in all four languages', () => {
+  it('names every scene in every language', () => {
     for (const [id, scene] of Object.entries(scenes)) {
       for (const language of LANGUAGES) {
         expect(scene.name[language], `${id} in ${language}`).toBeTruthy()
@@ -95,7 +95,7 @@ describe('every word', () => {
     }
   })
 
-  it('has a meaning in all four languages', () => {
+  it('has a meaning in every language', () => {
     for (const word of entries) {
       for (const language of LANGUAGES) {
         expect(word.meaning[language], `${word.written} in ${language}`).toBeTruthy()

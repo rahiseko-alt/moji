@@ -6,7 +6,7 @@
  * is no localStorage, cookie or query parameter behind this.
  */
 
-export const LANGUAGES = ['ja', 'en', 'vi', 'ne'] as const
+export const LANGUAGES = ['ja', 'en', 'vi', 'ne', 'my', 'si', 'bn'] as const
 export type Language = (typeof LANGUAGES)[number]
 
 /** Each language names itself, so a learner can find their own without reading Japanese. */
@@ -15,6 +15,9 @@ export const LANGUAGE_ENDONYMS: Record<Language, string> = {
   en: 'English',
   vi: 'Tiếng Việt',
   ne: 'नेपाली',
+  my: 'မြန်မာ',
+  si: 'සිංහල',
+  bn: 'বাংলা',
 }
 
 /** A learner who picks nothing still gets a working app. */

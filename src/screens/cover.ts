@@ -42,7 +42,7 @@ export function mountCover(
   }
 
   // The one word on the cover that is not translated: a learner who cannot yet
-  // read any of the four languages can still see where to press.
+  // read any of the languages can still see where to press.
   start.addEventListener('click', onStart)
 
   const render = (): void => {
