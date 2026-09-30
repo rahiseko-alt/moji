@@ -18,8 +18,9 @@ import './credits.css'
 /** The address KanjiVG's licence asks to be linked. */
 const KANJIVG_SITE = 'http://kanjivg.tagaini.net'
 
-/** Vietnamese and Nepali are drafts until a native speaker has been through them. */
-const TRANSLATIONS_IN_REVIEW = 'ベトナム語・ネパール語は確認中 / Vietnamese and Nepali are being checked'
+/** Every language but Japanese and English is a draft until a native speaker has been through it. */
+const TRANSLATIONS_IN_REVIEW =
+  '日本語・英語以外は確認中 / Languages other than Japanese and English are being checked'
 
 export function mountCredits(coverFrame: HTMLElement, choices: ChoicesStore): Screen {
   const open = document.createElement('button')
